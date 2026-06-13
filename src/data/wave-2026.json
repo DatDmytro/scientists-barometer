@@ -1,0 +1,596 @@
+{
+  "schemaVersion": 1,
+  "wave": {
+    "id": "2026",
+    "label": "Пілот 2026",
+    "n": 200,
+    "design": "pilot",
+    "field": {
+      "start": "2026-02-25",
+      "end": "2026-04-13",
+      "days": 46,
+      "mainWave": "2026-03"
+    },
+    "population": {
+      "size": 136131,
+      "source": "Держстат, 2024",
+      "fractionPct": 0.15,
+      "definition": "наукові, науково-педагогічні та педагогічні працівники ЗВО і наукових установ України, задіяні в науковій діяльності"
+    },
+    "sampling": {
+      "method": "non_probability",
+      "stratified": false,
+      "channels": 3,
+      "voluntary": true,
+      "anonymous": true
+    },
+    "marginOfError": null,
+    "uncertaintyNote": "Вибірка невипадкова (зручна/самовідбір) — класична похибка не застосовна. Невизначеність подано 95% довірчими інтервалами на індекси; відмінність від генеральної сукупності — критерієм χ²."
+  },
+  "indices": [
+    {
+      "code": "ІНЧ 1",
+      "label": "зміна часу на ДНД (рік)",
+      "dimension": "Динаміка структури часу",
+      "n": 196,
+      "value": 101.5,
+      "se": 3.96,
+      "ciLow": 93.8,
+      "ciHigh": 109.3,
+      "reportValue": 101.6,
+      "matchesReport": false
+    },
+    {
+      "code": "ІНЧ 5",
+      "label": "зміна часу на ДНД (5 років)",
+      "dimension": "Динаміка структури часу",
+      "n": 196,
+      "value": 100.0,
+      "se": 5.04,
+      "ciLow": 90.1,
+      "ciHigh": 109.9,
+      "reportValue": 100.0,
+      "matchesReport": true
+    },
+    {
+      "code": "ІКННЧ 1",
+      "label": "зміна часу на КННД (рік)",
+      "dimension": "Динаміка структури часу",
+      "n": 198,
+      "value": 127.0,
+      "se": 3.41,
+      "ciLow": 120.3,
+      "ciHigh": 133.7,
+      "reportValue": 127.0,
+      "matchesReport": true
+    },
+    {
+      "code": "ІКННЧ 5",
+      "label": "зміна часу на КННД (5 років)",
+      "dimension": "Динаміка структури часу",
+      "n": 198,
+      "value": 132.1,
+      "se": 4.2,
+      "ciLow": 123.8,
+      "ciHigh": 140.3,
+      "reportValue": 132.1,
+      "matchesReport": true
+    },
+    {
+      "code": "ІБВЧ 1",
+      "label": "зміна часу на БД (рік)",
+      "dimension": "Динаміка структури часу",
+      "n": 197,
+      "value": 134.5,
+      "se": 3.67,
+      "ciLow": 127.3,
+      "ciHigh": 141.7,
+      "reportValue": 134.5,
+      "matchesReport": true
+    },
+    {
+      "code": "ІБВЧ 5",
+      "label": "зміна часу на БД (5 років)",
+      "dimension": "Динаміка структури часу",
+      "n": 196,
+      "value": 138.8,
+      "se": 4.06,
+      "ciLow": 130.8,
+      "ciHigh": 146.7,
+      "reportValue": 138.8,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ ф",
+      "label": "забезпеченість фінансуванням",
+      "dimension": "Поточна забезпеченість",
+      "n": 195,
+      "value": 49.7,
+      "se": 3.92,
+      "ciLow": 42.1,
+      "ciHigh": 57.4,
+      "reportValue": 49.7,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ о",
+      "label": "забезпеченість обладнанням",
+      "dimension": "Поточна забезпеченість",
+      "n": 196,
+      "value": 84.7,
+      "se": 4.34,
+      "ciLow": 76.2,
+      "ciHigh": 93.2,
+      "reportValue": 84.7,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ ч",
+      "label": "забезпеченість часом",
+      "dimension": "Поточна забезпеченість",
+      "n": 196,
+      "value": 87.8,
+      "se": 4.37,
+      "ciLow": 79.2,
+      "ciHigh": 96.3,
+      "reportValue": 87.8,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ",
+      "label": "інтегральний Індекс наукових можливостей (геом.)",
+      "dimension": "Поточна забезпеченість",
+      "n": 195,
+      "value": 71.8,
+      "se": 3.56,
+      "ciLow": 64.8,
+      "ciHigh": 78.8,
+      "reportValue": 71.8,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ ф1",
+      "label": "динаміка фінансування (рік)",
+      "dimension": "Динаміка забезпеченості",
+      "n": 191,
+      "value": 83.8,
+      "se": 3.8,
+      "ciLow": 76.3,
+      "ciHigh": 91.2,
+      "reportValue": 83.8,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ ф5",
+      "label": "динаміка фінансування (5 років)",
+      "dimension": "Динаміка забезпеченості",
+      "n": 188,
+      "value": 79.8,
+      "se": 4.11,
+      "ciLow": 71.7,
+      "ciHigh": 87.8,
+      "reportValue": 79.8,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ о1",
+      "label": "динаміка обладнання (рік)",
+      "dimension": "Динаміка забезпеченості",
+      "n": 194,
+      "value": 95.4,
+      "se": 3.31,
+      "ciLow": 88.9,
+      "ciHigh": 101.9,
+      "reportValue": 95.4,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ о5",
+      "label": "динаміка обладнання (5 років)",
+      "dimension": "Динаміка забезпеченості",
+      "n": 190,
+      "value": 91.8,
+      "se": 3.82,
+      "ciLow": 84.3,
+      "ciHigh": 99.3,
+      "reportValue": 91.8,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ ч1",
+      "label": "динаміка часу (рік)",
+      "dimension": "Динаміка забезпеченості",
+      "n": 192,
+      "value": 81.5,
+      "se": 3.49,
+      "ciLow": 74.7,
+      "ciHigh": 88.4,
+      "reportValue": 81.5,
+      "matchesReport": true
+    },
+    {
+      "code": "ІНМ ч5",
+      "label": "динаміка часу (5 років)",
+      "dimension": "Динаміка забезпеченості",
+      "n": 190,
+      "value": 79.5,
+      "se": 3.98,
+      "ciLow": 71.7,
+      "ciHigh": 87.3,
+      "reportValue": 79.5,
+      "matchesReport": true
+    },
+    {
+      "code": "ІЯНР в",
+      "label": "якість власних досліджень",
+      "dimension": "Якість результатів",
+      "n": 199,
+      "value": 113.3,
+      "se": 2.63,
+      "ciLow": 108.2,
+      "ciHigh": 118.5,
+      "reportValue": 113.3,
+      "matchesReport": true
+    },
+    {
+      "code": "ІЯНР ч",
+      "label": "якість досліджень інших",
+      "dimension": "Якість результатів",
+      "n": 197,
+      "value": 113.7,
+      "se": 3.0,
+      "ciLow": 107.8,
+      "ciHigh": 119.6,
+      "reportValue": 113.7,
+      "matchesReport": true
+    },
+    {
+      "code": "ІЯНР в1",
+      "label": "динаміка якості власних (рік)",
+      "dimension": "Якість результатів",
+      "n": 197,
+      "value": 118.3,
+      "se": 3.07,
+      "ciLow": 112.3,
+      "ciHigh": 124.3,
+      "reportValue": 118.3,
+      "matchesReport": true
+    },
+    {
+      "code": "ІЯНР в5",
+      "label": "динаміка якості власних (5 рр.)",
+      "dimension": "Якість результатів",
+      "n": 197,
+      "value": 124.1,
+      "se": 3.82,
+      "ciLow": 116.6,
+      "ciHigh": 131.6,
+      "reportValue": 124.1,
+      "matchesReport": true
+    },
+    {
+      "code": "ІЯНР ч1",
+      "label": "динаміка якості інших (рік)",
+      "dimension": "Якість результатів",
+      "n": 196,
+      "value": 105.6,
+      "se": 2.87,
+      "ciLow": 100.0,
+      "ciHigh": 111.2,
+      "reportValue": 105.6,
+      "matchesReport": true
+    },
+    {
+      "code": "ІЯНР ч5",
+      "label": "динаміка якості інших (5 років)",
+      "dimension": "Якість результатів",
+      "n": 196,
+      "value": 103.3,
+      "se": 3.49,
+      "ciLow": 96.5,
+      "ciHigh": 110.2,
+      "reportValue": 103.3,
+      "matchesReport": true
+    },
+    {
+      "code": "ІОРН 1",
+      "label": "очікування (наступний рік)",
+      "dimension": "Очікування",
+      "n": 199,
+      "value": 78.6,
+      "se": 3.79,
+      "ciLow": 71.2,
+      "ciHigh": 86.1,
+      "reportValue": 78.6,
+      "matchesReport": true
+    },
+    {
+      "code": "ІОРН 5",
+      "label": "очікування (наступні 5 років)",
+      "dimension": "Очікування",
+      "n": 199,
+      "value": 84.7,
+      "se": 4.45,
+      "ciLow": 75.9,
+      "ciHigh": 93.4,
+      "reportValue": 84.7,
+      "matchesReport": true
+    }
+  ],
+  "indicators": [
+    {
+      "label": "Змістовність роботи (% згодних)",
+      "section": "4.1",
+      "n": 199,
+      "pct": 63.8,
+      "reportPct": 63.8
+    },
+    {
+      "label": "Усунення БД покращить якість (% покращення)",
+      "section": "4.6",
+      "n": 198,
+      "pct": 93.4,
+      "reportPct": 93.4
+    },
+    {
+      "label": "Зниження навантаж. покращить якість (%)",
+      "section": "4.6",
+      "n": 199,
+      "pct": 79.4,
+      "reportPct": 79.4
+    },
+    {
+      "label": "Публікували б без примусу (% так)",
+      "section": "4.6",
+      "n": 199,
+      "pct": 84.9,
+      "reportPct": 84.9
+    }
+  ],
+  "reliability": {
+    "cronbachAlpha": [
+      {
+        "scale": "1. Поточна забезпеченість",
+        "alpha": 0.755
+      },
+      {
+        "scale": "2. Динаміка забезпеч. (рік)",
+        "alpha": 0.748
+      },
+      {
+        "scale": "3. Динаміка забезпеч. (5 років)",
+        "alpha": 0.786
+      },
+      {
+        "scale": "4. Якість власних (now+y1+y5)",
+        "alpha": 0.804
+      },
+      {
+        "scale": "5. Якість інших (now+y1+y5)",
+        "alpha": 0.878
+      },
+      {
+        "scale": "6. Достатність часу (4 пит.)",
+        "alpha": 0.881
+      },
+      {
+        "scale": "7. ІОРН (рік+5 років)",
+        "alpha": 0.905
+      }
+    ],
+    "fleiss": {
+      "kappa": 0.275,
+      "pBar": 0.531
+    },
+    "spearman": [
+      {
+        "pair": "Частка ДНД ↔ ІЯНР власних",
+        "rho": 0.351
+      },
+      {
+        "pair": "ІНМ(бали) ↔ ІОРН(рік)",
+        "rho": 0.315
+      },
+      {
+        "pair": "Частка БД ↔ ІОРН(рік)",
+        "rho": -0.196
+      },
+      {
+        "pair": "Частка БД ↔ ІЯНР власних",
+        "rho": -0.147
+      },
+      {
+        "pair": "ІНМ(бали) ↔ ІЯНР власних",
+        "rho": 0.127
+      }
+    ]
+  },
+  "timeShares": [
+    {
+      "category": "НД",
+      "meanPct": 31.533,
+      "zvoPct": 26.583,
+      "nuPct": 42.544
+    },
+    {
+      "category": "КН",
+      "meanPct": 35.859,
+      "zvoPct": 37.446,
+      "nuPct": 32.679
+    },
+    {
+      "category": "БД",
+      "meanPct": 28.788,
+      "zvoPct": 31.763,
+      "nuPct": 21.964
+    }
+  ],
+  "representativeness": {
+    "criteria": [
+      {
+        "criterion": "Тип установи",
+        "n": 197,
+        "chi2": 19.88,
+        "df": 1,
+        "p": 8.226984355087024e-06,
+        "reportChi2": 19.88
+      },
+      {
+        "criterion": "Науковий ступінь",
+        "n": 200,
+        "chi2": 27.93,
+        "df": 2,
+        "p": 8.61341052741929e-07,
+        "reportChi2": 27.93
+      },
+      {
+        "criterion": "Вчене звання (ЗВО)",
+        "n": 140,
+        "chi2": 12.32,
+        "df": 2,
+        "p": 0.002110319444938,
+        "reportChi2": 12.32
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "n": 56,
+        "chi2": 20.46,
+        "df": 3,
+        "p": 0.0001364599583066,
+        "reportChi2": 20.46
+      }
+    ],
+    "comparison": [
+      {
+        "criterion": "Тип установи",
+        "category": "ЗВО",
+        "popPct": 83.0,
+        "sampleN": 140,
+        "samplePct": 71.1,
+        "biasPp": -11.9
+      },
+      {
+        "criterion": "Тип установи",
+        "category": "Наукова установа",
+        "popPct": 17.0,
+        "sampleN": 57,
+        "samplePct": 28.9,
+        "biasPp": 11.9
+      },
+      {
+        "criterion": "Науковий ступінь",
+        "category": "Кандидат наук / PhD",
+        "popPct": 53.4,
+        "sampleN": 127,
+        "samplePct": 63.5,
+        "biasPp": 10.1
+      },
+      {
+        "criterion": "Науковий ступінь",
+        "category": "Доктор наук",
+        "popPct": 17.4,
+        "sampleN": 48,
+        "samplePct": 24.0,
+        "biasPp": 6.6
+      },
+      {
+        "criterion": "Науковий ступінь",
+        "category": "Без наукового ступеня",
+        "popPct": 29.2,
+        "sampleN": 25,
+        "samplePct": 12.5,
+        "biasPp": -16.7
+      },
+      {
+        "criterion": "Вчене звання (ЗВО)",
+        "category": "Доцент",
+        "popPct": 39.3,
+        "sampleN": 69,
+        "samplePct": 49.3,
+        "biasPp": 10.0
+      },
+      {
+        "criterion": "Вчене звання (ЗВО)",
+        "category": "Без вченого звання",
+        "popPct": 45.1,
+        "sampleN": 42,
+        "samplePct": 30.0,
+        "biasPp": -15.1
+      },
+      {
+        "criterion": "Вчене звання (ЗВО)",
+        "category": "Професор",
+        "popPct": 14.4,
+        "sampleN": 26,
+        "samplePct": 18.6,
+        "biasPp": 4.2
+      },
+      {
+        "criterion": "Вчене звання (ЗВО)",
+        "category": "Старший дослідник",
+        "popPct": 1.2,
+        "sampleN": 3,
+        "samplePct": 2.1,
+        "biasPp": 0.9
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "category": "Природничо-математична",
+        "popPct": 44.0,
+        "sampleN": 23,
+        "samplePct": 41.1,
+        "biasPp": -2.9
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "category": "Інженерно-технологічна",
+        "popPct": 17.6,
+        "sampleN": 3,
+        "samplePct": 5.4,
+        "biasPp": -12.2
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "category": "Суспільна",
+        "popPct": 10.2,
+        "sampleN": 15,
+        "samplePct": 26.8,
+        "biasPp": 16.6
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "category": "Аграрно-ветеринарна",
+        "popPct": 11.2,
+        "sampleN": 8,
+        "samplePct": 14.3,
+        "biasPp": 3.1
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "category": "Біомедична",
+        "popPct": 8.6,
+        "sampleN": 3,
+        "samplePct": 5.4,
+        "biasPp": -3.2
+      },
+      {
+        "criterion": "Галузь наук (НУ)",
+        "category": "Гуманітарно-мистецька",
+        "popPct": 8.5,
+        "sampleN": 4,
+        "samplePct": 7.1,
+        "biasPp": -1.4
+      }
+    ],
+    "regionNote": "Область — описово (χ² не застосовний: E<5 у 18/23 регіонів)."
+  },
+  "meta": {
+    "source": "Report 2026",
+    "generated": "2026-06-11",
+    "scripts": [
+      "analysis.py",
+      "validity.py",
+      "representativeness.py"
+    ]
+  }
+}
