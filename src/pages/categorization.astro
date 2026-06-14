@@ -1,0 +1,84 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ViewToggle from '../components/ViewToggle.astro';
+import block from '../data/block-categorization-2026.json';
+
+const acts = block.activities; // вже відсортовано за БД% спадно
+const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
+---
+
+<Layout
+  title="Категоризація діяльності — Науковий Барометр"
+  description="54 види діяльності науковця, класифіковані як дійсна наукова, корисна ненаукова чи безглузда."
+>
+  <h1>Категоризація діяльності</h1>
+  <p class="lead">«{block.question}»</p>
+  <p class="note">{block.note}</p>
+
+  <div class="cat-summary">
+    <div><b>{block.summary['ДНД']}</b> видів — переважно дійсна наукова</div>
+    <div><b>{block.summary['КННД']}</b> — корисна ненаукова</div>
+    <div><b>{block.summary['БД']}</b> — безглузда</div>
+    <div><b>{block.fleissKappa}</b> Fleiss κ — помірна узгодженість</div>
+    <div><b>{block.controversialCount}</b> суперечливих — розрив &lt; 20 в.п.</div>
+  </div>
+
+  <div class="cat-legend">
+    <span><i class="swnd"></i>ДНД — дійсна наукова</span>
+    <span><i class="swkn"></i>КННД — корисна ненаукова</span>
+    <span><i class="swbd"></i>БД — безглузда</span>
+    <span class="note">(сортування — за часткою «безглузда»)</span>
+  </div>
+
+  <ViewToggle id="cat">
+    <div slot="chart">
+      {
+        acts.map((a) => (
+          <div class="actrow">
+            <div class="actname">
+              {a.name}
+              {a.controversial && <span class="contro"> · суперечливо</span>}
+            </div>
+            <div class="actbar">
+              <span class="nd" style={`width:${a.nd}%`} title={`ДНД ${a.nd}%`}>{lbl(a.nd)}</span>
+              <span class="kn" style={`width:${a.kn}%`} title={`КННД ${a.kn}%`}>{lbl(a.kn)}</span>
+              <span class="bd" style={`width:${a.bd}%`} title={`БД ${a.bd}%`}>{lbl(a.bd)}</span>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+    <table slot="table">
+      <thead>
+        <tr>
+          <th>Вид діяльності</th>
+          <th class="num">ДНД %</th>
+          <th class="num">КННД %</th>
+          <th class="num">БД %</th>
+          <th class="num">n</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          acts.map((a) => (
+            <tr>
+              <td>{a.name}</td>
+              <td class="num">{a.nd.toFixed(1)}</td>
+              <td class="num">{a.kn.toFixed(1)}</td>
+              <td class="num" style={a.dominant === 'БД' ? 'font-weight:600;color:#bf4040' : ''}>
+                {a.bd.toFixed(1)}
+              </td>
+              <td class="num">{a.n}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </ViewToggle>
+
+  <p class="note" style="margin-top:1.5rem">
+    Найбезглуздіші практики (за версією науковців): друк паперових варіантів, усне й письмове
+    звітування, забезпечення формальних метрик (h-індекс, цитування). Розрізи за демографією
+    (галузь, ступінь, регіон…) — наступним кроком.
+  </p>
+</Layout>
