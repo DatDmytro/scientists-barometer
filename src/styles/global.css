@@ -135,3 +135,8 @@ a { color: var(--accent); }
 .ct-n { color: var(--muted); font-weight: 400; font-size: 0.7rem; }
 .ct-cell { text-align: right; font-variant-numeric: tabular-nums; background: rgba(44, 95, 138, var(--a, 0)); }
 .ct-cell.hi { color: #fff; }
+
+/* ── Цитати: дописані варіанти / коментарі ── */
+.qlist { list-style: none; padding: 0; margin: 0.6rem 0; }
+.qlist li { padding: 0.45rem 0.7rem; border-left: 3px solid var(--line); margin: 0.4rem 0; background: var(--bg); border-radius: 0 6px 6px 0; font-size: 0.92rem; }
+.qlist.comments li { font-style: italic; border-left-color: var(--accent); }

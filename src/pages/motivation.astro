@@ -45,11 +45,20 @@ const maxPct = Math.max(...block.options.map((o) => o.pct));
   </section>
 
   <section>
-    <h2>Дописані варіанти та коментарі</h2>
+    <h2>Дописані варіанти мети ({block.writeInCount})</h2>
     <p class="note">
-      Респонденти дописали <b>{block.writeInCount}</b> власних варіантів мети та залишили коментарі до
-      блоку. Вони проходять модерацію (видалення будь-чого ідентифікуючого) перед публікацією і
-      з'являться тут згодом.
+      Власні відповіді респондентів у полі «Інше» — дослівно зі звіту, без редагування.
     </p>
+    <ul class="qlist">
+      {block.writeIns.map((wr) => <li>{wr}</li>)}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Коментарі до блоку ({block.comments.length})</h2>
+    <p class="note">Відкриті коментарі респондентів до цього розділу анкети.</p>
+    <ul class="qlist comments">
+      {block.comments.map((c) => <li>{c}</li>)}
+    </ul>
   </section>
 </Layout>
