@@ -1,10 +1,14 @@
 ---
+import '../styles/global.css';
 import wave from '../data/wave-2026.json';
+import IndicesChart from '../components/IndicesChart.astro';
+import ViewToggle from '../components/ViewToggle.astro';
 
 const w = wave.wave;
 const dims = [...new Set(wave.indices.map((i) => i.dimension))];
 const inm = wave.indices.find((i) => i.code === 'ІНМ');
 const fmtN = (n: number) => n.toLocaleString('uk-UA');
+const byDim = (dim: string) => wave.indices.filter((i) => i.dimension === dim);
 ---
 
 <!doctype html>
@@ -17,47 +21,6 @@ const fmtN = (n: number) => n.toLocaleString('uk-UA');
       name="description"
       content="Інтерсуб'єктивні індекси якості наукової діяльності в Україні. Пілотне дослідження N=200."
     />
-    <style>
-      :root {
-        --ink: #1a2230; --muted: #5b6b7c; --line: #e4e9ef; --bg: #f7f9fb;
-        --accent: #2c5f8a; --neg: #bf4040; --pos: #4a8c5c;
-      }
-      * { box-sizing: border-box; }
-      body {
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        color: var(--ink); max-width: 900px; margin: 0 auto;
-        padding: 2.5rem 1.25rem 5rem; line-height: 1.55;
-      }
-      h1 { margin: 0 0 0.2rem; font-size: 2rem; letter-spacing: -0.01em; }
-      .sub { color: var(--muted); margin: 0 0 1.75rem; font-size: 1.02rem; }
-      .meta {
-        background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
-        padding: 1rem 1.25rem; font-size: 0.9rem; color: var(--muted); margin-bottom: 2.25rem;
-      }
-      .meta p { margin: 0.3rem 0; }
-      .meta b { color: var(--ink); }
-      .pilot {
-        display: inline-block; background: #fff3e0; color: #9a5b00;
-        border: 1px solid #ffd9a0; border-radius: 999px;
-        padding: 0.1rem 0.6rem; font-size: 0.78rem; font-weight: 600; margin-left: 0.4rem;
-      }
-      h2 {
-        font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em;
-        color: var(--accent); margin: 2rem 0 0.4rem;
-      }
-      table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-      th, td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--line); }
-      th { font-weight: 600; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
-      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-      .code { font-weight: 700; white-space: nowrap; }
-      .val { font-weight: 600; }
-      .val.up { color: var(--pos); }
-      .val.down { color: var(--neg); }
-      .ci { color: var(--muted); font-size: 0.85rem; }
-      .flag { color: var(--neg); font-size: 0.72rem; white-space: nowrap; }
-      footer { margin-top: 3rem; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 1rem; }
-      a { color: var(--accent); }
-    </style>
   </head>
   <body>
     <h1>Науковий Барометр</h1>
@@ -75,49 +38,53 @@ const fmtN = (n: number) => n.toLocaleString('uk-UA');
     </div>
 
     {
-      dims.map((dim) => (
-        <section>
-          <h2>{dim}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Індекс</th>
-                <th>Опис</th>
-                <th class="num">Значення</th>
-                <th class="num">95% ДІ</th>
-                <th class="num">n</th>
-              </tr>
-            </thead>
-            <tbody>
-              {wave.indices
-                .filter((i) => i.dimension === dim)
-                .map((i) => (
+      dims.map((dim, i) => {
+        const items = byDim(dim);
+        return (
+          <section>
+            <h2>{dim}</h2>
+            <ViewToggle id={`dim-${i}`}>
+              <IndicesChart slot="chart" indices={items} />
+              <table slot="table">
+                <thead>
                   <tr>
-                    <td class="code">{i.code}</td>
-                    <td>{i.label}</td>
-                    <td class="num">
-                      <span class={`val ${i.value > 100 ? 'up' : i.value < 100 ? 'down' : ''}`}>
-                        {i.value.toFixed(1)}
-                      </span>
-                      {!i.matchesReport && <span class="flag"> (звіт: {i.reportValue})</span>}
-                    </td>
-                    <td class="num ci">
-                      {i.ciLow.toFixed(1)}–{i.ciHigh.toFixed(1)}
-                    </td>
-                    <td class="num">{i.n}</td>
+                    <th>Індекс</th>
+                    <th>Опис</th>
+                    <th class="num">Значення</th>
+                    <th class="num">95% ДІ</th>
+                    <th class="num">n</th>
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        </section>
-      ))
+                </thead>
+                <tbody>
+                  {items.map((idx) => (
+                    <tr>
+                      <td class="code">{idx.code}</td>
+                      <td>{idx.label}</td>
+                      <td class="num">
+                        <span class={`val ${idx.value > 100 ? 'up' : idx.value < 100 ? 'down' : ''}`}>
+                          {idx.value.toFixed(1)}
+                        </span>
+                        {!idx.matchesReport && <span class="flag"> (звіт: {idx.reportValue})</span>}
+                      </td>
+                      <td class="num ci">
+                        {idx.ciLow.toFixed(1)}–{idx.ciHigh.toFixed(1)}
+                      </td>
+                      <td class="num">{idx.n}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ViewToggle>
+          </section>
+        );
+      })
     }
 
     <footer>
       <p>
         Шкала: <b>100 = нейтральний рівень</b> (вище — переважання позитивних оцінок / зростання,
-        нижче — негативних / скорочення). Зведений Індекс наукових можливостей (ІНМ) ={' '}
-        <b>{inm?.value.toFixed(1)}</b>.
+        нижче — негативних / скорочення). Зелені вуса на графіку — 95% довірчі інтервали. Зведений
+        Індекс наукових можливостей (ІНМ) = <b>{inm?.value.toFixed(1)}</b>.
       </p>
       <p>Джерело даних: дослідження «{wave.meta.source}». Невипадкова пілотна вибірка — результати орієнтовні.</p>
     </footer>

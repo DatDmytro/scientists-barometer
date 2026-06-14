@@ -1,0 +1,68 @@
+---
+import * as Plot from '@observablehq/plot';
+import { parseHTML } from 'linkedom';
+
+interface Idx {
+  code: string;
+  label: string;
+  value: number;
+  ciLow: number;
+  ciHigh: number;
+  n: number;
+}
+
+const { indices } = Astro.props as { indices: Idx[] };
+
+// Рендеримо Plot на сервері (build-time) через linkedom → інлайн SVG, zero-JS.
+const { document } = parseHTML('<!DOCTYPE html><html><body></body></html>');
+
+const lo = Math.min(100, ...indices.map((d) => d.ciLow));
+const hi = Math.max(100, ...indices.map((d) => d.ciHigh));
+const pad = Math.max(4, (hi - lo) * 0.1);
+
+const chart = Plot.plot({
+  document,
+  width: 760,
+  height: 44 + indices.length * 40,
+  marginLeft: 86,
+  marginRight: 60,
+  marginTop: 12,
+  marginBottom: 34,
+  style: { fontSize: '12px', color: '#1a2230' },
+  x: {
+    domain: [Math.floor(lo - pad), Math.ceil(hi + pad)],
+    label: 'Індекс (100 = нейтральний рівень) →',
+    grid: true,
+  },
+  y: { domain: indices.map((d) => d.code), label: null, tickSize: 0 },
+  marks: [
+    Plot.barX(indices, {
+      y: 'code',
+      x1: 100,
+      x2: 'value',
+      fill: (d: Idx) => (d.value >= 100 ? '#4a8c5c' : '#bf4040'),
+      fillOpacity: 0.82,
+    }),
+    // вуса 95% довірчого інтервалу
+    Plot.ruleY(indices, { y: 'code', x1: 'ciLow', x2: 'ciHigh', stroke: '#1a2230', strokeWidth: 1.4 }),
+    Plot.tickX(indices, { x: 'ciLow', y: 'code', stroke: '#1a2230', strokeWidth: 1.4 }),
+    Plot.tickX(indices, { x: 'ciHigh', y: 'code', stroke: '#1a2230', strokeWidth: 1.4 }),
+    // нейтральна лінія
+    Plot.ruleX([100], { stroke: '#444', strokeWidth: 1.25 }),
+    // підписи значень
+    Plot.text(indices, {
+      y: 'code',
+      x: 'value',
+      text: (d: Idx) => d.value.toFixed(1),
+      dx: (d: Idx) => (d.value >= 100 ? 9 : -9),
+      textAnchor: (d: Idx) => (d.value >= 100 ? 'start' : 'end'),
+      fill: '#1a2230',
+      fontWeight: 700,
+    }),
+  ],
+});
+
+const svg = String((chart as Element).outerHTML);
+---
+
+<figure class="chart" set:html={svg}></figure>

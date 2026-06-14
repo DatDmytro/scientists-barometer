@@ -1,0 +1,31 @@
+---
+// CSS-only перемикач «Графік ⇄ Таблиця» (zero-JS).
+// Радіо-інпути — прямі діти .viewtoggle (перед контентом), щоб працювали ~ селектори.
+const { id, defaultView = 'chart' } = Astro.props as {
+  id: string;
+  defaultView?: 'chart' | 'table';
+};
+---
+
+<div class="viewtoggle">
+  <input
+    type="radio"
+    class="vt-r vt-r-chart"
+    name={`vt-${id}`}
+    id={`vt-${id}-chart`}
+    checked={defaultView === 'chart'}
+  />
+  <input
+    type="radio"
+    class="vt-r vt-r-table"
+    name={`vt-${id}`}
+    id={`vt-${id}-table`}
+    checked={defaultView === 'table'}
+  />
+  <div class="vt-tabs" role="tablist">
+    <label for={`vt-${id}-chart`}>Графік</label>
+    <label for={`vt-${id}-table`}>Таблиця</label>
+  </div>
+  <div class="vt-chart"><slot name="chart" /></div>
+  <div class="vt-table"><slot name="table" /></div>
+</div>
