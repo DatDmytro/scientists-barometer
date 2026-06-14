@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+import wave from '../data/wave-2026.json';
+
+const w = wave.wave;
+const rel = wave.reliability;
+const rep = wave.representativeness;
+const fmtN = (n: number) => n.toLocaleString('uk-UA');
+const pStr = (p: number) => (p < 0.001 ? '<0,001' : p.toFixed(3).replace('.', ','));
+const compByCrit = (c: string) => rep.comparison.filter((r) => r.criterion === c);
+const biasCls = (b: number) => (b >= 0 ? 'bias-pos' : 'bias-neg');
+const biasStr = (b: number) => (b >= 0 ? `+${b.toFixed(1)}` : b.toFixed(1));
+---
+
+<Layout title="Методологія — Науковий Барометр" description="Як рахуються індекси, надійність шкал, вибірка та репрезентативність.">
+  <h1>Методологія</h1>
+  <p class="lead">
+    Як рахуються індекси, наскільки вони надійні, і чесно — що це за вибірка. Принцип проєкту:
+    <b>кожне число має бути видно, звідки воно</b>.
+  </p>
+
+  <div class="prose">
+    <h3>Як рахуються індекси</h3>
+    <p>
+      Замість наукометрії (кількість публікацій, цитувань) індекси формуються зі структурованих оцінок
+      самих науковців і агрегуються у <b>дифузійний індекс</b> — за аналогією з Індексом менеджерів із
+      закупівель (PMI) та Індексом споживчих настроїв.
+    </p>
+    <div class="formula">
+      <code>Індекс = [P₁·1 + P₂·0,5 + P₃·0 + P₄·(−0,5) + P₅·(−1)] · 100 + 100</code>
+      <p class="note" style="margin:0.5rem 0 0">
+        де P₁…P₅ — частки відповідей від найпозитивнішої до найнегативнішої. Діапазон <b>0–200</b>,
+        де <b>100 = нейтральний рівень</b> (баланс): вище 100 — переважання позитивних оцінок або
+        зростання, нижче — негативних або скорочення.
+      </p>
+    </div>
+    <p class="note">
+      Зведений <b>Індекс наукових можливостей (ІНМ)</b> — геометричне середнє трьох індексів
+      забезпеченості (фінансування, обладнання, час).
+    </p>
+
+    <h3>Надійність шкал (Cronbach α)</h3>
+    <p>Внутрішня узгодженість багатопунктових шкал. Значення ≥ 0,7 вважаються прийнятними.</p>
+    <table>
+      <thead><tr><th>Шкала</th><th class="num">α</th></tr></thead>
+      <tbody>
+        {rel.cronbachAlpha.map((c) => (
+          <tr><td>{c.scale}</td><td class="num">{c.alpha.toFixed(3).replace('.', ',')}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">Усі сім шкал — у діапазоні 0,75–0,91 (від прийнятної до відмінної узгодженості).</p>
+
+    <h3>Узгодженість оцінювачів (Fleiss κ)</h3>
+    <p>
+      Наскільки науковці однаково категоризують види діяльності (наукова / корисна ненаукова /
+      безглузда): <b>κ = {rel.fleiss.kappa.toFixed(3).replace('.', ',')}</b>
+      (середня узгодженість P̄ = {rel.fleiss.pBar.toFixed(3).replace('.', ',')}) — «помірна» за шкалою
+      Лендіса–Коха. Помірний консенсус очікуваний: межі між категоріями частково суб'єктивні, і це
+      само по собі змістовний результат.
+    </p>
+
+    <h3>Конструктна валідність (Spearman ρ)</h3>
+    <p>Зв'язки між незалежними конструктами в очікуваному напрямку:</p>
+    <table>
+      <thead><tr><th>Пара конструктів</th><th class="num">ρ</th></tr></thead>
+      <tbody>
+        {rel.spearman.map((s) => (
+          <tr><td>{s.pair}</td><td class={`num ${s.rho >= 0 ? 'bias-pos' : 'bias-neg'}`}>{biasStr(s.rho)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h3>Вибірка та невизначеність</h3>
+    <p>
+      <b>N = {w.n}</b> ({w.field.start} – {w.field.end}). Генеральна сукупність —
+      <b>{fmtN(w.population.size)}</b> ({w.population.source}); вибірка становить {w.population.fractionPct}%.
+      Відбір <b>невипадковий</b> (зручний/самовідбір через три канали).
+    </p>
+    <p>{w.uncertaintyNote}</p>
+
+    <h3>Репрезентативність (χ² проти Держстату)</h3>
+    <p>
+      Вибірку звірено з генеральною сукупністю за чотирма критеріями (критерій хі-квадрат). За всіма —
+      статистично значуща відмінність (p &lt; 0,05), що <b>очікувано для нестратифікованого пілоту</b>.
+      Зміщення системне: вибірка перекошена в бік більш кваліфікованих і залученіших у науку
+      респондентів. (5-й критерій — область — лише описово: для χ² замало спостережень у регіонах.)
+    </p>
+
+    {rep.criteria.map((cr) => (
+      <section style="margin-top:1.2rem">
+        <h2 style="margin-bottom:0.3rem">{cr.criterion}</h2>
+        <p class="note" style="margin:0 0 0.4rem">
+          χ² = {cr.chi2.toFixed(2).replace('.', ',')}, df = {cr.df}, p = {pStr(cr.p)} (N = {cr.n})
+        </p>
+        <table>
+          <thead>
+            <tr><th>Категорія</th><th class="num">ген. %</th><th class="num">вибірка %</th><th class="num">зміщення, в.п.</th></tr>
+          </thead>
+          <tbody>
+            {compByCrit(cr.criterion).map((r) => (
+              <tr>
+                <td>{r.category}</td>
+                <td class="num">{r.popPct.toFixed(1)}</td>
+                <td class="num">{r.samplePct.toFixed(1)}</td>
+                <td class={`num ${biasCls(r.biasPp)}`}>{biasStr(r.biasPp)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    ))}
+
+    <h3>Структура робочого часу</h3>
+    <p>Середні частки робочого часу за самооцінкою (% тижня), у розрізі типу установи:</p>
+    <table>
+      <thead><tr><th>Категорія</th><th class="num">Усі</th><th class="num">ЗВО</th><th class="num">НУ</th></tr></thead>
+      <tbody>
+        {wave.timeShares.map((t) => (
+          <tr>
+            <td>{t.category === 'НД' ? 'Дійсна наукова (ДНД)' : t.category === 'КН' ? 'Корисна ненаукова (КННД)' : 'Безглузда (БД)'}</td>
+            <td class="num">{t.meanPct.toFixed(1)}%</td>
+            <td class="num">{t.zvoPct.toFixed(1)}%</td>
+            <td class="num">{t.nuPct.toFixed(1)}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">Це не індекси, а описові частки часу (середні арифметичні).</p>
+  </div>
+</Layout>

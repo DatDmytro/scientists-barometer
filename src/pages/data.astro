@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+import wave from '../data/wave-2026.json';
+
+const w = wave.wave;
+const fmtN = (n: number) => n.toLocaleString('uk-UA');
+const repoData = 'https://github.com/DatDmytro/scientists-barometer/blob/main/src/data/wave-2026.json';
+---
+
+<Layout title="Дані — Науковий Барометр" description="Хвилі дослідження, показники, завантаження даних.">
+  <h1>Дані</h1>
+  <p class="lead">
+    Усі числа на сайті походять з одного перевіреного джерела — контракту хвилі. Кожне нове дослідження
+    додається як окрема «хвиля» для порівняння в часі.
+  </p>
+
+  <div class="prose">
+    <h3>Хвилі</h3>
+    <table>
+      <thead>
+        <tr><th>Хвиля</th><th class="num">N</th><th>Поле</th><th>Відбір</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>{w.label}</b></td>
+          <td class="num">{w.n}</td>
+          <td>{w.field.start} – {w.field.end}</td>
+          <td>невипадковий пілот</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">
+      Генеральна сукупність — {fmtN(w.population.size)} осіб ({w.population.source}); ця хвиля охоплює
+      {w.population.fractionPct}%.
+    </p>
+
+    <h3>Що вимірюється</h3>
+    <ul>
+      <li><b>24 індекси</b> якості наукової діяльності з 95% довірчими інтервалами — див. <a href="/">головну</a>.</li>
+      <li><b>Надійність і репрезентативність</b> — див. <a href="/methodology">методологію</a>.</li>
+    </ul>
+
+    <h3>Не-індексні показники</h3>
+    <p>
+      Окремі питання, що подаються як <b>відсотки</b> (а не індекси) — за тим, як їх подає звіт:
+    </p>
+    <table>
+      <thead><tr><th>Показник</th><th class="num">%</th><th class="num">n</th></tr></thead>
+      <tbody>
+        {wave.indicators.map((i) => (
+          <tr>
+            <td>{i.label}</td>
+            <td class="num"><b>{i.pct.toFixed(1)}%</b></td>
+            <td class="num">{i.n}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h3>Завантаження</h3>
+    <ul>
+      <li><a href="/wave-2026.json">wave-2026.json</a> — повний контракт даних цієї хвилі (агрегати).</li>
+      <li><a href={repoData}>той самий файл на GitHub</a> (з історією змін).</li>
+    </ul>
+
+    <h3>Як додаються нові хвилі</h3>
+    <p class="note">
+      Модель статична: нове опитування → перевірені розрахунки (Python) → новий <code>wave-YYYY.json</code>
+      → перебудова сайту. Жодного бекенду; дані версіонуються в git.
+    </p>
+
+    <h3>Етика</h3>
+    <p class="note">
+      Респондентам гарантовано публікацію <b>лише безособово й агреговано</b>. Сирі відповіді не
+      публікуються; на сайт потрапляють тільки агреговані показники.
+    </p>
+  </div>
+</Layout>

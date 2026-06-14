@@ -1,0 +1,46 @@
+---
+import '../styles/global.css';
+
+const { title, description } = Astro.props as { title: string; description?: string };
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const nav = [
+  { href: '/', label: 'Головна' },
+  { href: '/methodology', label: 'Методологія' },
+  { href: '/about', label: 'Про дослідження' },
+  { href: '/data', label: 'Дані' },
+];
+const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+  </head>
+  <body>
+    <header class="topnav">
+      <a href="/" class="brand">Науковий Барометр</a>
+      <nav>
+        {nav.map((n) => <a href={n.href} class={active(n.href) ? 'active' : ''}>{n.label}</a>)}
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <p>
+        Джерело: дослідження «Оцінка організаційно-економічного забезпечення якості наукової
+        діяльності» (пілот N=200, 2026). Дані публікуються <b>безособово й агреговано</b>.
+      </p>
+      <p>
+        <a href="https://github.com/DatDmytro/scientists-barometer">Код сайту</a> · Науковий Барометр
+        / Scientists Barometer
+      </p>
+    </footer>
+  </body>
+</html>

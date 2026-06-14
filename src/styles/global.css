@@ -75,3 +75,26 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 footer p { margin: 0.3rem 0; }
 a { color: var(--accent); }
+
+/* ── Навігація ── */
+.topnav { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.8rem; margin-bottom: 1.75rem; }
+.topnav .brand { font-weight: 800; font-size: 1.05rem; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
+.topnav nav { display: flex; gap: 0.2rem; flex-wrap: wrap; }
+.topnav nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 6px; }
+.topnav nav a:hover { color: var(--accent); background: var(--bg); }
+.topnav nav a.active { color: var(--accent); background: var(--bg); }
+
+/* ── Текстові сторінки ── */
+.prose { font-size: 0.98rem; }
+.prose h3 { font-size: 1.05rem; margin: 1.9rem 0 0.5rem; color: var(--ink); }
+.prose p { margin: 0.7rem 0; }
+.prose ul { margin: 0.6rem 0; padding-left: 1.2rem; }
+.prose li { margin: 0.3rem 0; }
+.lead { font-size: 1.12rem; color: var(--ink); margin: 0 0 1.25rem; }
+.formula { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1.1rem; margin: 1rem 0; }
+.formula code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9rem; }
+.note { color: var(--muted); font-size: 0.86rem; }
+.bias-pos { color: var(--pos); font-variant-numeric: tabular-nums; }
+.bias-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
+.big { font-size: 1.6rem; font-weight: 700; }
+.big.up { color: var(--pos); } .big.down { color: var(--neg); }
