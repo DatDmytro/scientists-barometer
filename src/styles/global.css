@@ -98,3 +98,40 @@ a { color: var(--accent); }
 .bias-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
 .big { font-size: 1.6rem; font-weight: 700; }
 .big.up { color: var(--pos); } .big.down { color: var(--neg); }
+
+/* ── Розподіл (таблиця з інлайн-баром) ── */
+.dist { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.dist td { padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.dist .opt { width: 46%; }
+.dist .barcell { width: 38%; }
+.dist .bar { background: var(--bg); border-radius: 4px; height: 1.1rem; overflow: hidden; }
+.dist .bar > span { display: block; height: 100%; background: var(--accent); opacity: 0.82; }
+.dist .pct { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dist .nn { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ── Cross-tab: селектор демографії + теплокарта (CSS-only) ── */
+.crosstab { margin: 0.4rem 0 1rem; }
+.ct-r { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ct-tabs { display: flex; gap: 2px; flex-wrap: wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 2px; margin-bottom: 0.7rem; }
+.ct-tabs label { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--muted); padding: 0.2rem 0.6rem; border-radius: 6px; user-select: none; }
+.ct-pane { display: none; }
+#ct-galuz:checked ~ .ct-pane[data-dim="galuz"],
+#ct-stupin:checked ~ .ct-pane[data-dim="stupin"],
+#ct-zvannya:checked ~ .ct-pane[data-dim="zvannya"],
+#ct-typ:checked ~ .ct-pane[data-dim="typ"],
+#ct-stazh:checked ~ .ct-pane[data-dim="stazh"],
+#ct-oblast:checked ~ .ct-pane[data-dim="oblast"] { display: block; }
+#ct-galuz:checked ~ .ct-tabs label[for="ct-galuz"],
+#ct-stupin:checked ~ .ct-tabs label[for="ct-stupin"],
+#ct-zvannya:checked ~ .ct-tabs label[for="ct-zvannya"],
+#ct-typ:checked ~ .ct-tabs label[for="ct-typ"],
+#ct-stazh:checked ~ .ct-tabs label[for="ct-stazh"],
+#ct-oblast:checked ~ .ct-tabs label[for="ct-oblast"] { background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.ct-scroll { overflow-x: auto; }
+.ct-table { border-collapse: collapse; font-size: 0.82rem; }
+.ct-table th, .ct-table td { padding: 0.34rem 0.45rem; border: 1px solid var(--line); }
+.ct-table thead th { vertical-align: bottom; font-size: 0.74rem; font-weight: 600; color: var(--ink); text-transform: none; letter-spacing: 0; min-width: 64px; max-width: 110px; white-space: normal; line-height: 1.2; }
+.ct-table tbody td:first-child { max-width: 240px; font-weight: 500; }
+.ct-n { color: var(--muted); font-weight: 400; font-size: 0.7rem; }
+.ct-cell { text-align: right; font-variant-numeric: tabular-nums; background: rgba(44, 95, 138, var(--a, 0)); }
+.ct-cell.hi { color: #fff; }

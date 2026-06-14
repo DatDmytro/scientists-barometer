@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CrossTab from '../components/CrossTab.astro';
+import block from '../data/block-motivation-2026.json';
+
+const maxPct = Math.max(...block.options.map((o) => o.pct));
+---
+
+<Layout
+  title="Мотивація науковців — Науковий Барометр"
+  description="Як науковці бачать головну мету своєї роботи: розподіл відповідей та розрізи за демографією."
+>
+  <h1>Мотивація науковців</h1>
+  <p class="lead">«{block.question}»</p>
+  <p class="note">Множинний вибір; відповіли n = {block.n}. Можна обрати кілька варіантів.</p>
+
+  <section>
+    <h2>Розподіл відповідей</h2>
+    <table class="dist">
+      <tbody>
+        {block.options.map((o) => (
+          <tr>
+            <td class="opt">{o.label}</td>
+            <td class="barcell"><div class="bar"><span style={`width:${(o.pct / maxPct) * 100}%`}></span></div></td>
+            <td class="pct">{o.pct.toFixed(1)}%</td>
+            <td class="nn">{o.n}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">
+      Лише <b>{block.options.find((o) => o.code === 'most_papers')?.pct}%</b> обрали «опублікувати більше
+      всіх статей» і <b>{block.options.find((o) => o.code === 'hirsch')?.pct}%</b> — «найвищий індекс
+      Гірша». Формальні метрики майже ніхто не вважає метою — переважають прикладний і фундаментальний
+      результати.
+    </p>
+  </section>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Обери вимір — побачиш, як частка кожної мети змінюється між групами (теплокарта: темніше = вищий %).
+    </p>
+    <CrossTab block={block} />
+  </section>
+
+  <section>
+    <h2>Дописані варіанти та коментарі</h2>
+    <p class="note">
+      Респонденти дописали <b>{block.writeInCount}</b> власних варіантів мети та залишили коментарі до
+      блоку. Вони проходять модерацію (видалення будь-чого ідентифікуючого) перед публікацією і
+      з'являться тут згодом.
+    </p>
+  </section>
+</Layout>

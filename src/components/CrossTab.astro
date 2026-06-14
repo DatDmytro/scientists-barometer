@@ -1,0 +1,65 @@
+---
+// Теплокарта розрізів: рядки = варіанти мети, колонки = групи обраної демографії,
+// клітинка = % у групі, хто обрав варіант. Селектор демографії — CSS-only (zero-JS).
+// Групи з n<minCell вже придушено в даних.
+interface Opt { code: string; label: string; pct: number; }
+interface Group { value: string; n: number; }
+interface Dim { id: string; label: string; groups: Group[]; }
+const { block } = Astro.props as {
+  block: {
+    options: Opt[];
+    dimensions: Dim[];
+    crosstab: Record<string, Record<string, { n: number; pct: Record<string, number> }>>;
+  };
+};
+const opts = block.options;
+const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала кольору 0–55%+
+---
+
+<div class="crosstab">
+  {block.dimensions.map((d, i) => (
+    <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
+  ))}
+  <div class="ct-tabs">
+    {block.dimensions.map((d) => (
+      <label for={`ct-${d.id}`}>{d.label}</label>
+    ))}
+  </div>
+
+  {block.dimensions.map((d) => (
+    <div class="ct-pane" data-dim={d.id}>
+      <div class="ct-scroll">
+        <table class="ct-table">
+          <thead>
+            <tr>
+              <th>Мета \ {d.label.toLowerCase()}</th>
+              {d.groups.map((g) => (
+                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {opts.map((o) => (
+              <tr>
+                <td>{o.label}</td>
+                {d.groups.map((g) => {
+                  const p = block.crosstab[d.id][g.value].pct[o.label] ?? 0;
+                  const a = alpha(p);
+                  return (
+                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}`} style={`--a:${a.toFixed(2)}`}>
+                      {p.toFixed(0)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:0.5rem">
+        Числа — % респондентів у групі, хто обрав варіант (множинний вибір, тож сума &gt; 100%). Групи
+        з n &lt; {/* minCell */ 5} приховано.
+      </p>
+    </div>
+  ))}
+</div>
