@@ -1,0 +1,79 @@
+---
+import Layout from '../layouts/Layout.astro';
+import IndicesChart from '../components/IndicesChart.astro';
+import TimeCrossTab from '../components/TimeCrossTab.astro';
+import block from '../data/block-timestructure-2026.json';
+import wave from '../data/wave-2026.json';
+
+const sh = Object.fromEntries(block.shares.map((s) => [s.cat, s]));
+const dyn = wave.indices.filter((i) => i.dimension === 'Динаміка структури часу');
+const h = block.hours;
+---
+
+<Layout
+  title="Структура робочого часу — Науковий Барометр"
+  description="Скільки робочого часу науковці витрачають на дійсну наукову, корисну ненаукову та безглузду діяльність."
+>
+  <h1>Структура робочого часу</h1>
+  <p class="lead">«{block.question}»</p>
+
+  <section>
+    <h2>На що йде робочий час</h2>
+    <div class="actbar" style="height:2.2rem;font-size:0.88rem;margin:0.6rem 0;">
+      <span class="nd" style={`width:${sh['НД'].mean}%`}>ДНД {sh['НД'].mean}%</span>
+      <span class="kn" style={`width:${sh['КН'].mean}%`}>КННД {sh['КН'].mean}%</span>
+      <span class="bd" style={`width:${sh['БД'].mean}%`}>БД {sh['БД'].mean}%</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Категорія</th><th class="num">Середнє %</th><th class="num">Медіана</th><th class="num">ЗВО</th><th class="num">НУ</th></tr>
+      </thead>
+      <tbody>
+        {block.shares.map((s) => (
+          <tr>
+            <td>{s.label}</td>
+            <td class="num"><b>{s.mean}</b></td>
+            <td class="num">{s.median}</td>
+            <td class="num">{s.zvo}</td>
+            <td class="num">{s.nu}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">{block.note}</p>
+  </section>
+
+  <section>
+    <h2>Скільки реально працюють</h2>
+    <div class="cat-summary">
+      <div><b>{h.mean}</b> год/тиждень у середньому (медіана {h.median})</div>
+      <div><b>{h.overtimePct}%</b> працюють понаднормово (41+ год)</div>
+      <div><b>{h.bullshitHoursAtMean}</b> год/тиждень — на безглузду діяльність</div>
+    </div>
+    <p class="note">
+      Законодавча норма в Україні — 40 год/тиждень. Тобто в середньому на <b>безглузду діяльність</b>
+      іде понад {h.bullshitHoursAtMean} годин щотижня (а при нормованому тижні — ≈{h.bullshitHoursAt40}).
+    </p>
+  </section>
+
+  <section>
+    <h2>Динаміка структури часу</h2>
+    <p class="note" style="margin-bottom:0.5rem">
+      Як змінюється час на кожну категорію (індекс; 100 = без змін, вище 100 — зростання). Зелені вуса —
+      95% довірчі інтервали.
+    </p>
+    <IndicesChart indices={dyn} />
+    <p class="note">
+      ІНЧ — наукова, ІКННЧ — корисна ненаукова, ІБВЧ — безглузда. <b>Безглузда діяльність зростає
+      найшвидше</b> з-поміж усіх категорій, тоді як наукова стагнує (≈100).
+    </p>
+  </section>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Середня частка робочого часу на кожну категорію (НД зелений / КН синій / БД червоний) у розрізі груп.
+    </p>
+    <TimeCrossTab block={block} />
+  </section>
+</Layout>

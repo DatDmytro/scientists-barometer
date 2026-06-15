@@ -1,0 +1,70 @@
+---
+// Теплокарта: рядки = категорії часу (НД/КН/БД), колонки = групи демографії,
+// клітинка = середня частка часу (%) групи на категорію. Колір рядка = колір категорії.
+// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·». Zero-JS.
+interface Group { value: string; n: number; }
+interface Dim { id: string; label: string; groups: Group[]; }
+const { block } = Astro.props as {
+  block: {
+    crosstabDims: Dim[];
+    crosstab: Record<string, Record<string, { n: number } & Record<string, number | null>>>;
+  };
+};
+const rows = [
+  { cat: 'НД', label: 'Дійсна наукова', color: [74, 140, 92] },
+  { cat: 'КН', label: 'Корисна ненаукова', color: [138, 175, 196] },
+  { cat: 'БД', label: 'Безглузда', color: [191, 64, 64] },
+];
+const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
+---
+
+<div class="crosstab">
+  {block.crosstabDims.map((d, i) => (
+    <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
+  ))}
+  <div class="ct-tabs">
+    {block.crosstabDims.map((d) => (
+      <label for={`ct-${d.id}`}>{d.label}</label>
+    ))}
+  </div>
+
+  {block.crosstabDims.map((d) => (
+    <div class="ct-pane" data-dim={d.id}>
+      <div class="ct-scroll">
+        <table class="ct-table">
+          <thead>
+            <tr>
+              <th>Частка часу · %</th>
+              {d.groups.map((g) => (
+                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr>
+                <td>{r.label} ({r.cat})</td>
+                {d.groups.map((g) => {
+                  const v = block.crosstab[d.id][g.value][r.cat];
+                  if (v === null || v === undefined) {
+                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                  }
+                  const a = alpha(v);
+                  const [R, G, B] = r.color;
+                  return (
+                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}`} style={`background:rgba(${R},${G},${B},${a.toFixed(2)})`}>
+                      {Math.round(v)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:0.5rem">
+        Числа — середня частка робочого часу (%) групи на категорію. «·» — недостатньо даних (n &lt; 5).
+      </p>
+    </div>
+  ))}
+</div>
