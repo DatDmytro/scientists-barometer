@@ -8,7 +8,7 @@ const { block } = Astro.props as {
   block: {
     provision: { res: string; label: string }[];
     crosstabDims: Dim[];
-    crosstab: Record<string, Record<string, { n: number } & Record<string, number | null>>>;
+    crosstab: Record<string, Record<string, { n: number; [k: string]: number | { unprov: number; prov: number } | null }>>;
   };
 };
 const rows = block.provision; // фінансування / обладнання / час
@@ -42,15 +42,14 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
               <tr>
                 <td>{r.label}</td>
                 {d.groups.map((g) => {
-                  const v = block.crosstab[d.id][g.value][r.res];
-                  if (v === null || v === undefined) {
-                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                  const c = block.crosstab[d.id][g.value][r.res] as { unprov: number; prov: number } | null;
+                  if (!c) {
+                    return <td class="pm ct-cell" data-unprov="" data-prov="" style="color:var(--muted)">·</td>;
                   }
-                  const a = alpha(v);
+                  const a = alpha(c.unprov);
                   return (
-                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}`} style={`background:rgba(191,64,64,${a.toFixed(2)})`}>
-                      {Math.round(v)}
-                    </td>
+                    <td class={`pm ct-cell${a > 0.45 ? ' hi' : ''}`} data-unprov={c.unprov} data-prov={c.prov}
+                        style={`background:rgba(191,64,64,${a.toFixed(2)})`}>{c.unprov}</td>
                   );
                 })}
               </tr>
