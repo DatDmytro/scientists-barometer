@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ViewToggle from '../components/ViewToggle.astro';
+import CatCrossTab from '../components/CatCrossTab.astro';
 import block from '../data/block-categorization-2026.json';
 
 const acts = block.activities; // вже відсортовано за БД% спадно
@@ -78,7 +79,14 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
 
   <p class="note" style="margin-top:1.5rem">
     Найбезглуздіші практики (за версією науковців): друк паперових варіантів, усне й письмове
-    звітування, забезпечення формальних метрик (h-індекс, цитування). Розрізи за демографією
-    (галузь, ступінь, регіон…) — наступним кроком.
+    звітування, забезпечення формальних метрик (h-індекс, цитування).
   </p>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Обери вимір — побачиш частку «безглузда» (БД%) для кожного виду в розрізі груп (темніше = вищий %).
+    </p>
+    <CatCrossTab block={block} />
+  </section>
 </Layout>
