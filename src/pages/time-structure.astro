@@ -8,6 +8,12 @@ import wave from '../data/wave-2026.json';
 const sh = Object.fromEntries(block.shares.map((s) => [s.cat, s]));
 const dyn = wave.indices.filter((i) => i.dimension === 'Динаміка структури часу');
 const h = block.hours;
+// кольори індексів = кольори категорій у теплокартах (ІНЧ→наукова зелений, ІКННЧ→корисна синій, ІБВЧ→безглузда червоний)
+const dynColors: Record<string, string> = {
+  'ІНЧ 1': '#4a8c5c', 'ІНЧ 5': '#4a8c5c',
+  'ІКННЧ 1': '#8aafc4', 'ІКННЧ 5': '#8aafc4',
+  'ІБВЧ 1': '#bf4040', 'ІБВЧ 5': '#bf4040',
+};
 ---
 
 <Layout
@@ -62,10 +68,14 @@ const h = block.hours;
       Як змінюється час на кожну категорію (індекс; 100 = без змін, вище 100 — зростання). Зелені вуса —
       95% довірчі інтервали.
     </p>
-    <IndicesChart indices={dyn} />
+    <div class="cat-legend">
+      <span><i class="swnd"></i>ІНЧ — наукова</span>
+      <span><i class="swkn"></i>ІКННЧ — корисна ненаукова</span>
+      <span><i class="swbd"></i>ІБВЧ — безглузда</span>
+    </div>
+    <IndicesChart indices={dyn} colorByCode={dynColors} />
     <p class="note">
-      ІНЧ — наукова, ІКННЧ — корисна ненаукова, ІБВЧ — безглузда. <b>Безглузда діяльність зростає
-      найшвидше</b> з-поміж усіх категорій, тоді як наукова стагнує (≈100).
+      <b>Безглузда діяльність зростає найшвидше</b> з-поміж усіх категорій, тоді як наукова стагнує (≈100).
     </p>
   </section>
 

@@ -11,7 +11,10 @@ interface Idx {
   n: number;
 }
 
-const { indices } = Astro.props as { indices: Idx[] };
+const { indices, colorByCode } = Astro.props as {
+  indices: Idx[];
+  colorByCode?: Record<string, string>; // код індексу → колір (інакше зелений/червоний за value)
+};
 
 // Рендеримо Plot на сервері (build-time) через linkedom → інлайн SVG, zero-JS.
 const { document } = parseHTML('<!DOCTYPE html><html><body></body></html>');
@@ -40,7 +43,7 @@ const chart = Plot.plot({
       y: 'code',
       x1: 100,
       x2: 'value',
-      fill: (d: Idx) => (d.value >= 100 ? '#4a8c5c' : '#bf4040'),
+      fill: (d: Idx) => colorByCode?.[d.code] ?? (d.value >= 100 ? '#4a8c5c' : '#bf4040'),
       fillOpacity: 0.82,
     }),
     // вуса 95% довірчого інтервалу
