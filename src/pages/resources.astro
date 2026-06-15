@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+import IndicesChart from '../components/IndicesChart.astro';
+import ResCrossTab from '../components/ResCrossTab.astro';
+import block from '../data/block-resources-2026.json';
+import wave from '../data/wave-2026.json';
+
+const provIdx = wave.indices.filter((i) => i.dimension === 'Поточна забезпеченість');
+const dynIdx = wave.indices.filter((i) => i.dimension === 'Динаміка забезпеченості');
+const w = block.war;
+---
+
+<Layout
+  title="Забезпеченість ресурсами — Науковий Барометр"
+  description="Наскільки науковці забезпечені фінансуванням, обладнанням і часом; нестача сну/відпочинку; втрати через війну."
+>
+  <h1>Забезпеченість ресурсами</h1>
+  <p class="lead">«{block.question}»</p>
+
+  <section>
+    <h2>Поточна забезпеченість (ІНМ)</h2>
+    <div class="cat-summary">
+      <div><b class="big down">{block.inmIntegral}</b> ІНМ — інтегральний Індекс наукових можливостей (100 = нейтр.)</div>
+      <div><b>{block.provision[0].unprovidedPct}%</b> незабезпечені фінансуванням ({block.provision[0].criticalPct}% критично)</div>
+    </div>
+    <IndicesChart indices={provIdx} />
+    <table>
+      <thead><tr><th>Ресурс</th><th class="num">Індекс</th><th class="num">Незабезпечені %</th><th class="num">з них критично</th></tr></thead>
+      <tbody>
+        {block.provision.map((p) => (
+          <tr>
+            <td>{p.label}</td>
+            <td class="num"><b>{p.index}</b></td>
+            <td class="num">{p.unprovidedPct}</td>
+            <td class="num">{p.criticalPct}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Динаміка забезпеченості</h2>
+    <p class="note" style="margin-bottom:0.5rem">Як змінюється забезпеченість (індекс; 100 = без змін).</p>
+    <IndicesChart indices={dynIdx} />
+    <p class="note">Усі шість індексів динаміки <b>нижчі за 100</b> — забезпеченість погіршується за всіма ресурсами.</p>
+  </section>
+
+  <section>
+    <h2>Достатність часу</h2>
+    <p class="note" style="margin-top:-0.2rem">Частка тих, кому НЕ вистачає часу (скоріше + критично недостатньо).</p>
+    <table class="dist">
+      <tbody>
+        {block.sufficiency.map((s) => (
+          <tr>
+            <td class="opt">{s.label}</td>
+            <td class="barcell"><div class="bar"><span style={`width:${s.insufficientPct}%;background:#bf4040`}></span></div></td>
+            <td class="pct">{s.insufficientPct}%</td>
+            <td class="nn">крит. {s.criticalPct}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Втрати через війну</h2>
+    <div class="cat-summary">
+      <div><b class="big down">{w.meanPct}%</b> робочого часу втрачається через обстріли, тривоги, відключення (медіана {w.medianPct}%)</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">% незабезпечених кожним ресурсом у розрізі груп (темніше = більша нестача).</p>
+    <ResCrossTab block={block} />
+  </section>
+</Layout>

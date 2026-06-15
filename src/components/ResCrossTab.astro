@@ -1,0 +1,67 @@
+---
+// Теплокарта: рядки = ресурси (фінансування/обладнання/час), колонки = групи демографії,
+// клітинка = % незабезпечених у групі (скоріше+критично). Червона шкала (вище % = гірше).
+// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·». Zero-JS.
+interface Group { value: string; n: number; }
+interface Dim { id: string; label: string; groups: Group[]; }
+const { block } = Astro.props as {
+  block: {
+    provision: { res: string; label: string }[];
+    crosstabDims: Dim[];
+    crosstab: Record<string, Record<string, { n: number } & Record<string, number | null>>>;
+  };
+};
+const rows = block.provision; // фінансування / обладнання / час
+const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
+---
+
+<div class="crosstab">
+  {block.crosstabDims.map((d, i) => (
+    <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
+  ))}
+  <div class="ct-tabs">
+    {block.crosstabDims.map((d) => (
+      <label for={`ct-${d.id}`}>{d.label}</label>
+    ))}
+  </div>
+
+  {block.crosstabDims.map((d) => (
+    <div class="ct-pane" data-dim={d.id}>
+      <div class="ct-scroll">
+        <table class="ct-table">
+          <thead>
+            <tr>
+              <th>Незабезпечені · %</th>
+              {d.groups.map((g) => (
+                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr>
+                <td>{r.label}</td>
+                {d.groups.map((g) => {
+                  const v = block.crosstab[d.id][g.value][r.res];
+                  if (v === null || v === undefined) {
+                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                  }
+                  const a = alpha(v);
+                  return (
+                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}`} style={`background:rgba(191,64,64,${a.toFixed(2)})`}>
+                      {Math.round(v)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:0.5rem">
+        Числа — % у групі, хто <b>незабезпечений</b> ресурсом (скоріше + критично). «·» — n &lt; 5.
+        Темніше = більша нестача.
+      </p>
+    </div>
+  ))}
+</div>
