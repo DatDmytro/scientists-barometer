@@ -116,7 +116,10 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     rows.forEach((r) => container.appendChild(r));
   }
   sel?.addEventListener('change', () => {
-    sortContainer(chart, sel.value);
-    sortContainer(tbody, sel.value);
+    const key = sel.value;
+    sortContainer(chart, key);
+    sortContainer(tbody, key);
+    // рядки теплокарти розрізів — у кожному з 6 панелей
+    document.querySelectorAll('.ct-pane tbody').forEach((tb) => sortContainer(tb as HTMLElement, key));
   });
 </script>

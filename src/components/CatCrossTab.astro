@@ -2,7 +2,7 @@
 // Теплокарта БД% у розрізі демографій: рядки = види діяльності (за спаданням загального БД%),
 // колонки = групи обраної демографії, клітинка = % у групі, хто вважає вид «безглуздим».
 // Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>, як у мотивації). Придушення n<5.
-interface Act { name: string; bd: number; }
+interface Act { name: string; nd: number; kn: number; bd: number; pi: number; }
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
 const { block } = Astro.props as {
@@ -40,7 +40,7 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
           </thead>
           <tbody>
             {acts.map((a) => (
-              <tr>
+              <tr data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
                 <td>{a.name}</td>
                 {d.groups.map((g) => {
                   const p = block.crosstab[d.id][g.value].bd[a.name];
