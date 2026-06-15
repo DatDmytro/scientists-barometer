@@ -1,0 +1,63 @@
+---
+// Теплокарта достатності часу: рядки = потреби (сон/відпочинок/читання/роздуми),
+// колонки = групи демографії. Клітинка несе обидві метрики (data-insuf/data-suf);
+// показує «недостатньо» (червоним) за замовч., перемикається на «достатньо» (зеленим)
+// селектором на сторінці. Придушення n<5 → «·». Селектор демографії — CSS-only (reuse .ct-*).
+interface Group { value: string; n: number; }
+interface Dim { id: string; label: string; groups: Group[]; }
+const { block } = Astro.props as {
+  block: {
+    sufficiency: { need: string; label: string }[];
+    crosstabDims: Dim[];
+    sufficiencyCrosstab: Record<string, Record<string, { n: number } & Record<string, { insuf: number; suf: number } | null>>>;
+  };
+};
+const rows = block.sufficiency;
+const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
+---
+
+<div class="crosstab">
+  {block.crosstabDims.map((d, i) => (
+    <input type="radio" class="ct-r" name="ct-suf" id={`cts-${d.id}`} checked={i === 0} />
+  ))}
+  <div class="ct-tabs">
+    {block.crosstabDims.map((d) => (
+      <label for={`cts-${d.id}`}>{d.label}</label>
+    ))}
+  </div>
+
+  {block.crosstabDims.map((d) => (
+    <div class="ct-pane cts-pane" data-dim={d.id}>
+      <div class="ct-scroll">
+        <table class="ct-table">
+          <thead>
+            <tr>
+              <th>Потреба · %</th>
+              {d.groups.map((g) => (
+                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr>
+                <td>{r.label}</td>
+                {d.groups.map((g) => {
+                  const c = block.sufficiencyCrosstab[d.id][g.value][r.need];
+                  if (!c) {
+                    return <td class="sm ct-cell" data-insuf="" data-suf="" style="color:var(--muted)">·</td>;
+                  }
+                  const a = alpha(c.insuf);
+                  return (
+                    <td class={`sm ct-cell${a > 0.45 ? ' hi' : ''}`} data-insuf={c.insuf} data-suf={c.suf}
+                        style={`background:rgba(191,64,64,${a.toFixed(2)})`}>{c.insuf}</td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ))}
+</div>

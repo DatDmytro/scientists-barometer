@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import IndicesChart from '../components/IndicesChart.astro';
 import ResCrossTab from '../components/ResCrossTab.astro';
+import SuffCrossTab from '../components/SuffCrossTab.astro';
 import block from '../data/block-resources-2026.json';
 import wave from '../data/wave-2026.json';
 
@@ -48,19 +49,29 @@ const w = block.war;
 
   <section>
     <h2>Достатність часу</h2>
-    <p class="note" style="margin-top:-0.2rem">Частка тих, кому НЕ вистачає часу (скоріше + критично недостатньо).</p>
+    <div class="catsort">
+      Показати:
+      <select id="suf-metric">
+        <option value="insuf">кому недостатньо (червоним)</option>
+        <option value="suf">кому достатньо (зеленим)</option>
+      </select>
+    </div>
     <table class="dist">
       <tbody>
         {block.sufficiency.map((s) => (
           <tr>
             <td class="opt">{s.label}</td>
-            <td class="barcell"><div class="bar"><span style={`width:${s.insufficientPct}%;background:#bf4040`}></span></div></td>
-            <td class="pct">{s.insufficientPct}%</td>
-            <td class="nn">крит. {s.criticalPct}%</td>
+            <td class="barcell"><div class="bar"><span class="sufbar" data-insuf={s.insufficientPct} data-suf={s.sufficientPct} style={`width:${s.insufficientPct}%;background:#bf4040`}></span></div></td>
+            <td class="pct sufpct" data-insuf={s.insufficientPct} data-suf={s.sufficientPct}>{s.insufficientPct}%</td>
+            <td class="nn">крит. недост. {s.criticalPct}%</td>
           </tr>
         ))}
       </tbody>
     </table>
+
+    <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">Розрізи за демографією</h3>
+    <p class="note" style="margin-top:0">Та сама метрика (недостатньо / достатньо) у розрізі груп. Темніше = вищий %.</p>
+    <SuffCrossTab block={block} />
   </section>
 
   <section>
@@ -76,3 +87,36 @@ const w = block.war;
     <ResCrossTab block={block} />
   </section>
 </Layout>
+
+<script>
+  // Перемикання достатності часу: insuf (червоний) ⇄ suf (зелений) — бари + теплокарта
+  const sel = document.getElementById('suf-metric') as HTMLSelectElement | null;
+  function applySuf(metric: string) {
+    const [r, g, b] = metric === 'suf' ? [74, 140, 92] : [191, 64, 64];
+    document.querySelectorAll<HTMLElement>('.sufbar').forEach((bar) => {
+      const v = parseFloat(bar.dataset[metric] || '0');
+      bar.style.width = v + '%';
+      bar.style.background = `rgb(${r},${g},${b})`;
+    });
+    document.querySelectorAll<HTMLElement>('.sufpct').forEach((p) => {
+      p.textContent = (p.dataset[metric] || '0') + '%';
+    });
+    document.querySelectorAll<HTMLElement>('.sm').forEach((cell) => {
+      const raw = cell.dataset[metric];
+      if (raw === undefined || raw === '') {
+        cell.textContent = '·';
+        cell.style.background = '';
+        cell.style.color = 'var(--muted)';
+        cell.classList.remove('hi');
+        return;
+      }
+      const val = parseFloat(raw);
+      const a = Math.min(val / 80, 1) * 0.85;
+      cell.textContent = String(Math.round(val));
+      cell.style.background = `rgba(${r},${g},${b},${a.toFixed(2)})`;
+      cell.style.color = '';
+      cell.classList.toggle('hi', a > 0.45);
+    });
+  }
+  sel?.addEventListener('change', () => applySuf(sel.value));
+</script>

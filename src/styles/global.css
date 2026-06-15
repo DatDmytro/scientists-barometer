@@ -135,6 +135,19 @@ a { color: var(--accent); }
 .ct-n { color: var(--muted); font-weight: 400; font-size: 0.7rem; }
 .ct-cell { text-align: right; font-variant-numeric: tabular-nums; background: rgba(44, 95, 138, var(--a, 0)); }
 .ct-cell.hi { color: #fff; }
+/* другий cross-tab селектор (cts-) — для достатності часу */
+#cts-galuz:checked ~ .cts-pane[data-dim="galuz"],
+#cts-stupin:checked ~ .cts-pane[data-dim="stupin"],
+#cts-zvannya:checked ~ .cts-pane[data-dim="zvannya"],
+#cts-typ:checked ~ .cts-pane[data-dim="typ"],
+#cts-stazh:checked ~ .cts-pane[data-dim="stazh"],
+#cts-oblast:checked ~ .cts-pane[data-dim="oblast"] { display: block; }
+#cts-galuz:checked ~ .ct-tabs label[for="cts-galuz"],
+#cts-stupin:checked ~ .ct-tabs label[for="cts-stupin"],
+#cts-zvannya:checked ~ .ct-tabs label[for="cts-zvannya"],
+#cts-typ:checked ~ .ct-tabs label[for="cts-typ"],
+#cts-stazh:checked ~ .ct-tabs label[for="cts-stazh"],
+#cts-oblast:checked ~ .ct-tabs label[for="cts-oblast"] { background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
 
 /* ── Цитати: дописані варіанти / коментарі ── */
 .qlist { list-style: none; padding: 0; margin: 0.6rem 0; }
