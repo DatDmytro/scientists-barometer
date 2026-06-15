@@ -1,18 +1,20 @@
 ---
-// Теплокарта БД% у розрізі демографій: рядки = види діяльності (за спаданням загального БД%),
-// колонки = групи обраної демографії, клітинка = % у групі, хто вважає вид «безглуздим».
-// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>, як у мотивації). Придушення n<5.
+// Теплокарта розрізів: рядки = види (сортовані), колонки = групи демографії.
+// Клітинка несе всі 3 % (data-nd/kn/bd); показує категорію, обрану селектором «Сортувати»
+// (за замовч. БД — червоним). Перемикання метрики/кольору — інлайн-скриптом на сторінці.
+// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·».
 interface Act { name: string; nd: number; kn: number; bd: number; pi: number; }
+interface Cell { nd: number; kn: number; bd: number; }
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
 const { block } = Astro.props as {
   block: {
     activities: Act[];
     crosstabDims: Dim[];
-    crosstab: Record<string, Record<string, { n: number; bd: Record<string, number | null> }>>;
+    crosstab: Record<string, Record<string, { n: number; cells: Record<string, Cell | null> }>>;
   };
 };
-const acts = block.activities; // вже відсортовано за загальним БД%
+const acts = block.activities;
 const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
 ---
 
@@ -32,7 +34,7 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Вид діяльності · БД%</th>
+              <th>Вид діяльності · %</th>
               {d.groups.map((g) => (
                 <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
@@ -43,15 +45,14 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
               <tr data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
                 <td>{a.name}</td>
                 {d.groups.map((g) => {
-                  const p = block.crosstab[d.id][g.value].bd[a.name];
-                  if (p === null || p === undefined) {
-                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                  const c = block.crosstab[d.id][g.value].cells[a.name];
+                  if (!c) {
+                    return <td class="ct-cell hm" data-nd="" data-kn="" data-bd="" style="color:var(--muted)">·</td>;
                   }
-                  const A = alpha(p);
+                  const A = alpha(c.bd);
                   return (
-                    <td class={`ct-cell${A > 0.45 ? ' hi' : ''}`} style={`background:rgba(191,64,64,${A.toFixed(2)})`}>
-                      {Math.round(p)}
-                    </td>
+                    <td class={`ct-cell hm${A > 0.45 ? ' hi' : ''}`} data-nd={c.nd} data-kn={c.kn} data-bd={c.bd}
+                        style={`background:rgba(191,64,64,${A.toFixed(2)})`}>{c.bd}</td>
                   );
                 })}
               </tr>
@@ -60,8 +61,8 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
         </table>
       </div>
       <p class="note" style="margin-top:0.5rem">
-        Числа — % у групі, хто вважає вид <b>безглуздим</b> (БД). «·» — недостатньо даних (n &lt; 5).
-        Темніше = вищий %.
+        Числа — % у групі для <b>обраної категорії</b> (селектор «Сортувати»): ДНД (зелений) /
+        КННД (синій) / БД (червоний). «·» — недостатньо даних (n &lt; 5). Темніше = вищий %.
       </p>
     </div>
   ))}

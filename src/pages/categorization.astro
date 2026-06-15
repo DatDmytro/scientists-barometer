@@ -99,7 +99,8 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
   <section>
     <h2>Розрізи за демографією</h2>
     <p class="note" style="margin-top:-0.2rem">
-      Обери вимір — побачиш частку «безглузда» (БД%) для кожного виду в розрізі груп (темніше = вищий %).
+      Обери вимір — побачиш % для кожного виду в розрізі груп. Який показник (ДНД/КННД/БД) і колір —
+      залежить від селектора «Сортувати» вгорі (за замовч. БД, червоним). Темніше = вищий %.
     </p>
     <CatCrossTab block={block} />
   </section>
@@ -115,11 +116,33 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     rows.sort((a, b) => parseFloat(b.dataset[key] || '0') - parseFloat(a.dataset[key] || '0'));
     rows.forEach((r) => container.appendChild(r));
   }
+  // Перемикання показника теплокарти (ДНД/КННД/БД) — числа й колір клітинок
+  const COLORS: Record<string, number[]> = { nd: [74, 140, 92], kn: [138, 175, 196], bd: [191, 64, 64] };
+  function applyMetric(cat: string) {
+    const [r, g, b] = COLORS[cat];
+    document.querySelectorAll<HTMLElement>('.hm').forEach((cell) => {
+      const raw = cell.dataset[cat];
+      if (raw === undefined || raw === '') {
+        cell.textContent = '·';
+        cell.style.background = '';
+        cell.style.color = 'var(--muted)';
+        cell.classList.remove('hi');
+        return;
+      }
+      const val = parseFloat(raw);
+      const a = Math.min(val / 70, 1) * 0.85;
+      cell.textContent = String(Math.round(val));
+      cell.style.background = `rgba(${r},${g},${b},${a.toFixed(2)})`;
+      cell.style.color = '';
+      cell.classList.toggle('hi', a > 0.45);
+    });
+  }
+
   sel?.addEventListener('change', () => {
     const key = sel.value;
     sortContainer(chart, key);
     sortContainer(tbody, key);
-    // рядки теплокарти розрізів — у кожному з 6 панелей
     document.querySelectorAll('.ct-pane tbody').forEach((tb) => sortContainer(tb as HTMLElement, key));
+    if (key === 'nd' || key === 'kn' || key === 'bd') applyMetric(key);
   });
 </script>
