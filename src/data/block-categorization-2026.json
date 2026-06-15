@@ -29,6 +29,7 @@
       "nd": 3.9,
       "kn": 18.2,
       "bd": 77.9,
+      "pi": 0.639,
       "dominant": "БД",
       "controversial": false
     },
@@ -38,6 +39,7 @@
       "nd": 5.4,
       "kn": 22.8,
       "bd": 71.8,
+      "pi": 0.568,
       "dominant": "БД",
       "controversial": false
     },
@@ -47,6 +49,7 @@
       "nd": 13.9,
       "kn": 19.6,
       "bd": 66.5,
+      "pi": 0.496,
       "dominant": "БД",
       "controversial": false
     },
@@ -56,6 +59,7 @@
       "nd": 10.5,
       "kn": 24.7,
       "bd": 64.8,
+      "pi": 0.489,
       "dominant": "БД",
       "controversial": false
     },
@@ -65,6 +69,7 @@
       "nd": 2.2,
       "kn": 38.7,
       "bd": 59.1,
+      "pi": 0.496,
       "dominant": "БД",
       "controversial": false
     },
@@ -74,6 +79,7 @@
       "nd": 6.6,
       "kn": 35.3,
       "bd": 58.1,
+      "pi": 0.463,
       "dominant": "БД",
       "controversial": false
     },
@@ -83,6 +89,7 @@
       "nd": 10.8,
       "kn": 35.8,
       "bd": 53.4,
+      "pi": 0.422,
       "dominant": "БД",
       "controversial": true
     },
@@ -92,6 +99,7 @@
       "nd": 4.1,
       "kn": 43.2,
       "bd": 52.7,
+      "pi": 0.462,
       "dominant": "БД",
       "controversial": true
     },
@@ -101,6 +109,7 @@
       "nd": 3.9,
       "kn": 47.7,
       "bd": 48.4,
+      "pi": 0.459,
       "dominant": "БД",
       "controversial": true
     },
@@ -110,6 +119,7 @@
       "nd": 6.9,
       "kn": 45.5,
       "bd": 47.6,
+      "pi": 0.434,
       "dominant": "БД",
       "controversial": true
     },
@@ -119,6 +129,7 @@
       "nd": 20.6,
       "kn": 32.5,
       "bd": 46.9,
+      "pi": 0.364,
       "dominant": "БД",
       "controversial": true
     },
@@ -128,6 +139,7 @@
       "nd": 5.4,
       "kn": 49.6,
       "bd": 45.0,
+      "pi": 0.447,
       "dominant": "КННД",
       "controversial": true
     },
@@ -137,6 +149,7 @@
       "nd": 25.8,
       "kn": 30.2,
       "bd": 44.0,
+      "pi": 0.347,
       "dominant": "БД",
       "controversial": true
     },
@@ -146,6 +159,7 @@
       "nd": 6.0,
       "kn": 53.6,
       "bd": 40.4,
+      "pi": 0.451,
       "dominant": "КННД",
       "controversial": true
     },
@@ -155,6 +169,7 @@
       "nd": 6.9,
       "kn": 59.7,
       "bd": 33.3,
+      "pi": 0.469,
       "dominant": "КННД",
       "controversial": false
     },
@@ -164,6 +179,7 @@
       "nd": 37.1,
       "kn": 29.9,
       "bd": 32.9,
+      "pi": 0.332,
       "dominant": "ДНД",
       "controversial": true
     },
@@ -173,6 +189,7 @@
       "nd": 14.5,
       "kn": 52.6,
       "bd": 32.9,
+      "pi": 0.402,
       "dominant": "КННД",
       "controversial": true
     },
@@ -182,6 +199,7 @@
       "nd": 6.8,
       "kn": 60.5,
       "bd": 32.7,
+      "pi": 0.474,
       "dominant": "КННД",
       "controversial": false
     },
@@ -191,6 +209,7 @@
       "nd": 31.9,
       "kn": 36.2,
       "bd": 31.9,
+      "pi": 0.33,
       "dominant": "КННД",
       "controversial": true
     },
@@ -200,6 +219,7 @@
       "nd": 14.6,
       "kn": 54.3,
       "bd": 31.1,
+      "pi": 0.409,
       "dominant": "КННД",
       "controversial": false
     },
@@ -209,6 +229,7 @@
       "nd": 4.9,
       "kn": 67.1,
       "bd": 28.0,
+      "pi": 0.528,
       "dominant": "КННД",
       "controversial": false
     },
@@ -218,6 +239,7 @@
       "nd": 16.5,
       "kn": 59.5,
       "bd": 24.1,
+      "pi": 0.435,
       "dominant": "КННД",
       "controversial": false
     },
@@ -227,6 +249,7 @@
       "nd": 49.7,
       "kn": 28.4,
       "bd": 21.9,
+      "pi": 0.371,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -236,6 +259,7 @@
       "nd": 19.1,
       "kn": 62.5,
       "bd": 18.4,
+      "pi": 0.457,
       "dominant": "КННД",
       "controversial": false
     },
@@ -245,6 +269,7 @@
       "nd": 12.1,
       "kn": 70.1,
       "bd": 17.8,
+      "pi": 0.534,
       "dominant": "КННД",
       "controversial": false
     },
@@ -254,6 +279,7 @@
       "nd": 3.7,
       "kn": 79.5,
       "bd": 16.8,
+      "pi": 0.659,
       "dominant": "КННД",
       "controversial": false
     },
@@ -263,6 +289,7 @@
       "nd": 35.0,
       "kn": 48.4,
       "bd": 16.6,
+      "pi": 0.381,
       "dominant": "КННД",
       "controversial": true
     },
@@ -272,6 +299,7 @@
       "nd": 22.1,
       "kn": 62.8,
       "bd": 15.1,
+      "pi": 0.463,
       "dominant": "КННД",
       "controversial": false
     },
@@ -281,6 +309,7 @@
       "nd": 19.9,
       "kn": 65.6,
       "bd": 14.6,
+      "pi": 0.487,
       "dominant": "КННД",
       "controversial": false
     },
@@ -290,6 +319,7 @@
       "nd": 14.0,
       "kn": 75.3,
       "bd": 10.7,
+      "pi": 0.596,
       "dominant": "КННД",
       "controversial": false
     },
@@ -299,6 +329,7 @@
       "nd": 43.7,
       "kn": 45.8,
       "bd": 10.6,
+      "pi": 0.407,
       "dominant": "КННД",
       "controversial": true
     },
@@ -308,6 +339,7 @@
       "nd": 48.0,
       "kn": 41.7,
       "bd": 10.3,
+      "pi": 0.412,
       "dominant": "ДНД",
       "controversial": true
     },
@@ -317,6 +349,7 @@
       "nd": 50.0,
       "kn": 42.3,
       "bd": 7.7,
+      "pi": 0.431,
       "dominant": "ДНД",
       "controversial": true
     },
@@ -326,6 +359,7 @@
       "nd": 70.5,
       "kn": 22.4,
       "bd": 7.1,
+      "pi": 0.55,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -335,6 +369,7 @@
       "nd": 80.6,
       "kn": 13.5,
       "bd": 5.9,
+      "pi": 0.669,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -344,6 +379,7 @@
       "nd": 45.3,
       "kn": 49.4,
       "bd": 5.3,
+      "pi": 0.449,
       "dominant": "КННД",
       "controversial": true
     },
@@ -353,6 +389,7 @@
       "nd": 63.3,
       "kn": 32.2,
       "bd": 4.4,
+      "pi": 0.504,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -362,6 +399,7 @@
       "nd": 74.7,
       "kn": 21.5,
       "bd": 3.8,
+      "pi": 0.604,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -371,6 +409,7 @@
       "nd": 42.4,
       "kn": 54.1,
       "bd": 3.5,
+      "pi": 0.471,
       "dominant": "КННД",
       "controversial": true
     },
@@ -380,6 +419,7 @@
       "nd": 88.0,
       "kn": 8.7,
       "bd": 3.3,
+      "pi": 0.783,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -389,6 +429,7 @@
       "nd": 77.1,
       "kn": 19.9,
       "bd": 3.0,
+      "pi": 0.633,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -398,6 +439,7 @@
       "nd": 24.3,
       "kn": 72.8,
       "bd": 2.9,
+      "pi": 0.588,
       "dominant": "КННД",
       "controversial": false
     },
@@ -407,6 +449,7 @@
       "nd": 70.7,
       "kn": 27.0,
       "bd": 2.3,
+      "pi": 0.571,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -416,6 +459,7 @@
       "nd": 82.7,
       "kn": 15.1,
       "bd": 2.2,
+      "pi": 0.705,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -425,6 +469,7 @@
       "nd": 88.5,
       "kn": 9.3,
       "bd": 2.2,
+      "pi": 0.791,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -434,6 +479,7 @@
       "nd": 14.4,
       "kn": 83.8,
       "bd": 1.9,
+      "pi": 0.721,
       "dominant": "КННД",
       "controversial": false
     },
@@ -443,6 +489,7 @@
       "nd": 85.1,
       "kn": 13.0,
       "bd": 1.9,
+      "pi": 0.74,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -452,6 +499,7 @@
       "nd": 89.7,
       "kn": 8.6,
       "bd": 1.7,
+      "pi": 0.81,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -461,6 +509,7 @@
       "nd": 75.1,
       "kn": 23.2,
       "bd": 1.6,
+      "pi": 0.617,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -470,6 +519,7 @@
       "nd": 90.8,
       "kn": 7.6,
       "bd": 1.6,
+      "pi": 0.829,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -479,6 +529,7 @@
       "nd": 37.2,
       "kn": 61.7,
       "bd": 1.1,
+      "pi": 0.516,
       "dominant": "КННД",
       "controversial": false
     },
@@ -488,6 +539,7 @@
       "nd": 80.9,
       "kn": 18.1,
       "bd": 1.1,
+      "pi": 0.685,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -497,6 +549,7 @@
       "nd": 59.6,
       "kn": 39.3,
       "bd": 1.1,
+      "pi": 0.507,
       "dominant": "ДНД",
       "controversial": false
     },
@@ -506,6 +559,7 @@
       "nd": 91.1,
       "kn": 7.9,
       "bd": 1.0,
+      "pi": 0.835,
       "dominant": "ДНД",
       "controversial": false
     }

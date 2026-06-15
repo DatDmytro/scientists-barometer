@@ -155,3 +155,6 @@ a { color: var(--accent); }
 .actbar span { display: block; text-align: center; overflow: hidden; }
 .actbar .nd { background: #4a8c5c; } .actbar .kn { background: #8aafc4; } .actbar .bd { background: #bf4040; }
 @media (max-width: 620px) { .actrow { grid-template-columns: 1fr; gap: 0.15rem; } }
+.catsort { margin: 0.6rem 0; font-size: 0.88rem; color: var(--muted); }
+.catsort select { font: inherit; padding: 0.2rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); margin-left: 0.3rem; }
+.actname .pi { color: var(--muted); font-size: 0.74rem; margin-left: 0.45rem; white-space: nowrap; }

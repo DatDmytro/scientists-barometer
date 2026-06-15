@@ -4,7 +4,7 @@ import ViewToggle from '../components/ViewToggle.astro';
 import CatCrossTab from '../components/CatCrossTab.astro';
 import block from '../data/block-categorization-2026.json';
 
-const acts = block.activities; // вже відсортовано за БД% спадно
+const acts = block.activities; // дефолт: за спаданням БД%
 const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
 ---
 
@@ -28,16 +28,27 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     <span><i class="swnd"></i>ДНД — дійсна наукова</span>
     <span><i class="swkn"></i>КННД — корисна ненаукова</span>
     <span><i class="swbd"></i>БД — безглузда</span>
-    <span class="note">(сортування — за часткою «безглузда»)</span>
+    <span class="note">Pᵢ — узгодженість оцінювачів по виду (0…1)</span>
+  </div>
+
+  <div class="catsort">
+    Сортувати:
+    <select id="cat-sort">
+      <option value="bd">за безглуздою (БД)</option>
+      <option value="nd">за дійсною науковою (ДНД)</option>
+      <option value="kn">за корисною ненауковою (КННД)</option>
+      <option value="pi">за узгодженістю (Pᵢ)</option>
+    </select>
   </div>
 
   <ViewToggle id="cat">
-    <div slot="chart">
+    <div slot="chart" id="cat-chart">
       {
         acts.map((a) => (
-          <div class="actrow">
+          <div class="actrow" data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
             <div class="actname">
               {a.name}
+              <span class="pi">Pᵢ={a.pi.toFixed(2)}</span>
               {a.controversial && <span class="contro"> · суперечливо</span>}
             </div>
             <div class="actbar">
@@ -56,19 +67,21 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
           <th class="num">ДНД %</th>
           <th class="num">КННД %</th>
           <th class="num">БД %</th>
+          <th class="num">Pᵢ</th>
           <th class="num">n</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="cat-tbody">
         {
           acts.map((a) => (
-            <tr>
+            <tr data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
               <td>{a.name}</td>
               <td class="num">{a.nd.toFixed(1)}</td>
               <td class="num">{a.kn.toFixed(1)}</td>
               <td class="num" style={a.dominant === 'БД' ? 'font-weight:600;color:#bf4040' : ''}>
                 {a.bd.toFixed(1)}
               </td>
+              <td class="num">{a.pi.toFixed(3)}</td>
               <td class="num">{a.n}</td>
             </tr>
           ))
@@ -79,7 +92,8 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
 
   <p class="note" style="margin-top:1.5rem">
     Найбезглуздіші практики (за версією науковців): друк паперових варіантів, усне й письмове
-    звітування, забезпечення формальних метрик (h-індекс, цитування).
+    звітування, забезпечення формальних метрик (h-індекс, цитування). Pᵢ — наскільки одностайні
+    оцінювачі щодо виду (складова Fleiss κ).
   </p>
 
   <section>
@@ -90,3 +104,19 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     <CatCrossTab block={block} />
   </section>
 </Layout>
+
+<script>
+  const sel = document.getElementById('cat-sort') as HTMLSelectElement | null;
+  const chart = document.getElementById('cat-chart');
+  const tbody = document.getElementById('cat-tbody');
+  function sortContainer(container: HTMLElement | null, key: string) {
+    if (!container) return;
+    const rows = Array.from(container.children) as HTMLElement[];
+    rows.sort((a, b) => parseFloat(b.dataset[key] || '0') - parseFloat(a.dataset[key] || '0'));
+    rows.forEach((r) => container.appendChild(r));
+  }
+  sel?.addEventListener('change', () => {
+    sortContainer(chart, sel.value);
+    sortContainer(tbody, sel.value);
+  });
+</script>
