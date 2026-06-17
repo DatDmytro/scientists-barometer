@@ -1,0 +1,30 @@
+---
+// 100%-стек-бар Likert-розподілу: 1 рядок = 1 індекс, 5 сегментів (позитив→негатив).
+// Палітра фіксована: зелене (позитив) → сіре (нейтр.) → червоне (негатив). Zero-JS.
+// Переюзає .actrow/.actbar (категоризація). value показуємо бейджем біля назви.
+interface Cell { label: string; n: number; pct: number }
+interface Row { code: string; label: string; value: number; dist: Cell[] }
+const { rows, legend } = Astro.props as { rows: Row[]; legend: string[] };
+const PALETTE = ['#4a8c5c', '#8fc0a0', '#c9ccd1', '#d99a9a', '#bf4040'];
+---
+
+<div class="cat-legend">
+  {legend.map((l, i) => (
+    <span><i style={`background:${PALETTE[i]}`}></i>{l}</span>
+  ))}
+</div>
+
+{rows.map((r) => (
+  <div class="actrow">
+    <div class="actname">{r.label} <span class="ct-n">({r.code})</span><span class="pi"><b>{r.value}</b></span></div>
+    <div class="actbar likert">
+      {r.dist.map((c, i) => (
+        c.pct > 0 && (
+          <span style={`width:${c.pct}%;background:${PALETTE[i]}`} title={`${c.label}: ${c.pct}% (n=${c.n})`}>
+            {c.pct >= 9 ? c.pct.toFixed(0) : ''}
+          </span>
+        )
+      ))}
+    </div>
+  </div>
+))}

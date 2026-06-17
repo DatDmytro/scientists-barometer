@@ -52,15 +52,15 @@ const chart = Plot.plot({
     Plot.tickX(indices, { x: 'ciHigh', y: 'code', stroke: '#1a2230', strokeWidth: 1.4 }),
     // нейтральна лінія
     Plot.ruleX([100], { stroke: '#444', strokeWidth: 1.25 }),
-    // підписи значень
-    Plot.text(indices, {
-      y: 'code',
-      x: 'value',
-      text: (d: Idx) => d.value.toFixed(1),
-      dx: (d: Idx) => (d.value >= 100 ? 9 : -9),
-      textAnchor: (d: Idx) => (d.value >= 100 ? 'start' : 'end'),
-      fill: '#1a2230',
-      fontWeight: 700,
+    // підписи значень. dx/textAnchor у Plot — КОНСТАНТИ (не канали), тому розбиваємо
+    // на дві марки: ≥100 (підпис праворуч) та <100 (ліворуч). Інакше функція → translate(NaN).
+    Plot.text(indices.filter((d: Idx) => d.value >= 100), {
+      y: 'code', x: 'value', text: (d: Idx) => d.value.toFixed(1),
+      dx: 9, textAnchor: 'start', fill: '#1a2230', fontWeight: 700,
+    }),
+    Plot.text(indices.filter((d: Idx) => d.value < 100), {
+      y: 'code', x: 'value', text: (d: Idx) => d.value.toFixed(1),
+      dx: -9, textAnchor: 'end', fill: '#1a2230', fontWeight: 700,
     }),
   ],
 });

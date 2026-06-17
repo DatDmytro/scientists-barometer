@@ -1,0 +1,127 @@
+---
+import Layout from '../layouts/Layout.astro';
+import IndicesChart from '../components/IndicesChart.astro';
+import StackedDist from '../components/StackedDist.astro';
+import QualCrossTab from '../components/QualCrossTab.astro';
+import block from '../data/block-quality-2026.json';
+import wave from '../data/wave-2026.json';
+
+// значення індексів — з блоку (з розподілом), 95% ДІ — з wave-2026.json
+const waveByCode = Object.fromEntries(wave.indices.map((i) => [i.code, i]));
+const chartRows = (grp: string) =>
+  block.indices
+    .filter((i) => i.group === grp)
+    .map((i) => {
+      const w = waveByCode[i.code];
+      return { code: i.code, label: i.label, value: i.value, ciLow: w.ciLow, ciHigh: w.ciHigh, n: i.n };
+    });
+const distRows = (grp: string) => block.indices.filter((i) => i.group === grp);
+
+const curChart = chartRows('Поточна якість');
+const dynChart = chartRows('Динаміка якості');
+const expChart = chartRows('Очікування');
+const curDist = distRows('Поточна якість');
+const dynDist = distRows('Динаміка якості');
+const expDist = distRows('Очікування');
+
+const link = block.timeQualityLink;
+const maxPct = Math.max(...link.options.map((o) => o.pct));
+const orn1 = expDist.find((i) => i.code === 'ІОРН 1')!;
+const worseNext = orn1.dist[3].pct + orn1.dist[4].pct; // дещо+значно гірше
+---
+
+<Layout
+  title="Якість і очікування — Науковий Барометр"
+  description="Як науковці оцінюють якість досліджень (ІЯНР), її динаміку та чого очікують від розвитку науки в Україні (ІОРН)."
+>
+  <h1>Якість наукових результатів та очікування</h1>
+  <p class="lead">«{block.question}»</p>
+  <p class="note">
+    П'ятий блок анкети: зв'язок часу і якості, поточна оцінка якості (власної та чужої),
+    її динаміка у двох горизонтах і очікування щодо розвитку науки. Звідси — індекси
+    <b>ІЯНР</b> (якість) та <b>ІОРН</b> (очікування).
+  </p>
+
+  <section>
+    <h2>Зв'язок: час на науку ↔ якість результатів</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Окреме питання без розрахунку індексу — як науковці бачать механізм впливу часу на якість
+      (n = {link.n}).
+    </p>
+    <table class="dist">
+      <tbody>
+        {link.options.map((o) => (
+          <tr>
+            <td class="opt">{o.label}</td>
+            <td class="barcell"><div class="bar"><span style={`width:${(o.pct / maxPct) * 100}%`}></span></div></td>
+            <td class="pct">{o.pct.toFixed(1)}%</td>
+            <td class="nn">{o.n}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">
+      Абсолютна більшість — <b>{link.directPct.toFixed(1)}%</b> — бачать <b>прямий зв'язок</b>: більше часу на
+      дійсну наукову діяльність означає кращу якість. Це методологічно ключовий результат: якщо час
+      на справжню науку витісняється безглуздою діяльністю, від цього прямо страждає якість науки
+      (підтримка гіпотези H2).
+    </p>
+    <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">Дописані варіанти (2)</h3>
+    <ul class="qlist">
+      {link.writeIns.map((w) => <li>{w}</li>)}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Поточна якість результатів (ІЯНР)</h2>
+    <IndicesChart indices={curChart} />
+    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок (100% = всі відповіді):</p>
+    <StackedDist rows={curDist} legend={curDist[0].dist.map((c) => c.label)} />
+    <p class="note">
+      Обидва індекси помірно позитивні (≈113). Більшість оцінює якість як «нормальну» або «скоріше
+      високу». Майже однаковий рівень оцінок власних і чужих досліджень свідчить про відсутність
+      систематичного завищення самооцінки.
+    </p>
+  </section>
+
+  <section>
+    <h2>Динаміка якості</h2>
+    <IndicesChart indices={dynChart} />
+    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок зміни (100% = всі відповіді):</p>
+    <StackedDist rows={dynDist} legend={dynDist[0].dist.map((c) => c.label)} />
+    <p class="note">
+      Якість <b>власних</b> досліджень оцінюється як стабільно зростаюча (рік 118,3, 5 років 124,1),
+      тоді як якість <b>чужих</b> — майже без змін (105,6 / 103,3). Контраст «своє зростає, чуже
+      стагнує» може бути проявом когнітивного упередження. Динамічні індекси спираються на пам'ять
+      респондентів — це обмеження пілоту.
+    </p>
+  </section>
+
+  <section>
+    <h2>Очікування розвитку науки (ІОРН)</h2>
+    <IndicesChart indices={expChart} />
+    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл очікувань (100% = всі відповіді):</p>
+    <StackedDist rows={expDist} legend={expDist[0].dist.map((c) => c.label)} />
+    <p class="note">
+      Обидва індекси очікувань <b>суттєво нижчі за 100</b> (рік {expDist[0].value}, 5 років
+      {' '}{expDist[1].value}) — загальний структурний песимізм. На найближчий рік погіршення очікують
+      {' '}<b>{worseNext.toFixed(1)}%</b>. На 5-річному горизонті картина дещо оптимістичніша.
+    </p>
+  </section>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Обери вимір — побачиш значення кожного індексу між групами (теплокарта навколо 100).
+    </p>
+    <QualCrossTab block={block} />
+  </section>
+
+  <section>
+    <h2>Коментарі до блоку ({block.comments.length})</h2>
+    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <ul class="qlist comments">
+      {block.comments.map((c) => <li>{c}</li>)}
+    </ul>
+  </section>
+</Layout>

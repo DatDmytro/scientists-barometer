@@ -1,0 +1,74 @@
+---
+// Теплокарта: рядки = 8 індексів (ІЯНР/ІОРН), колонки = групи демографії,
+// клітинка = значення індексу у групі. Дивергентна шкала навколо 100:
+// зелене = вище 100 (позитивно), червоне = нижче 100 (негативно), яскравість ∝ |відхилення|.
+// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·». Zero-JS.
+interface Group { value: string; n: number; }
+interface Dim { id: string; label: string; groups: Group[]; }
+interface Idx { code: string; label: string; group: string }
+const { block } = Astro.props as {
+  block: {
+    indices: Idx[];
+    crosstabDims: Dim[];
+    crosstab: Record<string, Record<string, { n: number } & Record<string, number | null>>>;
+  };
+};
+const rows = block.indices;
+// дивергентна заливка навколо нейтрального рівня 100
+function fill(v: number): string {
+  const d = v - 100;
+  const a = (Math.min(Math.abs(d) / 40, 1) * 0.85).toFixed(2);
+  return d >= 0 ? `rgba(74,140,92,${a})` : `rgba(191,64,64,${a})`;
+}
+const strong = (v: number) => Math.min(Math.abs(v - 100) / 40, 1) * 0.85 > 0.45;
+---
+
+<div class="crosstab">
+  {block.crosstabDims.map((d, i) => (
+    <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
+  ))}
+  <div class="ct-tabs">
+    {block.crosstabDims.map((d) => (
+      <label for={`ct-${d.id}`}>{d.label}</label>
+    ))}
+  </div>
+
+  {block.crosstabDims.map((d) => (
+    <div class="ct-pane" data-dim={d.id}>
+      <div class="ct-scroll">
+        <table class="ct-table">
+          <thead>
+            <tr>
+              <th>Індекс · значення</th>
+              {d.groups.map((g) => (
+                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr>
+                <td>{r.label} <span class="ct-n">({r.code})</span></td>
+                {d.groups.map((g) => {
+                  const v = block.crosstab[d.id][g.value][r.code];
+                  if (v === null || v === undefined) {
+                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                  }
+                  return (
+                    <td class={`ct-cell${strong(v) ? ' hi' : ''}`} style={`background:${fill(v)}`}>
+                      {Math.round(v)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:0.5rem">
+        Числа — значення індексу у групі (100 = нейтральний рівень). <b style="color:#4a8c5c">Зелене</b> — вище 100
+        (позитивно), <b style="color:#bf4040">червоне</b> — нижче 100. «·» — недостатньо даних (n &lt; 5).
+      </p>
+    </div>
+  ))}
+</div>
