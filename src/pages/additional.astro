@@ -1,0 +1,144 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StackedDist from '../components/StackedDist.astro';
+import AddCrossTab from '../components/AddCrossTab.astro';
+import block from '../data/block-additional-2026.json';
+
+const de = block.deadEnd;
+const deMax = Math.max(...de.options.map((o) => o.pct));
+const removebs = block.impact.find((i) => i.code === 'removebs')!;
+const workload = block.impact.find((i) => i.code === 'workload')!;
+const pub = block.publishing;
+
+// рядки для StackedDist (value = % позитивних як заголовкове число)
+const impactRows = block.impact.map((i) => ({ code: i.code, label: i.label, value: i.positivePct, dist: i.dist }));
+const pubRows = [{ code: 'pub', label: 'Проводив би й публікував без вимог', value: pub.positivePct, dist: pub.dist }];
+
+const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
+---
+
+<Layout
+  title="Додаткові питання — Науковий Барометр"
+  description="Перевірка центральних гіпотез: поведінка в глухому куті, вплив усунення безглуздої діяльності та зниження навантаження на якість, читацька активність, публікації без примусу."
+>
+  <h1>Додаткові питання</h1>
+  <p class="lead">«{block.question}»</p>
+  <p class="note">
+    Шостий блок анкети перевіряє центральні гіпотези дослідження: зв'язок навантаження та якості,
+    публікаційний тиск і читацьку активність.
+  </p>
+
+  <section>
+    <h2>Поведінка в умовах «глухого кута»</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Що зробить науковець, коли дослідження зайшло в глухий кут (хибна гіпотеза, брак даних, втрата
+      актуальності). Множинний вибір; відповіли n = {de.n}.
+    </p>
+    <table class="dist">
+      <tbody>
+        {de.options.map((o) => (
+          <tr>
+            <td class="opt">{o.label}</td>
+            <td class="barcell"><div class="bar"><span style={`width:${(o.pct / deMax) * 100}%`}></span></div></td>
+            <td class="pct">{o.pct.toFixed(1)}%</td>
+            <td class="nn">{o.n}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">
+      Три з чотирьох варіантів — методологічно прийнятні. Але <b>{de.options.find((o) => o.code === 'adjust')?.pct}%</b>
+      {' '}обрали «коригувати, щоб закінчити, навіть неякісно» — адаптація до системи, де незавершене
+      дослідження не зараховується у звітність незалежно від причин.
+    </p>
+    <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">Дописані варіанти ({de.writeIns.length})</h3>
+    <ul class="qlist">
+      {de.writeIns.map((w) => <li>{w}</li>)}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Вплив на якість наукової роботи</h2>
+    <div class="cat-summary">
+      <div><b class="big up">{removebs.positivePct}%</b> очікують покращення якості за умови <b>усунення безглуздої діяльності</b> (H3)</div>
+      <div><b class="big up">{workload.positivePct}%</b> — за умови <b>зниження загального навантаження</b> (H8)</div>
+    </div>
+    <p class="note" style="margin:0.6rem 0 0.3rem">Розподіл відповідей (100% = всі відповіді):</p>
+    <StackedDist rows={impactRows} legend={removebs.dist.map((c) => c.label)} />
+    <p class="note">
+      Усунення БД — <b>найбільш консолідований результат усього дослідження</b>: жоден респондент не
+      обрав «значно погіршиться», лише 0,5% — «дещо погіршиться».
+    </p>
+  </section>
+
+  <section>
+    <h2>Публікації без зовнішнього примусу</h2>
+    <div class="cat-summary">
+      <div><b class="big up">{pub.positivePct}%</b> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b> (H4)</div>
+    </div>
+    <p class="note" style="margin:0.6rem 0 0.3rem">«{pub.question}»</p>
+    <StackedDist rows={pubRows} legend={pub.dist.map((c) => c.label)} />
+    <p class="note">
+      Внутрішня мотивація науковців потужна й не формується зовнішнім примусом — формальні вимоги
+      радше заважають, ніж допомагають.
+    </p>
+  </section>
+
+  <section>
+    <h2>Уважна читацька активність</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Яка частка прочитань є справді уважними (повне засвоєння), а не поверхневим переглядом.
+    </p>
+
+    <h3 style="font-size:0.96rem;margin:1rem 0 0.3rem;color:var(--ink)">Свої прочитання чужих праць</h3>
+    <p class="note" style="margin:0">Медіана <b>{block.reading.own.median}%</b>, середня {block.reading.own.mean}% (n = {block.reading.own.n}).</p>
+    <table class="dist">
+      <tbody>
+        {block.reading.own.dist.map((b) => (
+          <tr>
+            <td class="opt">{b.label}</td>
+            <td class="barcell"><div class="bar"><span style={`width:${(b.pct / readMax(block.reading.own.dist)) * 100}%`}></span></div></td>
+            <td class="pct">{b.pct.toFixed(1)}%</td>
+            <td class="nn">{b.n}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">Як уважно інші читають ваші праці</h3>
+    <p class="note" style="margin:0">Медіана <b>{block.reading.others.median}%</b>, середня {block.reading.others.mean}% (n = {block.reading.others.n}).</p>
+    <table class="dist">
+      <tbody>
+        {block.reading.others.dist.map((b) => (
+          <tr>
+            <td class="opt">{b.label}</td>
+            <td class="barcell"><div class="bar"><span style={`width:${(b.pct / readMax(block.reading.others.dist)) * 100}%`}></span></div></td>
+            <td class="pct">{b.pct.toFixed(1)}%</td>
+            <td class="nn">{b.n}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">
+      Медіанний науковець уважно читає лише <b>{block.reading.own.median}%</b> публікацій, які відкриває, і
+      припускає, що його праці уважно читають ще рідше (<b>{block.reading.others.median}%</b>). Більшість
+      читання — поверхневе; це сигнал публікаційної інфляції («наукового спаму»).
+    </p>
+  </section>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      % згодних по трьох показниках у розрізі груп (теплокарта: темніше = сильніша згода).
+    </p>
+    <AddCrossTab block={block} />
+  </section>
+
+  <section>
+    <h2>Коментарі до блоку ({block.comments.length})</h2>
+    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <ul class="qlist comments">
+      {block.comments.map((c) => <li>{c}</li>)}
+    </ul>
+  </section>
+</Layout>
