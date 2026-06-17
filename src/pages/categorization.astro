@@ -104,6 +104,14 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     </p>
     <CatCrossTab block={block} />
   </section>
+
+  <section>
+    <h2>Коментарі до блоку ({block.comments.length})</h2>
+    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <ul class="qlist comments">
+      {block.comments.map((c) => <li>{c}</li>)}
+    </ul>
+  </section>
 </Layout>
 
 <script>

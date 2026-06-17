@@ -93,6 +93,14 @@ const w = block.war;
     <p class="note" style="margin-top:0">% у групі для обраної метрики, по кожному ресурсу. Темніше = вищий %.</p>
     <ResCrossTab block={block} />
   </section>
+
+  <section>
+    <h2>Коментарі до блоку ({block.comments.length})</h2>
+    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <ul class="qlist comments">
+      {block.comments.map((c) => <li>{c}</li>)}
+    </ul>
+  </section>
 </Layout>
 
 <script>
