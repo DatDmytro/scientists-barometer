@@ -1,0 +1,127 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const email = 'dmitrymaslov@ukr.net';
+
+const joinSubject = 'Долучитися до наступної хвилі «Науковий барометр»';
+const joinBody = `Доброго дня! Хочу отримати запрошення на наступну хвилю опитування «Науковий барометр».
+
+Ім'я:
+Роль (науковець / аспірант / студент / інше) — за бажанням:
+Галузь — за бажанням:
+
+Даю згоду зберегти мою адресу з єдиною метою — надіслати форму опитування при наступній хвилі. Розумію, що це не частина даних дослідження і що можу попросити видалення будь-коли.`;
+
+const feedbackSubject = 'Відгук про сайт «Науковий барометр»';
+const feedbackBody = `Тип (баг / пропозиція / зауваження до методології / інше):
+
+Повідомлення:`;
+
+const joinHref = `mailto:${email}?subject=${encodeURIComponent(joinSubject)}&body=${encodeURIComponent(joinBody)}`;
+const feedbackHref = `mailto:${email}?subject=${encodeURIComponent(feedbackSubject)}&body=${encodeURIComponent(feedbackBody)}`;
+---
+
+<Layout
+  title="Долучитися — Науковий Барометр"
+  description="Лишіть контакт, щоб узяти участь у наступній хвилі опитування, або надішліть відгук про сайт."
+>
+  <h1>Долучитися</h1>
+  <p class="lead">
+    «Барометр» повторюється хвилями. Якщо хочете взяти участь у наступному опитуванні — лишіть
+    контакт, і ми надішлемо вам форму, коли стартує нова хвиля. Тут само можна надіслати відгук про
+    сайт чи дослідження.
+  </p>
+
+  <div class="cta-grid">
+    <div class="cta">
+      <h3>Отримати запрошення на наступну хвилю</h3>
+      <p>
+        Напишіть нам — і коли стартує нова хвиля опитування, ви першими отримаєте форму. Це єдине, для
+        чого ми використаємо вашу адресу. Ваш контакт зберігається <b>окремо</b> від даних дослідження
+        і ніколи не стає їх частиною.
+      </p>
+      <a class="btn" href={joinHref}>Написати, щоб долучитися</a>
+    </div>
+
+    <div class="cta">
+      <h3>Зворотний зв'язок про сайт і дослідження</h3>
+      <p>
+        Помітили помилку, маєте пропозицію чи зауваження до методології? Напишіть — це допомагає
+        покращити інструмент до наступної ітерації. Відгук не є частиною дослідження.
+      </p>
+      <a class="btn btn-sec" href={feedbackHref}>Написати відгук</a>
+    </div>
+  </div>
+
+  <div class="meta">
+    <p><b>Як ми поводимося з вашим контактом</b></p>
+    <p><b>Хто збирає:</b> Маслов Д.С. (ORCID 0000-0002-1721-8319), автор дослідження.</p>
+    <p><b>Що:</b> лише вашу електронну адресу (+ за бажанням ім'я, роль, галузь).</p>
+    <p><b>Навіщо:</b> виключно щоб надіслати форму опитування при наступній хвилі. Жодної розсилки, реклами чи передачі третім сторонам.</p>
+    <p><b>Скільки:</b> до вашого запиту про видалення або до завершення проєкту.</p>
+    <p>
+      <b>Окремо від дослідження:</b> контакти охочих долучитися й відгуки — це не матеріал
+      дослідження. Вони зберігаються окремо від відповідей опитування, не публікуються й не входять у
+      жодні агреговані дані на цьому сайті.
+    </p>
+    <p>
+      <b>Ваші права:</b> доступ, виправлення чи видалення — напишіть на
+      <a href={`mailto:${email}`}>{email}</a>.
+    </p>
+  </div>
+</Layout>
+
+<style>
+  .cta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0 2rem;
+  }
+  .cta {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+    background: #fff;
+  }
+  .cta h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+  .cta p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+  .cta b {
+    color: var(--ink);
+  }
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+  }
+  .btn:hover {
+    opacity: 0.92;
+  }
+  .btn-sec {
+    background: #fff;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .meta a {
+    color: var(--accent);
+  }
+  @media (max-width: 620px) {
+    .cta-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
