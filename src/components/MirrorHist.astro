@@ -1,0 +1,29 @@
+---
+// Дзеркальна гістограма двох груп: ліворуч — ЗВО, праворуч — наукові установи;
+// рядки — інтервали частки часу, довжина — % групи (кожна група — від своєї бази).
+// Дані — verification-2026.json → knownGroups (те, з чого рахується критерій Манна-Уітні).
+import { num, pct, pval, signed } from '../lib/format';
+
+interface Bin { interval: string; zvo: number; nu: number }
+interface Side { n: number; mean: number; median: number }
+interface Props { title: string; bins: Bin[]; zvo: Side; nu: Side; delta: number; p: number; tone: string }
+const { title, bins, zvo, nu, delta, p, tone } = Astro.props;
+const zp = bins.map((b) => (b.zvo / zvo.n) * 100);
+const np = bins.map((b) => (b.nu / nu.n) * 100);
+const max = Math.max(...zp, ...np);
+---
+
+<figure class="mirror">
+  <figcaption><b>{title}</b>
+    <span class="note">різниця середніх {signed(delta)} в.п. · p = {pval(p)}{p >= 0.05 ? ' (н/з)' : ''}</span>
+  </figcaption>
+  <div class="mh-head"><span>ЗВО · {num(zvo.mean)} %</span><span></span><span>НУ · {num(nu.mean)} %</span></div>
+  {bins.map((b, k) => (
+    <div class="mh-row" title={`${b.interval}: ЗВО ${pct(zp[k])} (${b.zvo}), НУ ${pct(np[k])} (${b.nu})`}>
+      <span class="mh-l"><i class={`t-${tone}`} style={`width:${(zp[k] / max) * 100}%`}></i></span>
+      <span class="mh-x">{b.interval.replace(' %', '')}</span>
+      <span class="mh-r"><i class={`t-${tone}`} style={`width:${(np[k] / max) * 100}%`}></i></span>
+    </div>
+  ))}
+  <p class="note mh-foot">медіана: ЗВО {num(zvo.median, 0)} %, НУ {num(nu.median, 0)} % · n = {zvo.n} / {nu.n}</p>
+</figure>

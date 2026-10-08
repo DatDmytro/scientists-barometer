@@ -1,18 +1,21 @@
 # Безпекові заголовки для Cloudflare Pages.
 #
 # CSP — сувора: сайт самодостатній (жодних зовнішніх скриптів/стилів/шрифтів).
-# Весь JS — self-hosted. Два sha256-хеші нижче — це інлайн-скрипти прогресивного
-# покращення (сортування) на /categorization і /resources.
-#   Якщо ці скрипти АБО тулчейн збірки зміняться — хеші треба перегенерувати:
-#     npm run build
-#     потім sha256(base64) від тіла кожного інлайн-<script> у dist/**/index.html
+# Весь JS — self-hosted окремими файлами (/_astro/*.js): astro.config.mjs вимикає інлайнінг
+# скриптів (vite.build.assetsInlineLimit = 0), тож хеші не потрібні. Запобіжник
+# scripts/check-dist.mjs падає на збірці, якщо в HTML з'явиться інлайн-<script>.
+#
+# style-src має 'unsafe-inline' свідомо: Astro scoped-стилі + style="" атрибути
+# (позиції й кольори графіків). Скрипт-вектор (небезпечний) лишається замкненим на 'self'.
+
+/**/index.html
 #   Режим відмови м'який: таблиця рендериться, лише сортування перестає працювати.
 #
 # style-src має 'unsafe-inline' свідомо: Astro scoped-стилі + style="" атрибути.
 # Скрипт-вектор (небезпечний) лишається замкненим на 'self' + конкретні хеші.
 
 /*
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-4POScrkfkqHOLR+UoRB+Ne6VNmdw7tHU58juwSbB27g=' 'sha256-VecLoR2LfioTdRIRa4nRVkUiPsezSPfuNoRQE94AEDc='; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), microphone=(), midi=(), payment=(), usb=()

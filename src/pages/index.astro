@@ -1,80 +1,237 @@
 ---
+// Головна — вітрина для широкої аудиторії: три типи показників (стан зараз → оцінка змін →
+// очікування), ключові відсотки, розділи; усі 24 індекси — згорнуто внизу.
 import Layout from '../layouts/Layout.astro';
+import IndexTile from '../components/IndexTile.astro';
+import IndexForest from '../components/IndexForest.astro';
+import StatTile from '../components/StatTile.astro';
 import wave from '../data/wave-2026.json';
-import IndicesChart from '../components/IndicesChart.astro';
-import ViewToggle from '../components/ViewToggle.astro';
+import ci from '../data/crosstab-ci-2026.json';
+import verification from '../data/verification-2026.json';
+import time from '../data/block-timestructure-2026.json';
+import motivation from '../data/block-motivation-2026.json';
+import categorization from '../data/block-categorization-2026.json';
+import additional from '../data/block-additional-2026.json';
+import { BLOCKS } from '../lib/blocks';
+import { KIND, byCode, type Index } from '../lib/indices';
+import { DOI, DOI_URL, SAMPLE_BIAS, SAMPLE_ARGUMENT } from '../lib/site';
+import { num, pct, int } from '../lib/format';
 
 const w = wave.wave;
-const dims = [...new Set(wave.indices.map((i) => i.dimension))];
-const inm = wave.indices.find((i) => i.code === 'ІНМ');
-const fmtN = (n: number) => n.toLocaleString('uk-UA');
-const byDim = (dim: string) => wave.indices.filter((i) => i.dimension === dim);
+const date = (s: string) => new Intl.DateTimeFormat('uk-UA', { day: 'numeric', month: 'long' }).format(new Date(s));
+const share = Object.fromEntries(time.shares.map((s) => [s.cat, s.mean]));
+
+// динаміка для перемикача «За рік / За 5 років»: 8 показників одного горизонту
+const DYN = (h: 1 | 5) => [
+  { title: 'Структура робочого часу', codes: [`ІНЧ ${h}`, `ІКННЧ ${h}`, `ІБВЧ ${h}`] },
+  { title: 'Забезпеченість ресурсами', codes: [`ІНМ ф${h}`, `ІНМ о${h}`, `ІНМ ч${h}`] },
+  { title: 'Якість досліджень', codes: [`ІЯНР в${h}`, `ІЯНР ч${h}`] },
+];
+// спільна шкала для обох горизонтів, щоб перемикання не зсувало вісь
+const dynAll = [...DYN(1), ...DYN(5)].flatMap((g) => g.codes).map(byCode);
+const DYN_DOMAIN: [number, number] = [
+  Math.floor((Math.min(100, ...dynAll.map((i) => i.ciLow)) - 4) / 10) * 10,
+  Math.ceil((Math.max(100, ...dynAll.map((i) => i.ciHigh)) + 4) / 10) * 10,
+];
+
+// усі 16 показників динаміки (для згорнутого блоку): пункт → рядки «за рік» / «за 5 років»
+const CHANGE_GROUPS = [
+  { title: 'Час на дійсну наукову діяльність', codes: ['ІНЧ 1', 'ІНЧ 5'] },
+  { title: 'Час на корисну ненаукову діяльність', codes: ['ІКННЧ 1', 'ІКННЧ 5'] },
+  { title: 'Час на безглузду діяльність', codes: ['ІБВЧ 1', 'ІБВЧ 5'] },
+  { title: 'Забезпеченість фінансуванням', codes: ['ІНМ ф1', 'ІНМ ф5'] },
+  { title: 'Забезпеченість обладнанням', codes: ['ІНМ о1', 'ІНМ о5'] },
+  { title: 'Забезпеченість часом', codes: ['ІНМ ч1', 'ІНМ ч5'] },
+  { title: 'Якість власних досліджень', codes: ['ІЯНР в1', 'ІЯНР в5'] },
+  { title: 'Якість досліджень інших', codes: ['ІЯНР ч1', 'ІЯНР ч5'] },
+];
+const STATE_GROUPS = [
+  { title: 'Наукові можливості', codes: ['ІНМ ф', 'ІНМ о', 'ІНМ ч', 'ІНМ'] },
+  { title: 'Якість наукових результатів', codes: ['ІЯНР в', 'ІЯНР ч'] },
+];
+const EXPECT_GROUPS = [{ title: 'Розвиток науки', codes: ['ІОРН 1', 'ІОРН 5'] }];
+
+// чотири відсоткові показники: дослівні питання анкети + ДІ Вілсона
+const Q = verification.questionnaire.indicators as Record<string, string>;
+const question = (label: string) => Q[label].split(' (в оригіналі')[0].trim();
+const ind = (label: string) => {
+  const i = ci.indicators.find((x) => x.label === label);
+  if (!i) throw new Error(`Немає показника ${label}`);
+  return i;
+};
+const STATS = [
+  { label: 'Усунення БД покращить якість (% покращення)', title: 'Без безглуздої діяльності якість роботи зросла б',
+    answer: '«значно» + «дещо покращиться»', href: '/additional' },
+  { label: 'Публікували б без примусу (% так)', title: 'Досліджували й публікували б і без обов’язкових вимог',
+    answer: '«точно так» + «швидше так»', href: '/additional' },
+  { label: 'Зниження навантаж. покращить якість (%)', title: 'Менше навантаження — вища якість роботи',
+    answer: '«значно» + «дещо покращиться»', href: '/additional' },
+  { label: 'Змістовність роботи (% згодних)', title: 'Моя робота робить змістовний внесок у світ',
+    answer: '«повністю» + «скоріше погоджуюсь»', href: '/motivation' },
+].map((s) => ({ ...s, ...ind(s.label), question: question(s.label) }));
+
+// ключове число для кожної картки розділу
+const topGoal = [...motivation.options].sort((a, b) => b.n - a.n)[0];
+const removebs = additional.impact.find((x) => x.code === 'removebs')!;
+const inm = byCode('ІНМ');
+const own = byCode('ІЯНР в');
+const KEY: Record<string, string> = {
+  motivation: `<b>${num(topGoal.pct)}&nbsp;%</b> обирають мету «${topGoal.label.split(' (')[0].toLowerCase()}»`,
+  categorization: `<b>${categorization.summary['БД']}</b> із ${categorization.activities.length} видів діяльності більшість вважає безглуздими`,
+  'time-structure': `<b>${num(share['БД'])}&nbsp;%</b> робочого часу — безглузда діяльність`,
+  resources: `Індекс наукових можливостей <b>${num(inm.value)}</b> — нижче нейтрального значення 100`,
+  quality: `Якість власних досліджень <b>${num(own.value)}</b> — вище нейтрального значення 100`,
+  additional: `<b>${num(removebs.positivePct)}&nbsp;%</b> чекають кращої якості, якщо прибрати безглузду діяльність`,
+};
+const PART: Record<string, string> = { 'ІНМ ф': 'фінансування', 'ІНМ о': 'обладнання', 'ІНМ ч': 'час' };
+const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
 ---
 
 <Layout
-  title={`Науковий Барометр — ${w.label}`}
-  description="Інтерсуб'єктивні індекси якості наукової діяльності в Україні. Пілотне дослідження N=200."
+  title="Науковий Барометр — стан науки в Україні очима науковців"
+  description="Інтерсуб'єктивні індекси якості наукової діяльності в Україні: як науковці оцінюють стан науки, зміни й перспективи. Хвиля 2026, пілот N = 200."
 >
-  <h1>Науковий Барометр</h1>
-  <p class="sub">
-    Індекси якості наукової діяльності в Україні · {w.label}<span class="pilot">пілот N={w.n}</span>
-  </p>
+  <section class="hero">
+    <h1>Науковий Барометр</h1>
+    <p class="lead">
+      Як самі науковці оцінюють стан науки в Україні: ресурси, якість досліджень, на що йде робочий
+      час і чого чекати далі.
+    </p>
+    <p class="hero-meta">
+      <span>Хвиля {w.id} · N = {w.n} · {date(w.field.start)} – {date(w.field.end)} {w.id}</span>
+      <span class="pilot">пілот, невипадкова вибірка</span>
+      <a class="doi-chip" href={DOI_URL} target="_blank" rel="noopener">DOI {DOI}</a>
+    </p>
+  </section>
 
-  <div class="meta">
+  <div class="howto">
     <p>
-      <b>Поле:</b> {w.field.start} – {w.field.end} ({w.field.days} днів). <b>Генеральна сукупність:</b>
-      {fmtN(w.population.size)} ({w.population.source}); вибірка — {w.population.fractionPct}%.
-      <b>Відбір:</b> невипадковий (зручний/самовідбір). Докладніше — <a href="/methodology">методологія</a>.
+      <b>Шкала індексу 0–200.</b> 100 — нейтральне значення: позитивних і негативних оцінок порівну. Вище 100
+      переважають позитивні («зросла», «забезпечені», «краще»), нижче — негативні.
+    </p>
+    <p>
+      <b>Точка і смуга.</b> Смуга — 95&nbsp;% довірчий інтервал. Заповнена точка — значення відрізняється
+      від 100; порожня сіра — інтервал перетинає 100, тож від нейтрального значення не відрізняється.
+    </p>
+    <p>
+      <b>Колір — за змістом.</b> <span class="t-good">Синій</span> — краще для науки,
+      <span class="t-bad">червоний</span> — гірше, <span class="t-neutral">сіро-синій</span> — без
+      оцінки. Тож зростання безглуздої діяльності — червоне.
     </p>
   </div>
 
-  {
-    dims.map((dim, i) => {
-      const items = byDim(dim);
-      return (
-        <section>
-          <h2>{dim}</h2>
-          <ViewToggle id={`dim-${i}`}>
-            <IndicesChart slot="chart" indices={items} />
-            <table slot="table">
-              <thead>
-                <tr>
-                  <th>Індекс</th>
-                  <th>Опис</th>
-                  <th class="num">Значення</th>
-                  <th class="num">95% ДІ</th>
-                  <th class="num">n</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((idx) => (
-                  <tr>
-                    <td class="code">{idx.code}</td>
-                    <td>{idx.label}</td>
-                    <td class="num">
-                      <span class={`val ${idx.value > 100 ? 'up' : idx.value < 100 ? 'down' : ''}`}>
-                        {idx.value.toFixed(1)}
-                      </span>
-                      {!idx.matchesReport && <span class="flag"> (звіт: {idx.reportValue})</span>}
-                    </td>
-                    <td class="num ci">
-                      {idx.ciLow.toFixed(1)}–{idx.ciHigh.toFixed(1)}
-                    </td>
-                    <td class="num">{idx.n}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </ViewToggle>
-        </section>
-      );
-    })
-  }
+  <section class="band" id="stan">
+    <h2>Стан зараз</h2>
+    <p class="band-note">{KIND.state.note[0].toUpperCase() + KIND.state.note.slice(1)}: наскільки науковці забезпечені ресурсами і як оцінюють якість досліджень.</p>
+    <div class="tiles">
+      <IndexTile codes={['ІНМ']} extra={['ІНМ ф', 'ІНМ о', 'ІНМ ч']} subtitle="зведена забезпеченість фінансуванням, обладнанням і часом" extraLabel={extraLabel} />
+      <IndexTile codes={['ІЯНР в']} />
+      <IndexTile codes={['ІЯНР ч']} />
+    </div>
+  </section>
 
-  <p class="note" style="margin-top:1.5rem">
-    Шкала: <b>100 = нейтральний рівень</b> (вище — переважання позитивних оцінок / зростання, нижче —
-    негативних / скорочення). Зелені/червоні вуса — 95% довірчі інтервали. Зведений Індекс наукових
-    можливостей (ІНМ) = <b>{inm?.value.toFixed(1)}</b>. Поряд з індексами є <a href="/data">не-індексні
-    показники</a> (відсотки).
+  <section class="band" id="zminy">
+    <h2>Динаміка (за оцінками науковців)</h2>
+    <p class="band-note">
+      Оцінка змін: респонденти відповідали, як змінилася частка часу, забезпеченість чи якість за
+      останній рік і за п'ять років.
+    </p>
+    <div class="hzbox">
+      <input type="radio" class="hz-r" name="hz" id="hz-1" checked />
+      <input type="radio" class="hz-r" name="hz" id="hz-5" />
+      <div class="hz-tabs" aria-label="Горизонт оцінки">
+        <label for="hz-1">За рік</label>
+        <label for="hz-5">За 5 років</label>
+      </div>
+      <div class="tiles">
+        <IndexTile codes={['ІНЧ 1', 'ІНЧ 5']} toggle />
+        <IndexTile codes={['ІКННЧ 1', 'ІКННЧ 5']} toggle />
+        <IndexTile codes={['ІБВЧ 1', 'ІБВЧ 5']} toggle />
+      </div>
+      <h3 class="subhead">Усі показники динаміки</h3>
+      <div class="hz hz-1"><IndexForest groups={DYN(1)} domain={DYN_DOMAIN} /></div>
+      <div class="hz hz-5"><IndexForest groups={DYN(5)} domain={DYN_DOMAIN} /></div>
+    </div>
+  </section>
+
+  <section class="band" id="ochikuvannya">
+    <h2>Чого очікують</h2>
+    <p class="band-note">Як, на думку респондентів, зміниться розвиток науки.</p>
+    <div class="tiles">
+      <IndexTile codes={['ІОРН 1', 'ІОРН 5']} subtitle="Як зміниться розвиток науки" />
+    </div>
+  </section>
+
+  <section class="band" id="chas">
+    <h2>Структура робочого часу</h2>
+    <p class="band-note">
+      Середні частки робочого тижня за самооцінкою респондентів. Сума близька до 100&nbsp;%, але не
+      точна: відповіді давалися інтервалами.
+    </p>
+    <div class="actbar timebar" role="img" aria-label={`Дійсна наукова ${pct(share['НД'])}, корисна ненаукова ${pct(share['КН'])}, безглузда ${pct(share['БД'])}`}>
+      <span class="nd" style={`width:${share['НД']}%`}>Дійсна наукова {pct(share['НД'])}</span>
+      <span class="kn" style={`width:${share['КН']}%`}>Корисна ненаукова {pct(share['КН'])}</span>
+      <span class="bd" style={`width:${share['БД']}%`}>Безглузда {pct(share['БД'])}</span>
+    </div>
+    <p>
+      За середнього робочого тижня {num(time.hours.mean)} год це приблизно
+      <b>{num(time.hours.bullshitHoursAtMean)} години на тиждень</b> безглуздої діяльності.
+      <a href="/time-structure">Докладніше →</a>
+    </p>
+  </section>
+
+  <section class="band" id="vidsotky">
+    <h2>Додаткові показники</h2>
+    <p class="band-note">
+      Відсоткові показники — частка двох найпозитивніших відповідей. Це не індекси, тож шкала 0–200
+      до них не застосовна.
+    </p>
+    <div class="tiles four">
+      {STATS.map((s) => (
+        <StatTile title={s.title} value={s.pct} ci={s.ci as [number, number]} n={s.n} question={s.question} answer={s.answer} href={s.href} />
+      ))}
+    </div>
+    <p class="note">
+      Довірчий інтервал для відсотків — інтервал Вілсона. Поблизу 100&nbsp;% він несиметричний: униз довший,
+      ніж угору, бо частка не може перевищити 100&nbsp;%. Звичайний інтервал «± похибка» біля краю шкали
+      неточний. <a href="/methodology#vybirka">Докладніше →</a>
+    </p>
+  </section>
+
+  <section class="band" id="rozdily">
+    <h2>Розділи дослідження</h2>
+    <p class="band-note">Шість блоків анкети — кожен із розподілами відповідей, розрізами за групами і коментарями респондентів.</p>
+    <div class="cards">
+      {BLOCKS.map((b, i) => (
+        <a class="card" href={b.href}>
+          <span class="card-num">Блок {i + 1}</span>
+          <h3>{b.title}</h3>
+          <p>{b.teaser}</p>
+          <p class="card-key" set:html={KEY[b.slug]} />
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <details class="all" id="usi-indeksy">
+    <summary>Усі 24 індекси — значення, 95&nbsp;% ДІ, n і розподіл відповідей</summary>
+    <h3>{KIND.state.label}</h3>
+    <IndexForest groups={STATE_GROUPS} />
+    <h3>{KIND.change.label}</h3>
+    <p class="note">{KIND.change.note[0].toUpperCase() + KIND.change.note.slice(1)}.</p>
+    <IndexForest groups={CHANGE_GROUPS} />
+    <h3>{KIND.expect.label}</h3>
+    <IndexForest groups={EXPECT_GROUPS} />
+    <p class="note">
+      Індекс = 100 · (1 + середнє зважених відповідей), ваги від +1 до −1; n — кількість відповідей на
+      питання. ДІ зведеного Індексу наукових можливостей рахувався бутстрепом. Як рахується —
+      <a href="/methodology">методологія</a>; усі значення — у <a href="/data">наборі даних</a>.
+    </p>
+  </details>
+
+  <p class="callout" style="margin-top:2rem">
+    <b>Пілот.</b> Вибірка невипадкова ({int(w.n)} із {int(w.population.size)} науковців, {num(w.population.fractionPct, 2)}&nbsp;%)
+    і {SAMPLE_BIAS}. {SAMPLE_ARGUMENT} Довірчі інтервали описують статистичну точність оцінок.
+    <a href="/methodology#vybirka">Про вибірку →</a>
   </p>
 </Layout>

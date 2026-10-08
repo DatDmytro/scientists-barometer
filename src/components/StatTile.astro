@@ -1,0 +1,27 @@
+---
+// Відсотковий показник (не індекс): велике число, шкала 0–100 % з 95 % ДІ Вілсона
+// і дослівне формулювання питання анкети.
+import Meter from './Meter.astro';
+import { num, pct, range, int } from '../lib/format';
+
+interface Props {
+  title: string;
+  value: number;
+  ci: [number, number];
+  n: number;
+  question: string;
+  answer?: string; // що саме пораховано, напр. «покращиться (значно + дещо)»
+  href?: string;
+}
+const { title, value, ci, n, question, answer, href } = Astro.props;
+---
+
+<article class="tile stat">
+  <h3 class="tile-title">{title}</h3>
+  <p class="tile-num"><span class="tile-big">{num(value)}</span><span class="tile-unit">%</span></p>
+  <Meter value={value} lo={ci[0]} hi={ci[1]} tone="accent" min={0} max={100} mid={null} unit=" %"
+         label={`${title}: ${pct(value)}, 95 % ДІ ${range(ci[0], ci[1])}`} />
+  <p class="tile-meta">95 % ДІ {range(ci[0], ci[1])} · n = {int(n)}{answer && <> · {answer}</>}</p>
+  <p class="tile-q">«{question}»</p>
+  {href && <a class="tile-link" href={href}>Докладніше →</a>}
+</article>

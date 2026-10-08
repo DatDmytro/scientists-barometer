@@ -1,0 +1,25 @@
+---
+// Навігація між шістьма блоками: пронумерована смуга вгорі, «назад / далі» внизу.
+import { BLOCKS } from '../lib/blocks';
+
+interface Props { slug: string; where?: 'top' | 'bottom' }
+const { slug, where = 'top' } = Astro.props;
+const k = BLOCKS.findIndex((b) => b.slug === slug);
+const prev = BLOCKS[k - 1];
+const next = BLOCKS[k + 1];
+---
+
+{where === 'top' ? (
+  <nav class="blocknav" aria-label="Блоки опитування">
+    {BLOCKS.map((b, i) => (
+      <a href={b.href} class={i === k ? 'active' : ''} aria-current={i === k ? 'page' : undefined}>
+        <span class="bn-num">{i + 1}</span>{b.title}
+      </a>
+    ))}
+  </nav>
+) : (
+  <nav class="blockpager" aria-label="Сусідні блоки">
+    {prev ? <a href={prev.href}>← {k}. {prev.title}</a> : <a href="/#rozdily">← Усі розділи</a>}
+    {next ? <a href={next.href} class="next">{k + 2}. {next.title} →</a> : <a href="/#rozdily" class="next">Усі розділи →</a>}
+  </nav>
+)}

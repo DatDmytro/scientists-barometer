@@ -36,9 +36,7 @@
       "value": 101.5,
       "se": 3.96,
       "ciLow": 93.8,
-      "ciHigh": 109.3,
-      "reportValue": 101.6,
-      "matchesReport": false
+      "ciHigh": 109.3
     },
     {
       "code": "ІНЧ 5",
@@ -48,9 +46,7 @@
       "value": 100.0,
       "se": 5.04,
       "ciLow": 90.1,
-      "ciHigh": 109.9,
-      "reportValue": 100.0,
-      "matchesReport": true
+      "ciHigh": 109.9
     },
     {
       "code": "ІКННЧ 1",
@@ -60,9 +56,7 @@
       "value": 127.0,
       "se": 3.41,
       "ciLow": 120.3,
-      "ciHigh": 133.7,
-      "reportValue": 127.0,
-      "matchesReport": true
+      "ciHigh": 133.7
     },
     {
       "code": "ІКННЧ 5",
@@ -72,9 +66,7 @@
       "value": 132.1,
       "se": 4.2,
       "ciLow": 123.8,
-      "ciHigh": 140.3,
-      "reportValue": 132.1,
-      "matchesReport": true
+      "ciHigh": 140.3
     },
     {
       "code": "ІБВЧ 1",
@@ -84,9 +76,7 @@
       "value": 134.5,
       "se": 3.67,
       "ciLow": 127.3,
-      "ciHigh": 141.7,
-      "reportValue": 134.5,
-      "matchesReport": true
+      "ciHigh": 141.7
     },
     {
       "code": "ІБВЧ 5",
@@ -96,9 +86,7 @@
       "value": 138.8,
       "se": 4.06,
       "ciLow": 130.8,
-      "ciHigh": 146.7,
-      "reportValue": 138.8,
-      "matchesReport": true
+      "ciHigh": 146.7
     },
     {
       "code": "ІНМ ф",
@@ -108,9 +96,7 @@
       "value": 49.7,
       "se": 3.92,
       "ciLow": 42.1,
-      "ciHigh": 57.4,
-      "reportValue": 49.7,
-      "matchesReport": true
+      "ciHigh": 57.4
     },
     {
       "code": "ІНМ о",
@@ -120,9 +106,7 @@
       "value": 84.7,
       "se": 4.34,
       "ciLow": 76.2,
-      "ciHigh": 93.2,
-      "reportValue": 84.7,
-      "matchesReport": true
+      "ciHigh": 93.2
     },
     {
       "code": "ІНМ ч",
@@ -132,9 +116,7 @@
       "value": 87.8,
       "se": 4.37,
       "ciLow": 79.2,
-      "ciHigh": 96.3,
-      "reportValue": 87.8,
-      "matchesReport": true
+      "ciHigh": 96.3
     },
     {
       "code": "ІНМ",
@@ -144,9 +126,7 @@
       "value": 71.8,
       "se": 3.56,
       "ciLow": 64.8,
-      "ciHigh": 78.8,
-      "reportValue": 71.8,
-      "matchesReport": true
+      "ciHigh": 78.8
     },
     {
       "code": "ІНМ ф1",
@@ -156,9 +136,7 @@
       "value": 83.8,
       "se": 3.8,
       "ciLow": 76.3,
-      "ciHigh": 91.2,
-      "reportValue": 83.8,
-      "matchesReport": true
+      "ciHigh": 91.2
     },
     {
       "code": "ІНМ ф5",
@@ -168,9 +146,7 @@
       "value": 79.8,
       "se": 4.11,
       "ciLow": 71.7,
-      "ciHigh": 87.8,
-      "reportValue": 79.8,
-      "matchesReport": true
+      "ciHigh": 87.8
     },
     {
       "code": "ІНМ о1",
@@ -180,9 +156,7 @@
       "value": 95.4,
       "se": 3.31,
       "ciLow": 88.9,
-      "ciHigh": 101.9,
-      "reportValue": 95.4,
-      "matchesReport": true
+      "ciHigh": 101.9
     },
     {
       "code": "ІНМ о5",
@@ -192,9 +166,7 @@
       "value": 91.8,
       "se": 3.82,
       "ciLow": 84.3,
-      "ciHigh": 99.3,
-      "reportValue": 91.8,
-      "matchesReport": true
+      "ciHigh": 99.3
     },
     {
       "code": "ІНМ ч1",
@@ -204,9 +176,7 @@
       "value": 81.5,
       "se": 3.49,
       "ciLow": 74.7,
-      "ciHigh": 88.4,
-      "reportValue": 81.5,
-      "matchesReport": true
+      "ciHigh": 88.4
     },
     {
       "code": "ІНМ ч5",
@@ -216,9 +186,7 @@
       "value": 79.5,
       "se": 3.98,
       "ciLow": 71.7,
-      "ciHigh": 87.3,
-      "reportValue": 79.5,
-      "matchesReport": true
+      "ciHigh": 87.3
     },
     {
       "code": "ІЯНР в",
@@ -228,9 +196,7 @@
       "value": 113.3,
       "se": 2.63,
       "ciLow": 108.2,
-      "ciHigh": 118.5,
-      "reportValue": 113.3,
-      "matchesReport": true
+      "ciHigh": 118.5
     },
     {
       "code": "ІЯНР ч",
@@ -240,9 +206,7 @@
       "value": 113.7,
       "se": 3.0,
       "ciLow": 107.8,
-      "ciHigh": 119.6,
-      "reportValue": 113.7,
-      "matchesReport": true
+      "ciHigh": 119.6
     },
     {
       "code": "ІЯНР в1",
@@ -252,9 +216,7 @@
       "value": 118.3,
       "se": 3.07,
       "ciLow": 112.3,
-      "ciHigh": 124.3,
-      "reportValue": 118.3,
-      "matchesReport": true
+      "ciHigh": 124.3
     },
     {
       "code": "ІЯНР в5",
@@ -264,9 +226,7 @@
       "value": 124.1,
       "se": 3.82,
       "ciLow": 116.6,
-      "ciHigh": 131.6,
-      "reportValue": 124.1,
-      "matchesReport": true
+      "ciHigh": 131.6
     },
     {
       "code": "ІЯНР ч1",
@@ -276,9 +236,7 @@
       "value": 105.6,
       "se": 2.87,
       "ciLow": 100.0,
-      "ciHigh": 111.2,
-      "reportValue": 105.6,
-      "matchesReport": true
+      "ciHigh": 111.2
     },
     {
       "code": "ІЯНР ч5",
@@ -288,9 +246,7 @@
       "value": 103.3,
       "se": 3.49,
       "ciLow": 96.5,
-      "ciHigh": 110.2,
-      "reportValue": 103.3,
-      "matchesReport": true
+      "ciHigh": 110.2
     },
     {
       "code": "ІОРН 1",
@@ -300,9 +256,7 @@
       "value": 78.6,
       "se": 3.79,
       "ciLow": 71.2,
-      "ciHigh": 86.1,
-      "reportValue": 78.6,
-      "matchesReport": true
+      "ciHigh": 86.1
     },
     {
       "code": "ІОРН 5",
@@ -312,39 +266,29 @@
       "value": 84.7,
       "se": 4.45,
       "ciLow": 75.9,
-      "ciHigh": 93.4,
-      "reportValue": 84.7,
-      "matchesReport": true
+      "ciHigh": 93.4
     }
   ],
   "indicators": [
     {
       "label": "Змістовність роботи (% згодних)",
-      "section": "4.1",
       "n": 199,
-      "pct": 63.8,
-      "reportPct": 63.8
+      "pct": 63.8
     },
     {
       "label": "Усунення БД покращить якість (% покращення)",
-      "section": "4.6",
       "n": 198,
-      "pct": 93.4,
-      "reportPct": 93.4
+      "pct": 93.4
     },
     {
       "label": "Зниження навантаж. покращить якість (%)",
-      "section": "4.6",
       "n": 199,
-      "pct": 79.4,
-      "reportPct": 79.4
+      "pct": 79.4
     },
     {
       "label": "Публікували б без примусу (% так)",
-      "section": "4.6",
       "n": 199,
-      "pct": 84.9,
-      "reportPct": 84.9
+      "pct": 84.9
     }
   ],
   "reliability": {
@@ -432,32 +376,28 @@
         "n": 197,
         "chi2": 19.88,
         "df": 1,
-        "p": 8.226984355087024e-06,
-        "reportChi2": 19.88
+        "p": 8.226984355087024e-06
       },
       {
         "criterion": "Науковий ступінь",
         "n": 200,
         "chi2": 27.93,
         "df": 2,
-        "p": 8.61341052741929e-07,
-        "reportChi2": 27.93
+        "p": 8.61341052741929e-07
       },
       {
         "criterion": "Вчене звання (ЗВО)",
         "n": 140,
         "chi2": 12.32,
         "df": 2,
-        "p": 0.002110319444938,
-        "reportChi2": 12.32
+        "p": 0.002110319444938
       },
       {
         "criterion": "Галузь наук (НУ)",
         "n": 56,
         "chi2": 20.46,
         "df": 3,
-        "p": 0.0001364599583066,
-        "reportChi2": 20.46
+        "p": 0.0001364599583066
       }
     ],
     "comparison": [
@@ -585,7 +525,6 @@
     "regionNote": "Область — описово (χ² не застосовний: E<5 у 18/23 регіонів)."
   },
   "meta": {
-    "source": "Report 2026",
     "generated": "2026-06-11",
     "scripts": [
       "analysis.py",

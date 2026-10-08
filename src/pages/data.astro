@@ -1,78 +1,118 @@
 ---
+// Дані й цитування — набір на Zenodo (DOI, цитування, склад, межі використання, перевірність),
+// хвилі, етика і машиночитна копія агрегатів.
 import Layout from '../layouts/Layout.astro';
 import wave from '../data/wave-2026.json';
+import {
+  CITATION, CONCEPT_DOI, CONCEPT_DOI_URL, DATASET_VERSION, DOI, DOI_URL, FILES, LICENSE, TITLE_UA,
+  SAMPLE_BIAS, SAMPLE_ARGUMENT,
+} from '../lib/site';
+import { int, num } from '../lib/format';
 
 const w = wave.wave;
-const fmtN = (n: number) => n.toLocaleString('uk-UA');
-const repoData = 'https://github.com/DatDmytro/scientists-barometer/blob/main/src/data/wave-2026.json';
 ---
 
-<Layout title="Дані — Науковий Барометр" description="Хвилі дослідження, показники, завантаження даних.">
-  <h1>Дані</h1>
+<Layout title="Дані й цитування — Науковий Барометр" description="Набір даних хвилі 2026 на Zenodo: DOI, як цитувати, склад, межі використання.">
+  <h1>Дані й цитування</h1>
   <p class="lead">
-    Усі числа на сайті походять з одного перевіреного джерела — контракту хвилі. Кожне нове дослідження
-    додається як окрема «хвиля» для порівняння в часі.
+    Усі агреговані результати хвилі 2026 опубліковано як відкритий набір даних на Zenodo — з DOI,
+    документацією українською та англійською і ліцензією {LICENSE.name}.
   </p>
 
   <div class="prose">
-    <h3>Хвилі</h3>
-    <table>
-      <thead>
-        <tr><th>Хвиля</th><th class="num">N</th><th>Поле</th><th>Відбір</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><b>{w.label}</b></td>
-          <td class="num">{w.n}</td>
-          <td>{w.field.start} – {w.field.end}</td>
-          <td>невипадковий пілот</td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="note">
-      Генеральна сукупність — {fmtN(w.population.size)} осіб ({w.population.source}); ця хвиля охоплює
-      {w.population.fractionPct}%.
-    </p>
-
-    <h3>Що вимірюється</h3>
-    <ul>
-      <li><b>24 індекси</b> якості наукової діяльності з 95% довірчими інтервалами — див. <a href="/">головну</a>.</li>
-      <li><b>Надійність і репрезентативність</b> — див. <a href="/methodology">методологію</a>.</li>
-    </ul>
-
-    <h3>Не-індексні показники</h3>
+    <h3>Набір даних</h3>
     <p>
-      Окремі питання, що подаються як <b>відсотки</b> (а не індекси) — за тим, як їх подає звіт:
+      <b>{TITLE_UA}</b><br />
+      Версія {DATASET_VERSION} · ліцензія <a href={LICENSE.url} target="_blank" rel="noopener">{LICENSE.name}</a> ·
+      <a class="doi-chip" href={DOI_URL} target="_blank" rel="noopener">DOI {DOI}</a>
     </p>
-    <table>
-      <thead><tr><th>Показник</th><th class="num">%</th><th class="num">n</th></tr></thead>
-      <tbody>
-        {wave.indicators.map((i) => (
-          <tr>
-            <td>{i.label}</td>
-            <td class="num"><b>{i.pct.toFixed(1)}%</b></td>
-            <td class="num">{i.n}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
 
-    <h3>Завантаження</h3>
+    <h3>Як цитувати</h3>
+    <div class="citebox">{CITATION}</div>
+    <p class="note">
+      Цитувати англійською назвою — під нею набір зареєстровано на Zenodo. DOI вище — <b>version DOI</b>:
+      він указує саме на цю версію набору й не зміниться. Zenodo створює ще й <b>concept DOI</b>
+      <a href={CONCEPT_DOI_URL} target="_blank" rel="noopener">{CONCEPT_DOI}</a>, який завжди веде на найновішу версію запису. Для
+      посилання на конкретні числа беріть version DOI.
+    </p>
+
+    <h3>Що всередині</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Файл</th><th>Що це</th></tr></thead>
+        <tbody>
+          {FILES.map((f) => (
+            <tr><td><code>{f.name}</code></td><td>{f.what}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Обидві книги мають однакову структуру й генеруються з одного джерела, тож числа в них ідентичні.
+      Аркуші: Про набір · Індекси · Показники · Надійність · Репрезентативність · Частки часу · шість
+      блоків анкети · Розподіли індексів · Статистики шкал · Пари конструктів · Крос-таби · Коментарі.
+    </p>
+
+    <h3>Про вибірку</h3>
+    <p>
+      Вибірка невипадкова й {SAMPLE_BIAS} (<a href="/methodology#reprezentatyvnist">репрезентативність</a>).
+      {SAMPLE_ARGUMENT} Чи узагальнювати результати з огляду на це — вирішує користувач даних.
+    </p>
+
+    <h3>Для чого набір не годиться</h3>
     <ul>
-      <li><a href="/wave-2026.json">wave-2026.json</a> — повний контракт даних цієї хвилі (агрегати).</li>
-      <li><a href={repoData}>той самий файл на GitHub</a> (з історією змін).</li>
+      <li><b>Рейтингування окремих установ, регіонів чи галузей.</b> Групи в розрізах малі (від n = 5), а
+        їхній склад визначив самовідбір, а не дизайн вибірки.</li>
+      <li><b>Оцінювання окремих науковців.</b> Індекси побудовано для рівня наукової системи;
+        використання їх для рішень щодо конкретних людей суперечить самому задуму інструменту.</li>
     </ul>
 
-    <h3>Як додаються нові хвилі</h3>
+    <h3>Числа можна перевірити самостійно</h3>
+    <p>
+      Набір укомплектовано так, щоб опубліковані величини перераховувалися незалежно, без доступу до
+      мікроданих: усі індекси (значення, стандартна похибка, 95&nbsp;% ДІ), Cronbach α і MIC, Spearman ρ з
+      поправками, критерій Манна-Уітні, перевірки узгодженості відповідей, Fleiss κ і χ²
+      репрезентативності. Єдиний виняток — ДІ зведеного ІНМ (бутстреп). Повна карта —
+      <a href="/methodology#perevirka">у методології</a>.
+    </p>
     <p class="note">
-      Модель статична: нове опитування → перевірені розрахунки (Python) → новий <code>wave-YYYY.json</code>
-      → перебудова сайту. Жодного бекенду; дані версіонуються в git.
+      Довірчі інтервали в розрізах за групами, які показує сайт, рахувалися окремо з первинних даних і
+      до версії {DATASET_VERSION} набору не входять.
+    </p>
+
+    <h3>Хвилі</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Хвиля</th><th class="num">N</th><th>Поле</th><th>Відбір</th><th>Набір даних</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>{w.label}</b></td>
+            <td class="num">{w.n}</td>
+            <td>{w.field.start} – {w.field.end}</td>
+            <td>невипадковий пілот</td>
+            <td><a href={DOI_URL} target="_blank" rel="noopener">версія {DATASET_VERSION}</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Генеральна сукупність — {int(w.population.size)} осіб ({w.population.source}); ця хвиля охоплює
+      {num(w.population.fractionPct, 2)}&nbsp;%. Якщо буде нова хвиля, її
+      дані стануть новою версією того самого запису на Zenodo: concept DOI лишиться, version DOI буде свій.
     </p>
 
     <h3>Етика</h3>
     <p class="note">
-      Респондентам гарантовано публікацію <b>лише безособово й агреговано</b>. Сирі відповіді не
-      публікуються; на сайт потрапляють тільки агреговані показники.
+      Респондентам гарантовано публікацію <b>лише безособово й агреговано</b>. Мікродані не публікуються;
+      розрізи за групами подано з придушенням малих груп (n &lt; 5). Докладніше — у
+      <a href="/methodology#etyka">методології</a>.
+    </p>
+
+    <h3>Для розробників</h3>
+    <p class="note">
+      Сайт статичний: агрегати зберігаються в JSON. Основний контракт хвилі можна завантажити
+      окремо — <a href="/wave-2026.json">wave-2026.json</a> (індекси,
+      показники, надійність, репрезентативність). Для цитування й аналізу використовуйте набір на Zenodo.
     </p>
   </div>
 </Layout>

@@ -1,0 +1,33 @@
+---
+// Таблиця розподілів відповідей для кількох індексів з однаковою шкалою: рядок = індекс,
+// стовпці = п'ять варіантів відповіді (%), n. Точні числа до графіка IndexForest.
+import { byCode } from '../lib/indices';
+import { num, int } from '../lib/format';
+
+interface Props { codes: string[]; caption?: string }
+const { codes, caption } = Astro.props;
+const rows = codes.map(byCode).filter((i) => i.dist);
+const head = rows[0].dist!.map((c) => c.label);
+---
+
+<div class="table-scroll">
+  <table class="disttable">
+    {caption && <caption>{caption}</caption>}
+    <thead>
+      <tr>
+        <th>Індекс</th>
+        {head.map((h) => <th class="num">{h}</th>)}
+        <th class="num">n</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((i) => (
+        <tr>
+          <td>{i.subject}{i.horizonText ? `, ${i.horizonText}` : ''} <span class="ixf-code">{i.code}</span></td>
+          {i.dist!.map((c) => <td class="num">{num(c.pct)}</td>)}
+          <td class="num">{int(i.n)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

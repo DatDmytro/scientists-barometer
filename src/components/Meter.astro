@@ -1,0 +1,36 @@
+---
+// Шкала-«барометр»: трек min–max, риска нейтралі, смуга 95 % ДІ і маркер значення.
+// HTML + CSS-позиціювання у відсотках (не SVG), щоб маркер не спотворювався на будь-якій ширині.
+import { num } from '../lib/format';
+
+interface Props {
+  value: number;
+  lo?: number;
+  hi?: number;
+  tone?: string; // good | bad | neutral | ns | accent
+  min?: number;
+  max?: number;
+  mid?: number | null; // нейтраль (100 для індексів); null — без риски
+  scale?: boolean;
+  unit?: string;
+  label: string; // текст для читачів екрана
+}
+const { value, lo, hi, tone = 'neutral', min = 0, max = 200, mid = 100, scale = true, unit = '', label } = Astro.props;
+const x = (v: number) => Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100));
+const hasCi = lo !== undefined && hi !== undefined;
+---
+
+<div class="meter" role="img" aria-label={label}>
+  <div class="meter-bar">
+    {mid !== null && <span class="meter-mid" style={`left:${x(mid)}%`}></span>}
+    {hasCi && <span class={`meter-ci t-${tone}`} style={`left:${x(lo!)}%;width:${x(hi!) - x(lo!)}%`}></span>}
+    <span class={`meter-dot t-${tone}`} style={`left:${x(value)}%`}></span>
+  </div>
+  {scale && (
+    <div class="meter-scale" aria-hidden="true">
+      <span style="left:0">{num(min, 0)}{unit}</span>
+      {mid !== null && <span class="mid" style={`left:${x(mid)}%`}>{num(mid, 0)}{unit}</span>}
+      <span style="left:100%">{num(max, 0)}{unit}</span>
+    </div>
+  )}
+</div>

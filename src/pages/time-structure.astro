@@ -1,18 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import IndicesChart from '../components/IndicesChart.astro';
+import BlockHeader from '../components/BlockHeader.astro';
+import BlockNav from '../components/BlockNav.astro';
+import IndexForest from '../components/IndexForest.astro';
+import DistTable from '../components/DistTable.astro';
+import MirrorHist from '../components/MirrorHist.astro';
 import TimeCrossTab from '../components/TimeCrossTab.astro';
 import block from '../data/block-timestructure-2026.json';
-import wave from '../data/wave-2026.json';
+import verification from '../data/verification-2026.json';
+import { byCode, CHANGE_CAVEAT } from '../lib/indices';
+import { num, pct } from '../lib/format';
 
 const sh = Object.fromEntries(block.shares.map((s) => [s.cat, s]));
-const dyn = wave.indices.filter((i) => i.dimension === 'Динаміка структури часу');
 const h = block.hours;
-// кольори індексів = кольори категорій у теплокартах (ІНЧ→наукова зелений, ІКННЧ→корисна синій, ІБВЧ→безглузда червоний)
-const dynColors: Record<string, string> = {
-  'ІНЧ 1': '#4a8c5c', 'ІНЧ 5': '#4a8c5c',
-  'ІКННЧ 1': '#8aafc4', 'ІКННЧ 5': '#8aafc4',
-  'ІБВЧ 1': '#bf4040', 'ІБВЧ 5': '#bf4040',
+const CHANGE = [
+  { title: 'Час на дійсну наукову діяльність', codes: ['ІНЧ 1', 'ІНЧ 5'] },
+  { title: 'Час на корисну ненаукову діяльність', codes: ['ІКННЧ 1', 'ІКННЧ 5'] },
+  { title: 'Час на безглузду діяльність', codes: ['ІБВЧ 1', 'ІБВЧ 5'] },
+];
+const inch5 = byCode('ІНЧ 5');
+const ibvch5 = byCode('ІБВЧ 5');
+const CAT: Record<string, { label: string; tone: string }> = {
+  НД: { label: 'Дійсна наукова (ДНД)', tone: 'good' },
+  КН: { label: 'Корисна ненаукова (КННД)', tone: 'neutral' },
+  БД: { label: 'Безглузда (БД)', tone: 'bad' },
 };
 ---
 
@@ -20,15 +31,14 @@ const dynColors: Record<string, string> = {
   title="Структура робочого часу — Науковий Барометр"
   description="Скільки робочого часу науковці витрачають на дійсну наукову, корисну ненаукову та безглузду діяльність."
 >
-  <h1>Структура робочого часу</h1>
-  <p class="lead">«{block.question}»</p>
+  <BlockHeader slug="time-structure" />
 
   <section>
     <h2>На що йде робочий час</h2>
-    <div class="actbar" style="height:2.2rem;font-size:0.88rem;margin:0.6rem 0;">
-      <span class="nd" style={`width:${sh['НД'].mean}%`}>ДНД {sh['НД'].mean}%</span>
-      <span class="kn" style={`width:${sh['КН'].mean}%`}>КННД {sh['КН'].mean}%</span>
-      <span class="bd" style={`width:${sh['БД'].mean}%`}>БД {sh['БД'].mean}%</span>
+    <div class="actbar timebar" role="img" aria-label={`ДНД ${pct(sh['НД'].mean)}, КННД ${pct(sh['КН'].mean)}, БД ${pct(sh['БД'].mean)}`}>
+      <span class="nd" style={`width:${sh['НД'].mean}%`}>ДНД {pct(sh['НД'].mean)}</span>
+      <span class="kn" style={`width:${sh['КН'].mean}%`}>КННД {pct(sh['КН'].mean)}</span>
+      <span class="bd" style={`width:${sh['БД'].mean}%`}>БД {pct(sh['БД'].mean)}</span>
     </div>
     <table>
       <thead>
@@ -38,10 +48,10 @@ const dynColors: Record<string, string> = {
         {block.shares.map((s) => (
           <tr>
             <td>{s.label}</td>
-            <td class="num"><b>{s.mean}</b></td>
-            <td class="num">{s.median}</td>
-            <td class="num">{s.zvo}</td>
-            <td class="num">{s.nu}</td>
+            <td class="num"><b>{num(s.mean)}</b></td>
+            <td class="num">{num(s.median)}</td>
+            <td class="num">{num(s.zvo)}</td>
+            <td class="num">{num(s.nu)}</td>
           </tr>
         ))}
       </tbody>
@@ -52,37 +62,55 @@ const dynColors: Record<string, string> = {
   <section>
     <h2>Скільки реально працюють</h2>
     <div class="cat-summary">
-      <div><b>{h.mean}</b> год/тиждень у середньому (медіана {h.median})</div>
-      <div><b>{h.overtimePct}%</b> працюють понаднормово (41+ год)</div>
-      <div><b>{h.bullshitHoursAtMean}</b> год/тиждень — на безглузду діяльність</div>
+      <div><b>{num(h.mean)}</b> год/тиждень у середньому (медіана {num(h.median)})</div>
+      <div><b>{pct(h.overtimePct)}</b> працюють понаднормово (41+ год)</div>
+      <div><b>{num(h.bullshitHoursAtMean)}</b> год/тиждень — на безглузду діяльність</div>
     </div>
     <p class="note">
       Законодавча норма в Україні — 40 год/тиждень. Тобто в середньому на <b>безглузду діяльність</b>
-      іде понад {h.bullshitHoursAtMean} годин щотижня (а при нормованому тижні — ≈{h.bullshitHoursAt40}).
+      іде понад {num(h.bullshitHoursAtMean)} годин щотижня (а при нормованому тижні — ≈{num(h.bullshitHoursAt40)}).
+    </p>
+  </section>
+
+  <section id="zvo-nu">
+    <h2>ЗВО і наукові установи</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Розподіл відповідей про частку часу в закладах вищої освіти й наукових установах (% кожної групи).
+      Відмінності перевірено критерієм Манна-Уітні.
+    </p>
+    <div class="mirrors">
+      {verification.knownGroups.map((g) => (
+        <MirrorHist title={CAT[g.category].label} bins={g.distribution} zvo={g.zvo} nu={g.nu} delta={g.delta} p={g.p} tone={CAT[g.category].tone} />
+      ))}
+    </div>
+    <p class="note">
+      У наукових установах частка дійсної наукової діяльності значно вища, а безглуздої — нижча; за
+      корисною ненауковою значущої різниці немає. Як рахувався критерій — у
+      <a href="/methodology#nadiinist">методології</a>.
     </p>
   </section>
 
   <section>
-    <h2>Динаміка структури часу</h2>
-    <p class="note" style="margin-bottom:0.5rem">
-      Як змінюється час на кожну категорію (індекс; 100 = без змін, вище 100 — зростання). Зелені вуса —
-      95% довірчі інтервали.
+    <h2>Оцінка змін структури часу</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Як, на думку респондентів, змінилася частка часу на кожну категорію за рік і за 5 років
+      (індекс; 100 — порівну відповідей «зросла» і «скоротилася»). {CHANGE_CAVEAT}
     </p>
-    <div class="cat-legend">
-      <span><i class="swnd"></i>ІНЧ — наукова</span>
-      <span><i class="swkn"></i>ІКННЧ — корисна ненаукова</span>
-      <span><i class="swbd"></i>ІБВЧ — безглузда</span>
-    </div>
-    <IndicesChart indices={dyn} colorByCode={dynColors} />
+    <IndexForest groups={CHANGE} />
     <p class="note">
-      <b>Безглузда діяльність зростає найшвидше</b> з-поміж усіх категорій, тоді як наукова стагнує (≈100).
+      За оцінкою респондентів, найшвидше зростав час на <b>безглузду діяльність</b>
+      (за 5 років — {num(ibvch5.value)}: {pct(ibvch5.up, 0)} «зросла» проти {pct(ibvch5.down, 0)}
+      «скоротилася»). Щодо часу на <b>наукову</b> діяльність думки розділилися: {num(inch5.value)} — це
+      {pct(inch5.up, 0)} «зросла» і {pct(inch5.down, 0)} «скоротилася», а не «без змін».
     </p>
+    <DistTable codes={CHANGE.flatMap((g) => g.codes)} caption="Розподіл відповідей, %" />
   </section>
 
   <section>
     <h2>Розрізи за демографією</h2>
     <p class="note" style="margin-top:-0.2rem">
-      Середня частка робочого часу на кожну категорію (НД зелений / КН синій / БД червоний) у розрізі груп.
+      Середня частка робочого часу на кожну категорію (<span class="t-good">ДНД</span> /
+      <span class="t-neutral">КННД</span> / <span class="t-bad">БД</span>) у розрізі груп.
     </p>
     <TimeCrossTab block={block} />
   </section>
@@ -94,4 +122,6 @@ const dynColors: Record<string, string> = {
       {block.comments.map((c) => <li>{c}</li>)}
     </ul>
   </section>
+
+  <BlockNav slug="time-structure" where="bottom" />
 </Layout>

@@ -1,7 +1,12 @@
 ---
 // Теплокарта: рядки = категорії часу (НД/КН/БД), колонки = групи демографії,
-// клітинка = середня частка часу (%) групи на категорію. Колір рядка = колір категорії.
-// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·». Zero-JS.
+// клітинка = середня частка часу (%) групи на категорію (+ 95 % ДІ середнього).
+// Колір рядка = колір категорії. Селектор демографії — CSS-only. Придушення n<5 → «·». Zero-JS.
+import CtFoot from './CtFoot.astro';
+import ciData from '../data/crosstab-ci-2026.json';
+import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
+import { pct } from '../lib/format';
+
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
 const { block } = Astro.props as {
@@ -10,10 +15,11 @@ const { block } = Astro.props as {
     crosstab: Record<string, Record<string, { n: number } & Record<string, number | null>>>;
   };
 };
+const CIS = ciData.timestructure as Record<string, Record<string, Record<string, { n: number; ci: CI } | null>>>;
 const rows = [
-  { cat: 'НД', label: 'Дійсна наукова', color: [74, 140, 92] },
-  { cat: 'КН', label: 'Корисна ненаукова', color: [138, 175, 196] },
-  { cat: 'БД', label: 'Безглузда', color: [191, 64, 64] },
+  { cat: 'НД', label: 'Дійсна наукова', color: 'c-good' },
+  { cat: 'КН', label: 'Корисна ненаукова', color: 'c-neutral' },
+  { cat: 'БД', label: 'Безглузда', color: 'c-bad' },
 ];
 const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
 ---
@@ -22,11 +28,13 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
   {block.crosstabDims.map((d, i) => (
     <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
   ))}
+  <input type="checkbox" class="ct-cib" id="ct-time-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
       <label for={`ct-${d.id}`}>{d.label}</label>
     ))}
   </div>
+  <label class="ct-cilabel" for="ct-time-ci">Показати 95&nbsp;% ДІ</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -36,7 +44,7 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
             <tr>
               <th>Частка часу · %</th>
               {d.groups.map((g) => (
-                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
@@ -47,13 +55,14 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
                 {d.groups.map((g) => {
                   const v = block.crosstab[d.id][g.value][r.cat];
                   if (v === null || v === undefined) {
-                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                    return <td class="ct-cell none">·</td>;
                   }
+                  const c = CIS[d.id]?.[g.value]?.[r.cat];
                   const a = alpha(v);
-                  const [R, G, B] = r.color;
                   return (
-                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}`} style={`background:rgba(${R},${G},${B},${a.toFixed(2)})`}>
-                      {Math.round(v)}
+                    <td class={`ct-cell ${r.color}${a > 0.45 ? ' hi' : ''}${c && c.n < SMALL_N ? ' lown' : ''}`} style={`--a:${a.toFixed(2)}`}
+                        title={tip(pct(v), c?.ci, c?.n, 1)}>
+                      {Math.round(v)}<span class="ct-ci">{ciText(c?.ci)}</span>
                     </td>
                   );
                 })}
@@ -62,9 +71,7 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.5rem">
-        Числа — середня частка робочого часу (%) групи на категорію. «·» — недостатньо даних (n &lt; 5).
-      </p>
+      <CtFoot cube={CIS}>Числа — середня частка робочого часу (%) групи на категорію.</CtFoot>
     </div>
   ))}
 </div>

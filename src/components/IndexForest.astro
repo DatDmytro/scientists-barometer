@@ -1,0 +1,92 @@
+---
+// Індекси як «forest plot»: точка — значення, лінія — 95 % ДІ, риска — нейтральні 100.
+// Заповнена точка — значення відрізняється від 100; порожня сіра — ДІ перетинає 100.
+// Поруч — розподіл п'яти відповідей (DistBar): той самий індекс 100 може бути і
+// «майже всі обрали нейтральну відповідь», і «думки розділилися навпіл».
+// Рядки — HTML-сітка з позиціюванням у відсотках (zero-JS, без спотворень на телефоні).
+import DistBar from './DistBar.astro';
+import { byCode, type Index } from '../lib/indices';
+import { num, range, pct, int } from '../lib/format';
+
+interface Group { title?: string; codes: string[] }
+interface Props {
+  groups: Group[];
+  dist?: boolean;
+  domain?: [number, number];
+  caption?: string;
+}
+const { groups, dist = true, domain, caption } = Astro.props;
+const rows = groups.map((g) => ({ ...g, items: g.codes.map(byCode) }));
+const all: Index[] = rows.flatMap((g) => g.items);
+
+const lo0 = Math.min(100, ...all.map((i) => i.ciLow));
+const hi0 = Math.max(100, ...all.map((i) => i.ciHigh));
+const [min, max] = domain ?? [Math.floor((lo0 - 4) / 10) * 10, Math.ceil((hi0 + 4) / 10) * 10];
+const step = max - min > 70 ? 20 : 10;
+const ticks: number[] = [];
+for (let t = Math.ceil(min / step) * step; t <= max; t += step) ticks.push(t);
+const x = (v: number) => ((v - min) / (max - min)) * 100;
+
+// спільні межі розподілів: центри всіх рядків — на одній вертикалі
+const withDist = all.filter((i) => i.dist);
+const L = Math.max(...withDist.map((i) => i.down + i.neutralPct / 2), 50);
+const R = Math.max(...withDist.map((i) => i.up + i.neutralPct / 2), 50);
+
+// у групі з різними горизонтами (рік / 5 років) підпис рядка — горизонт; якщо горизонт у групі
+// один (напр. лише «за рік») — предмет оцінки
+const sameHorizon = (g: { items: Index[] }) => g.items.every((i) => i.horizon === g.items[0].horizon);
+const rowLabel = (g: Group & { items: Index[] }, i: Index) =>
+  g.title
+    ? (sameHorizon(g) ? i.subject : i.horizonText || i.subject)
+    : [i.subject, i.horizonText].filter(Boolean).join(', ');
+const tip = (i: Index) =>
+  `${i.family.name} (${i.code}) — ${i.subject.toLowerCase()}${i.horizonText ? ', ' + i.horizonText : ''}: ` +
+  `${num(i.value)}, 95 % ДІ ${range(i.ciLow, i.ciHigh)}, n = ${int(i.n)}` +
+  (i.dist ? `. Відповіді: ${i.dist.map((c) => `${c.label.toLowerCase()} ${pct(c.pct)}`).join(', ')}` : '');
+---
+
+<figure class="ixf">
+  <div class={`ixf-grid${dist ? '' : ' nodist'}`}>
+    <div class="ixf-head" aria-hidden="true">
+      <span></span>
+      <div class="ixf-axis">
+        {ticks.map((t) => <span class={t === 100 ? 'mid' : ''} style={`left:${x(t)}%`}>{t}</span>)}
+      </div>
+      <span class="ixf-hval">Значення (95 % ДІ)</span>
+      {dist && <span class="ixf-hdist">Розподіл відповідей</span>}
+    </div>
+    {rows.map((g) => (
+      <>
+        {g.title && <div class="ixf-group">{g.title}</div>}
+        {g.items.map((i) => (
+          <div class={`ixf-row t-${i.tone}`} title={tip(i)}>
+            <div class="ixf-label">
+              {rowLabel(g, i)} <span class="ixf-code">{i.code}</span>
+            </div>
+            <div class="ixf-track" role="img" aria-label={tip(i)}>
+              {ticks.map((t) => <span class={`ixf-tick${t === 100 ? ' mid' : ''}`} style={`left:${x(t)}%`}></span>)}
+              <span class="ixf-ci" style={`left:${x(i.ciLow)}%;width:${x(i.ciHigh) - x(i.ciLow)}%`}></span>
+              <span class="ixf-dot" style={`left:${x(i.value)}%`}></span>
+            </div>
+            <div class="ixf-val"><b>{num(i.value)}</b> <span>{range(i.ciLow, i.ciHigh)}</span></div>
+            {dist && (
+              <div class="ixf-dist">
+                {i.dist
+                  ? <DistBar dist={i.dist} valence={i.family.valence as 1 | 0 | -1} left={L} right={R} />
+                  : <span class="ixf-nodist">геометричне середнє трьох складових</span>}
+              </div>
+            )}
+          </div>
+        ))}
+      </>
+    ))}
+  </div>
+  <figcaption class="ixf-legend">
+    <span><i class="lg-dot t-good"></i>краще для науки</span>
+    <span><i class="lg-dot t-bad"></i>гірше</span>
+    <span><i class="lg-dot t-neutral"></i>без оцінки «добре / погано»</span>
+    <span><i class="lg-dot t-ns"></i>95 % ДІ перетинає 100 — від нейтрального значення не відрізняється</span>
+    {dist && <span class="lg-dist">розподіл: праворуч від центру — позитивні відповіді, ліворуч — негативні, сіре — нейтральна</span>}
+    {caption && <span class="lg-cap">{caption}</span>}
+  </figcaption>
+</figure>

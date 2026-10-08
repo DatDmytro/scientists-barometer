@@ -1,0 +1,40 @@
+---
+// Один рядок розподілу п'яти відповідей, що розходиться від нейтральної:
+// нейтральна категорія — по центру (сіра), позитивні — праворуч, негативні — ліворуч.
+// Колір плеча — за змістом: що краще для науки — синє, гірше — червоне, без оцінки — сіро-синє.
+// left/right — спільні межі (у % відповідей), щоб центри всіх рядків стояли на одній лінії.
+import { pct as fpct } from '../lib/format';
+
+interface Cat { label: string; n: number; pct: number }
+interface Props {
+  dist: Cat[]; // від найпозитивнішої до найнегативнішої
+  valence: 1 | 0 | -1;
+  left: number;
+  right: number;
+  labels?: boolean; // підписи % усередині сегментів
+}
+const { dist, valence, left, right, labels = false } = Astro.props;
+const [s2, s1, mid, d1, d2] = dist.map((c) => c.pct);
+const up = valence > 0 ? 'g' : valence < 0 ? 'b' : 'n';
+const down = valence > 0 ? 'b' : valence < 0 ? 'g' : 'n';
+const span = left + right;
+const x = (u: number) => ((u + left) / span) * 100; // u — координата відносно центру, у % відповідей
+const h = mid / 2;
+const segs = [
+  { cls: `${down}2`, a: -h - d1 - d2, w: d2, c: dist[4] },
+  { cls: `${down}1`, a: -h - d1, w: d1, c: dist[3] },
+  { cls: 'mid', a: -h, w: mid, c: dist[2] },
+  { cls: `${up}1`, a: h, w: s1, c: dist[1] },
+  { cls: `${up}2`, a: h + s1, w: s2, c: dist[0] },
+].filter((s) => s.w > 0);
+const title = dist.map((c) => `${c.label}: ${fpct(c.pct)}`).join(' · ');
+---
+
+<div class={`distbar${labels ? ' big' : ''}`} title={title}>
+  {segs.map((s) => (
+    <span class={`seg ${s.cls}`} style={`left:${x(s.a)}%;width:${(s.w / span) * 100}%`}>
+      {labels && s.w >= 8 ? Math.round(s.w) : ''}
+    </span>
+  ))}
+  <span class="distbar-zero" style={`left:${x(0)}%`}></span>
+</div>

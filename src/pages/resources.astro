@@ -1,50 +1,73 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import IndicesChart from '../components/IndicesChart.astro';
+import BlockHeader from '../components/BlockHeader.astro';
+import BlockNav from '../components/BlockNav.astro';
+import IndexForest from '../components/IndexForest.astro';
+import DistTable from '../components/DistTable.astro';
 import ResCrossTab from '../components/ResCrossTab.astro';
 import SuffCrossTab from '../components/SuffCrossTab.astro';
 import block from '../data/block-resources-2026.json';
-import wave from '../data/wave-2026.json';
+import { byCode, CHANGE_CAVEAT } from '../lib/indices';
+import { num, pct } from '../lib/format';
 
-const provIdx = wave.indices.filter((i) => i.dimension === 'Поточна забезпеченість');
-const dynIdx = wave.indices.filter((i) => i.dimension === 'Динаміка забезпеченості');
+const STATE = [{ codes: ['ІНМ ф', 'ІНМ о', 'ІНМ ч', 'ІНМ'] }];
+const CHANGE = [
+  { title: 'Забезпеченість фінансуванням', codes: ['ІНМ ф1', 'ІНМ ф5'] },
+  { title: 'Забезпеченість обладнанням', codes: ['ІНМ о1', 'ІНМ о5'] },
+  { title: 'Забезпеченість часом', codes: ['ІНМ ч1', 'ІНМ ч5'] },
+];
+const changeIdx = CHANGE.flatMap((g) => g.codes).map(byCode);
+const below = changeIdx.filter((i) => !i.crosses100 && i.value < 100);
+const nsIdx = changeIdx.filter((i) => i.crosses100);
+const inm = byCode('ІНМ');
 const w = block.war;
 ---
 
 <Layout
   title="Забезпеченість ресурсами — Науковий Барометр"
-  description="Наскільки науковці забезпечені фінансуванням, обладнанням і часом; нестача сну/відпочинку; втрати через війну."
+  description="Наскільки науковці забезпечені фінансуванням, обладнанням і часом; нестача сну й відпочинку; втрати через війну."
 >
-  <h1>Забезпеченість ресурсами</h1>
-  <p class="lead">«{block.question}»</p>
+  <BlockHeader slug="resources" />
 
   <section>
-    <h2>Поточна забезпеченість (ІНМ)</h2>
+    <h2>Поточна забезпеченість</h2>
     <div class="cat-summary">
-      <div><b class="big down">{block.inmIntegral}</b> ІНМ — інтегральний Індекс наукових можливостей (100 = нейтр.)</div>
-      <div><b>{block.provision[0].unprovidedPct}%</b> незабезпечені фінансуванням ({block.provision[0].criticalPct}% критично)</div>
+      <div><b>{num(inm.value)}</b> Індекс наукових можливостей (ІНМ; 100 — нейтральне значення)</div>
+      <div><b>{pct(block.provision[0].unprovidedPct)}</b> незабезпечені фінансуванням ({pct(block.provision[0].criticalPct)} — критично)</div>
     </div>
-    <IndicesChart indices={provIdx} />
-    <table>
-      <thead><tr><th>Ресурс</th><th class="num">Індекс</th><th class="num">Незабезпечені %</th><th class="num">з них критично</th></tr></thead>
+    <IndexForest groups={STATE} />
+    <div class="table-scroll"><table>
+      <thead><tr><th>Ресурс</th><th class="num">Індекс</th><th class="num">Незабезпечені, %</th><th class="num">з них критично</th></tr></thead>
       <tbody>
         {block.provision.map((p) => (
           <tr>
             <td>{p.label}</td>
-            <td class="num"><b>{p.index}</b></td>
-            <td class="num">{p.unprovidedPct}</td>
-            <td class="num">{p.criticalPct}</td>
+            <td class="num"><b>{num(p.index)}</b></td>
+            <td class="num">{num(p.unprovidedPct)}</td>
+            <td class="num">{num(p.criticalPct)}</td>
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></div>
+    <DistTable codes={['ІНМ ф', 'ІНМ о', 'ІНМ ч']} caption="Розподіл відповідей, %" />
   </section>
 
   <section>
-    <h2>Динаміка забезпеченості</h2>
-    <p class="note" style="margin-bottom:0.5rem">Як змінюється забезпеченість (індекс; 100 = без змін).</p>
-    <IndicesChart indices={dynIdx} />
-    <p class="note">Усі шість індексів динаміки <b>нижчі за 100</b> — забезпеченість погіршується за всіма ресурсами.</p>
+    <h2>Оцінка змін забезпеченості</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      Як, на думку респондентів, змінилася забезпеченість за рік і за 5 років.
+      {CHANGE_CAVEAT}
+    </p>
+    <IndexForest groups={CHANGE} />
+    <p class="note">
+      {below.length} із {changeIdx.length} оцінок змін нижчі за 100 і від нейтрального значення відрізняються: за оцінкою
+      респондентів, забезпеченість погіршувалася.
+      {nsIdx.length > 0 && <>
+        Виняток — {nsIdx.map((i) => `${i.subject.toLowerCase()} ${i.horizonText} (${i.verdict})`).join(', ')}:
+        інтервал перетинає 100.
+      </>}
+    </p>
+    <DistTable codes={CHANGE.flatMap((g) => g.codes)} caption="Розподіл відповідей, %" />
   </section>
 
   <section>
@@ -53,7 +76,7 @@ const w = block.war;
       Показати:
       <select id="suf-metric">
         <option value="insuf">кому недостатньо (червоним)</option>
-        <option value="suf">кому достатньо (зеленим)</option>
+        <option value="suf">кому достатньо (синім)</option>
       </select>
     </div>
     <table class="dist">
@@ -61,23 +84,23 @@ const w = block.war;
         {block.sufficiency.map((s) => (
           <tr>
             <td class="opt">{s.label}</td>
-            <td class="barcell"><div class="bar"><span class="sufbar" data-insuf={s.insufficientPct} data-suf={s.sufficientPct} style={`width:${s.insufficientPct}%;background:#bf4040`}></span></div></td>
-            <td class="pct sufpct" data-insuf={s.insufficientPct} data-suf={s.sufficientPct}>{s.insufficientPct}%</td>
-            <td class="nn">крит. недост. {s.criticalPct}%</td>
+            <td class="barcell"><div class="bar"><span class="sufbar t-bad" data-insuf={s.insufficientPct} data-suf={s.sufficientPct} style={`width:${s.insufficientPct}%`}></span></div></td>
+            <td class="pct sufpct" data-insuf={pct(s.insufficientPct)} data-suf={pct(s.sufficientPct)}>{pct(s.insufficientPct)}</td>
+            <td class="nn">крит. недост. {pct(s.criticalPct)}</td>
           </tr>
         ))}
       </tbody>
     </table>
 
     <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">Розрізи за демографією</h3>
-    <p class="note" style="margin-top:0">Та сама метрика (недостатньо / достатньо) у розрізі груп. Темніше = вищий %.</p>
+    <p class="note" style="margin-top:0">Та сама метрика (недостатньо / достатньо) у розрізі груп.</p>
     <SuffCrossTab block={block} />
   </section>
 
   <section>
     <h2>Втрати через війну</h2>
     <div class="cat-summary">
-      <div><b class="big down">{w.meanPct}%</b> робочого часу втрачається через обстріли, тривоги, відключення (медіана {w.medianPct}%)</div>
+      <div><b>{pct(w.meanPct)}</b> робочого часу в середньому втрачається через обстріли, тривоги, відключення (медіана {pct(w.medianPct)})</div>
     </div>
   </section>
 
@@ -87,10 +110,10 @@ const w = block.war;
       Показати:
       <select id="prov-metric">
         <option value="unprov">хто незабезпечений (червоним)</option>
-        <option value="prov">хто забезпечений (зеленим)</option>
+        <option value="prov">хто забезпечений (синім)</option>
       </select>
     </div>
-    <p class="note" style="margin-top:0">% у групі для обраної метрики, по кожному ресурсу. Темніше = вищий %.</p>
+    <p class="note" style="margin-top:0">% у групі для обраної метрики, по кожному ресурсу.</p>
     <ResCrossTab block={block} />
   </section>
 
@@ -101,60 +124,28 @@ const w = block.war;
       {block.comments.map((c) => <li>{c}</li>)}
     </ul>
   </section>
+
+  <BlockNav slug="resources" where="bottom" />
 </Layout>
 
 <script>
-  // Перемикання достатності часу: insuf (червоний) ⇄ suf (зелений) — бари + теплокарта
-  const sel = document.getElementById('suf-metric') as HTMLSelectElement | null;
-  function applySuf(metric: string) {
-    const [r, g, b] = metric === 'suf' ? [74, 140, 92] : [191, 64, 64];
-    document.querySelectorAll<HTMLElement>('.sufbar').forEach((bar) => {
-      const v = parseFloat(bar.dataset[metric] || '0');
-      bar.style.width = v + '%';
-      bar.style.background = `rgb(${r},${g},${b})`;
-    });
-    document.querySelectorAll<HTMLElement>('.sufpct').forEach((p) => {
-      p.textContent = (p.dataset[metric] || '0') + '%';
-    });
-    document.querySelectorAll<HTMLElement>('.sm').forEach((cell) => {
-      const raw = cell.dataset[metric];
-      if (raw === undefined || raw === '') {
-        cell.textContent = '·';
-        cell.style.background = '';
-        cell.style.color = 'var(--muted)';
-        cell.classList.remove('hi');
-        return;
-      }
-      const val = parseFloat(raw);
-      const a = Math.min(val / 80, 1) * 0.85;
-      cell.textContent = String(Math.round(val));
-      cell.style.background = `rgba(${r},${g},${b},${a.toFixed(2)})`;
-      cell.style.color = '';
-      cell.classList.toggle('hi', a > 0.45);
-    });
-  }
-  sel?.addEventListener('change', () => applySuf(sel.value));
+  // Достатність часу: «недостатньо» ⇄ «достатньо» — бари й підписи; теплокарти розрізів
+  // уже містять обидва показники, тож для них перемикаємо лише data-metric контейнера.
+  const setMetric = (root: string, metric: string) =>
+    document.querySelectorAll<HTMLElement>(`[data-metric-root="${root}"]`).forEach((el) => (el.dataset.metric = metric));
 
-  // Перемикання забезпеченості: unprov (червоний) ⇄ prov (зелений) — теплокарта розрізів
-  const provSel = document.getElementById('prov-metric') as HTMLSelectElement | null;
-  function applyProv(metric: string) {
-    const [r, g, b] = metric === 'prov' ? [74, 140, 92] : [191, 64, 64];
-    document.querySelectorAll<HTMLElement>('.pm').forEach((cell) => {
-      const raw = cell.dataset[metric];
-      if (raw === undefined || raw === '') {
-        cell.textContent = '·';
-        cell.style.background = '';
-        cell.style.color = 'var(--muted)';
-        cell.classList.remove('hi');
-        return;
-      }
-      const val = parseFloat(raw);
-      const a = Math.min(val / 80, 1) * 0.85;
-      cell.textContent = String(Math.round(val));
-      cell.style.background = `rgba(${r},${g},${b},${a.toFixed(2)})`;
-      cell.style.color = '';
-      cell.classList.toggle('hi', a > 0.45);
+  const suf = document.getElementById('suf-metric') as HTMLSelectElement | null;
+  suf?.addEventListener('change', () => {
+    const m = suf.value;
+    document.querySelectorAll<HTMLElement>('.sufbar').forEach((bar) => {
+      bar.style.width = (bar.dataset[m] || '0') + '%';
+      bar.classList.toggle('t-bad', m === 'insuf');
+      bar.classList.toggle('t-good', m === 'suf');
     });
-  }
-  provSel?.addEventListener('change', () => applyProv(provSel.value));
+    document.querySelectorAll<HTMLElement>('.sufpct').forEach((p) => (p.textContent = p.dataset[m] || ''));
+    setMetric('suf', m);
+  });
+
+  const prov = document.getElementById('prov-metric') as HTMLSelectElement | null;
+  prov?.addEventListener('change', () => setMetric('prov', prov.value));
 </script>

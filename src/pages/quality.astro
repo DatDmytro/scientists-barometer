@@ -1,45 +1,42 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import IndicesChart from '../components/IndicesChart.astro';
-import StackedDist from '../components/StackedDist.astro';
+import BlockHeader from '../components/BlockHeader.astro';
+import BlockNav from '../components/BlockNav.astro';
+import IndexForest from '../components/IndexForest.astro';
+import LikertDiverging from '../components/LikertDiverging.astro';
 import QualCrossTab from '../components/QualCrossTab.astro';
 import block from '../data/block-quality-2026.json';
-import wave from '../data/wave-2026.json';
+import { byCode, CHANGE_CAVEAT } from '../lib/indices';
+import { num, pct } from '../lib/format';
 
-// значення індексів — з блоку (з розподілом), 95% ДІ — з wave-2026.json
-const waveByCode = Object.fromEntries(wave.indices.map((i) => [i.code, i]));
-const chartRows = (grp: string) =>
+// розподіли — з блоку (дослівні мітки відповідей); значення й 95 % ДІ — через довідник індексів
+const likert = (grp: string) =>
   block.indices
     .filter((i) => i.group === grp)
     .map((i) => {
-      const w = waveByCode[i.code];
-      return { code: i.code, label: i.label, value: i.value, ciLow: w.ciLow, ciHigh: w.ciHigh, n: i.n };
+      const m = byCode(i.code);
+      return { label: `${m.subject}${m.horizonText ? ', ' + m.horizonText : ''}`, code: i.code, value: i.value, dist: i.dist };
     });
-const distRows = (grp: string) => block.indices.filter((i) => i.group === grp);
-
-const curChart = chartRows('Поточна якість');
-const dynChart = chartRows('Динаміка якості');
-const expChart = chartRows('Очікування');
-const curDist = distRows('Поточна якість');
-const dynDist = distRows('Динаміка якості');
-const expDist = distRows('Очікування');
 
 const link = block.timeQualityLink;
 const maxPct = Math.max(...link.options.map((o) => o.pct));
-const orn1 = expDist.find((i) => i.code === 'ІОРН 1')!;
-const worseNext = orn1.dist[3].pct + orn1.dist[4].pct; // дещо+значно гірше
+const orn1 = byCode('ІОРН 1');
+const own1 = byCode('ІЯНР в1');
+const own5 = byCode('ІЯНР в5');
+const oth1 = byCode('ІЯНР ч1');
+const oth5 = byCode('ІЯНР ч5');
 ---
+
 
 <Layout
   title="Якість і очікування — Науковий Барометр"
   description="Як науковці оцінюють якість досліджень (ІЯНР), її динаміку та чого очікують від розвитку науки в Україні (ІОРН)."
 >
-  <h1>Якість наукових результатів та очікування</h1>
-  <p class="lead">«{block.question}»</p>
+  <BlockHeader slug="quality" title="Якість наукових результатів та очікування" />
   <p class="note">
-    П'ятий блок анкети: зв'язок часу і якості, поточна оцінка якості (власної та чужої),
-    її динаміка у двох горизонтах і очікування щодо розвитку науки. Звідси — індекси
-    <b>ІЯНР</b> (якість) та <b>ІОРН</b> (очікування).
+    П'ятий блок анкети: зв'язок часу і якості, поточна оцінка якості (власної та чужої), оцінка її
+    змін за рік і за 5 років і очікування щодо розвитку науки. Звідси — Індекс якості наукових
+    результатів (ІЯНР) та Індекс очікувань розвитку науки (ІОРН).
   </p>
 
   <section>
@@ -54,14 +51,14 @@ const worseNext = orn1.dist[3].pct + orn1.dist[4].pct; // дещо+значно 
           <tr>
             <td class="opt">{o.label}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(o.pct / maxPct) * 100}%`}></span></div></td>
-            <td class="pct">{o.pct.toFixed(1)}%</td>
+            <td class="pct">{pct(o.pct)}</td>
             <td class="nn">{o.n}</td>
           </tr>
         ))}
       </tbody>
     </table>
     <p class="note">
-      Абсолютна більшість — <b>{link.directPct.toFixed(1)}%</b> — бачать <b>прямий зв'язок</b>: більше часу на
+      Абсолютна більшість — <b>{pct(link.directPct)}</b> — бачать <b>прямий зв'язок</b>: більше часу на
       дійсну наукову діяльність означає кращу якість. Це методологічно ключовий результат: якщо час
       на справжню науку витісняється безглуздою діяльністю, від цього прямо страждає якість науки
       (підтримка гіпотези H2).
@@ -73,10 +70,10 @@ const worseNext = orn1.dist[3].pct + orn1.dist[4].pct; // дещо+значно 
   </section>
 
   <section>
-    <h2>Поточна якість результатів (ІЯНР)</h2>
-    <IndicesChart indices={curChart} />
-    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок (100% = всі відповіді):</p>
-    <StackedDist rows={curDist} legend={curDist[0].dist.map((c) => c.label)} />
+    <h2>Поточна якість результатів</h2>
+    <IndexForest groups={[{ codes: ['ІЯНР в', 'ІЯНР ч'] }]} dist={false} />
+    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок, % відповідей:</p>
+    <LikertDiverging rows={likert('Поточна якість')} />
     <p class="note">
       Обидва індекси помірно позитивні (≈113). Більшість оцінює якість як «нормальну» або «скоріше
       високу». Майже однаковий рівень оцінок власних і чужих досліджень свідчить про відсутність
@@ -85,27 +82,31 @@ const worseNext = orn1.dist[3].pct + orn1.dist[4].pct; // дещо+значно 
   </section>
 
   <section>
-    <h2>Динаміка якості</h2>
-    <IndicesChart indices={dynChart} />
-    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок зміни (100% = всі відповіді):</p>
-    <StackedDist rows={dynDist} legend={dynDist[0].dist.map((c) => c.label)} />
+    <h2>Оцінка змін якості</h2>
+    <p class="note" style="margin-top:-0.2rem">{CHANGE_CAVEAT}</p>
+    <IndexForest groups={[
+      { title: 'Якість власних досліджень', codes: ['ІЯНР в1', 'ІЯНР в5'] },
+      { title: 'Якість досліджень інших', codes: ['ІЯНР ч1', 'ІЯНР ч5'] },
+    ]} dist={false} />
+    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок змін, % відповідей:</p>
+    <LikertDiverging rows={likert('Динаміка якості')} />
     <p class="note">
-      Якість <b>власних</b> досліджень оцінюється як стабільно зростаюча (рік 118,3, 5 років 124,1),
-      тоді як якість <b>чужих</b> — майже без змін (105,6 / 103,3). Контраст «своє зростає, чуже
-      стагнує» може бути проявом когнітивного упередження. Динамічні індекси спираються на пам'ять
-      респондентів — це обмеження пілоту.
+      Якість <b>власних</b> досліджень, за оцінкою респондентів, покращувалася (рік {num(own1.value)},
+      5 років {num(own5.value)}), а для <b>чужих</b> оцінки від нейтрального значення не відрізняються ({num(oth1.value)} /
+      {' '}{num(oth5.value)}: інтервали перетинають 100). Контраст «своє покращується, чуже — ні» може бути
+      проявом когнітивного упередження. Оцінки змін спираються на пам'ять респондентів — це обмеження пілоту.
     </p>
   </section>
 
   <section>
-    <h2>Очікування розвитку науки (ІОРН)</h2>
-    <IndicesChart indices={expChart} />
-    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл очікувань (100% = всі відповіді):</p>
-    <StackedDist rows={expDist} legend={expDist[0].dist.map((c) => c.label)} />
+    <h2>Очікування розвитку науки</h2>
+    <IndexForest groups={[{ codes: ['ІОРН 1', 'ІОРН 5'] }]} dist={false} />
+    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл очікувань, % відповідей:</p>
+    <LikertDiverging rows={likert('Очікування')} />
     <p class="note">
-      Обидва індекси очікувань <b>суттєво нижчі за 100</b> (рік {expDist[0].value}, 5 років
-      {' '}{expDist[1].value}) — загальний структурний песимізм. На найближчий рік погіршення очікують
-      {' '}<b>{worseNext.toFixed(1)}%</b>. На 5-річному горизонті картина дещо оптимістичніша.
+      Обидва індекси очікувань <b>суттєво нижчі за 100</b> (на рік {num(byCode('ІОРН 1').value)}, на 5 років
+      {' '}{num(byCode('ІОРН 5').value)}) — загальний структурний песимізм. На найближчий рік погіршення очікують
+      {' '}<b>{pct(orn1.down)}</b>. На 5-річному горизонті картина дещо оптимістичніша.
     </p>
   </section>
 
@@ -124,4 +125,6 @@ const worseNext = orn1.dist[3].pct + orn1.dist[4].pct; // дещо+значно 
       {block.comments.map((c) => <li>{c}</li>)}
     </ul>
   </section>
+
+  <BlockNav slug="quality" where="bottom" />
 </Layout>

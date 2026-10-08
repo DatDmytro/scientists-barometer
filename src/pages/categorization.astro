@@ -2,7 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import ViewToggle from '../components/ViewToggle.astro';
 import CatCrossTab from '../components/CatCrossTab.astro';
+import BlockHeader from '../components/BlockHeader.astro';
+import BlockNav from '../components/BlockNav.astro';
 import block from '../data/block-categorization-2026.json';
+import { num } from '../lib/format';
 
 const acts = block.activities; // дефолт: за спаданням БД%
 const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
@@ -12,15 +15,14 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
   title="Категоризація діяльності — Науковий Барометр"
   description="54 види діяльності науковця, класифіковані як дійсна наукова, корисна ненаукова чи безглузда."
 >
-  <h1>Категоризація діяльності</h1>
-  <p class="lead">«{block.question}»</p>
+  <BlockHeader slug="categorization" />
   <p class="note">{block.note}</p>
 
   <div class="cat-summary">
     <div><b>{block.summary['ДНД']}</b> видів — переважно дійсна наукова</div>
     <div><b>{block.summary['КННД']}</b> — корисна ненаукова</div>
     <div><b>{block.summary['БД']}</b> — безглузда</div>
-    <div><b>{block.fleissKappa}</b> Fleiss κ — помірна узгодженість</div>
+    <div><b>{num(block.fleissKappa, 3)}</b> Fleiss κ — помірна узгодженість</div>
     <div><b>{block.controversialCount}</b> суперечливих — розрив &lt; 20 в.п.</div>
   </div>
 
@@ -48,13 +50,13 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
           <div class="actrow" data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
             <div class="actname">
               {a.name}
-              <span class="pi">Pᵢ={a.pi.toFixed(2)}</span>
+              <span class="pi">Pᵢ={num(a.pi, 2)}</span>
               {a.controversial && <span class="contro"> · суперечливо</span>}
             </div>
             <div class="actbar">
-              <span class="nd" style={`width:${a.nd}%`} title={`ДНД ${a.nd}%`}>{lbl(a.nd)}</span>
-              <span class="kn" style={`width:${a.kn}%`} title={`КННД ${a.kn}%`}>{lbl(a.kn)}</span>
-              <span class="bd" style={`width:${a.bd}%`} title={`БД ${a.bd}%`}>{lbl(a.bd)}</span>
+              <span class="nd" style={`width:${a.nd}%`} title={`ДНД ${num(a.nd)} %`}>{lbl(a.nd)}</span>
+              <span class="kn" style={`width:${a.kn}%`} title={`КННД ${num(a.kn)} %`}>{lbl(a.kn)}</span>
+              <span class="bd" style={`width:${a.bd}%`} title={`БД ${num(a.bd)} %`}>{lbl(a.bd)}</span>
             </div>
           </div>
         ))
@@ -76,12 +78,12 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
           acts.map((a) => (
             <tr data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
               <td>{a.name}</td>
-              <td class="num">{a.nd.toFixed(1)}</td>
-              <td class="num">{a.kn.toFixed(1)}</td>
-              <td class="num" style={a.dominant === 'БД' ? 'font-weight:600;color:#bf4040' : ''}>
-                {a.bd.toFixed(1)}
+              <td class="num">{num(a.nd)}</td>
+              <td class="num">{num(a.kn)}</td>
+              <td class="num" style={a.dominant === 'БД' ? 'font-weight:700' : ''}>
+                {num(a.bd)}
               </td>
-              <td class="num">{a.pi.toFixed(3)}</td>
+              <td class="num">{num(a.pi, 3)}</td>
               <td class="num">{a.n}</td>
             </tr>
           ))
@@ -112,6 +114,8 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
       {block.comments.map((c) => <li>{c}</li>)}
     </ul>
   </section>
+
+  <BlockNav slug="categorization" where="bottom" />
 </Layout>
 
 <script>
@@ -124,26 +128,10 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     rows.sort((a, b) => parseFloat(b.dataset[key] || '0') - parseFloat(a.dataset[key] || '0'));
     rows.forEach((r) => container.appendChild(r));
   }
-  // Перемикання показника теплокарти (ДНД/КННД/БД) — числа й колір клітинок
-  const COLORS: Record<string, number[]> = { nd: [74, 140, 92], kn: [138, 175, 196], bd: [191, 64, 64] };
+  // Показник теплокарти (ДНД/КННД/БД): числа й кольори всіх трьох уже відрендерені —
+  // перемикаємо лише data-metric контейнера, далі все робить CSS.
   function applyMetric(cat: string) {
-    const [r, g, b] = COLORS[cat];
-    document.querySelectorAll<HTMLElement>('.hm').forEach((cell) => {
-      const raw = cell.dataset[cat];
-      if (raw === undefined || raw === '') {
-        cell.textContent = '·';
-        cell.style.background = '';
-        cell.style.color = 'var(--muted)';
-        cell.classList.remove('hi');
-        return;
-      }
-      const val = parseFloat(raw);
-      const a = Math.min(val / 70, 1) * 0.85;
-      cell.textContent = String(Math.round(val));
-      cell.style.background = `rgba(${r},${g},${b},${a.toFixed(2)})`;
-      cell.style.color = '';
-      cell.classList.toggle('hi', a > 0.45);
-    });
+    document.querySelectorAll<HTMLElement>('[data-metric-root="cat"]').forEach((el) => (el.dataset.metric = cat));
   }
 
   sel?.addEventListener('change', () => {

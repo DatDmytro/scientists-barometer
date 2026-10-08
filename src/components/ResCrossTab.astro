@@ -1,29 +1,44 @@
 ---
 // Теплокарта: рядки = ресурси (фінансування/обладнання/час), колонки = групи демографії,
-// клітинка = % незабезпечених у групі (скоріше+критично). Червона шкала (вище % = гірше).
-// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·». Zero-JS.
+// клітинка = % незабезпечених (скоріше + критично) або забезпечених — з 95 % ДІ Вілсона.
+// Обидва показники відрендерені на збірці; перемикач на сторінці змінює data-metric контейнера.
+// Селектор демографії — CSS-only. Придушення n<5 → «·».
+import CtFoot from './CtFoot.astro';
+import ciData from '../data/crosstab-ci-2026.json';
+import { ciText, SMALL_N, type CI } from '../lib/crosstab';
+import { range, int } from '../lib/format';
+
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
+type Cell = { unprov: number; prov: number };
 const { block } = Astro.props as {
   block: {
     provision: { res: string; label: string }[];
     crosstabDims: Dim[];
-    crosstab: Record<string, Record<string, { n: number; [k: string]: number | { unprov: number; prov: number } | null }>>;
+    crosstab: Record<string, Record<string, { n: number; [k: string]: number | Cell | null }>>;
   };
 };
-const rows = block.provision; // фінансування / обладнання / час
+type CiCell = { n: number; unprov: CI; prov: CI } | null;
+const CIS = ciData.resources as unknown as Record<string, Record<string, Record<string, CiCell>>>;
+const rows = block.provision;
 const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
+const KEYS = [['unprov', 'незабезпечені'], ['prov', 'забезпечені']] as const;
+const title = (c: Cell, ci: CiCell) =>
+  KEYS.map(([k, l]) => `${l} ${c[k]} %${ci ? ` (${range(ci[k][0], ci[k][1], 0)})` : ''}`).join(' · ') +
+  (ci ? `; 95 % ДІ у дужках, n = ${int(ci.n)}` : '');
 ---
 
-<div class="crosstab">
+<div class="crosstab" data-metric="unprov" data-metric-root="prov">
   {block.crosstabDims.map((d, i) => (
     <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
   ))}
+  <input type="checkbox" class="ct-cib" id="ct-res-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
       <label for={`ct-${d.id}`}>{d.label}</label>
     ))}
   </div>
+  <label class="ct-cilabel" for="ct-res-ci">Показати 95&nbsp;% ДІ</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -31,9 +46,9 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Незабезпечені · %</th>
+              <th>Ресурс · %</th>
               {d.groups.map((g) => (
-                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
@@ -42,14 +57,17 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
               <tr>
                 <td>{r.label}</td>
                 {d.groups.map((g) => {
-                  const c = block.crosstab[d.id][g.value][r.res] as { unprov: number; prov: number } | null;
-                  if (!c) {
-                    return <td class="pm ct-cell" data-unprov="" data-prov="" style="color:var(--muted)">·</td>;
-                  }
-                  const a = alpha(c.unprov);
+                  const c = block.crosstab[d.id][g.value][r.res] as Cell | null;
+                  if (!c) return <td class="ct-cell none">·</td>;
+                  const ci = CIS[d.id]?.[g.value]?.[r.res] ?? null;
+                  const vars = KEYS.map(([k]) => `--a-${k}:${alpha(c[k]).toFixed(2)}`).join(';');
+                  const hi = KEYS.filter(([k]) => alpha(c[k]) > 0.45).map(([k]) => ` hi-${k}`).join('');
                   return (
-                    <td class={`pm ct-cell${a > 0.45 ? ' hi' : ''}`} data-unprov={c.unprov} data-prov={c.prov}
-                        style={`background:rgba(191,64,64,${a.toFixed(2)})`}>{c.unprov}</td>
+                    <td class={`ct-cell mcell${hi}${ci && ci.n < SMALL_N ? ' lown' : ''}`} style={vars} title={title(c, ci)}>
+                      {KEYS.map(([k]) => (
+                        <span class={`m m-${k}`}>{c[k]}<span class="ct-ci">{ciText(ci?.[k])}</span></span>
+                      ))}
+                    </td>
                   );
                 })}
               </tr>
@@ -57,10 +75,10 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.5rem">
-        Числа — % у групі, хто <b>незабезпечений</b> ресурсом (скоріше + критично). «·» — n &lt; 5.
-        Темніше = більша нестача.
-      </p>
+      <CtFoot cube={CIS}>
+        Числа — % у групі, хто <b class="t-bad">незабезпечений</b> ресурсом (скоріше + критично) або
+        <b class="t-good">забезпечений</b> — за перемикачем вище; темніше — вищий %.
+      </CtFoot>
     </div>
   ))}
 </div>

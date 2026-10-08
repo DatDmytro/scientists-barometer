@@ -1,30 +1,44 @@
 ---
 // Теплокарта достатності часу: рядки = потреби (сон/відпочинок/читання/роздуми),
-// колонки = групи демографії. Клітинка несе обидві метрики (data-insuf/data-suf);
-// показує «недостатньо» (червоним) за замовч., перемикається на «достатньо» (зеленим)
-// селектором на сторінці. Придушення n<5 → «·». Селектор демографії — CSS-only (reuse .ct-*).
+// колонки = групи демографії. Клітинка несе обидва показники («недостатньо» / «достатньо»)
+// з 95 % ДІ Вілсона; перемикач на сторінці змінює data-metric контейнера.
+// Придушення n<5 → «·». Селектор демографії — CSS-only (окремий префікс cts-).
+import CtFoot from './CtFoot.astro';
+import ciData from '../data/crosstab-ci-2026.json';
+import { ciText, SMALL_N, type CI } from '../lib/crosstab';
+import { range, int } from '../lib/format';
+
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
+type Cell = { insuf: number; suf: number };
 const { block } = Astro.props as {
   block: {
     sufficiency: { need: string; label: string }[];
     crosstabDims: Dim[];
-    sufficiencyCrosstab: Record<string, Record<string, { n: number } & Record<string, { insuf: number; suf: number } | null>>>;
+    sufficiencyCrosstab: Record<string, Record<string, { n: number } & Record<string, Cell | null>>>;
   };
 };
+type CiCell = { n: number; insuf: CI; suf: CI } | null;
+const CIS = ciData.sufficiency as unknown as Record<string, Record<string, Record<string, CiCell>>>;
 const rows = block.sufficiency;
 const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
+const KEYS = [['insuf', 'недостатньо'], ['suf', 'достатньо']] as const;
+const title = (c: Cell, ci: CiCell) =>
+  KEYS.map(([k, l]) => `${l} ${c[k]} %${ci ? ` (${range(ci[k][0], ci[k][1], 0)})` : ''}`).join(' · ') +
+  (ci ? `; 95 % ДІ у дужках, n = ${int(ci.n)}` : '');
 ---
 
-<div class="crosstab">
+<div class="crosstab" data-metric="insuf" data-metric-root="suf">
   {block.crosstabDims.map((d, i) => (
     <input type="radio" class="ct-r" name="ct-suf" id={`cts-${d.id}`} checked={i === 0} />
   ))}
+  <input type="checkbox" class="ct-cib" id="cts-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
       <label for={`cts-${d.id}`}>{d.label}</label>
     ))}
   </div>
+  <label class="ct-cilabel" for="cts-ci">Показати 95&nbsp;% ДІ</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane cts-pane" data-dim={d.id}>
@@ -34,7 +48,7 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
             <tr>
               <th>Потреба · %</th>
               {d.groups.map((g) => (
-                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
@@ -44,13 +58,16 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
                 <td>{r.label}</td>
                 {d.groups.map((g) => {
                   const c = block.sufficiencyCrosstab[d.id][g.value][r.need];
-                  if (!c) {
-                    return <td class="sm ct-cell" data-insuf="" data-suf="" style="color:var(--muted)">·</td>;
-                  }
-                  const a = alpha(c.insuf);
+                  if (!c) return <td class="ct-cell none">·</td>;
+                  const ci = CIS[d.id]?.[g.value]?.[r.need] ?? null;
+                  const vars = KEYS.map(([k]) => `--a-${k}:${alpha(c[k]).toFixed(2)}`).join(';');
+                  const hi = KEYS.filter(([k]) => alpha(c[k]) > 0.45).map(([k]) => ` hi-${k}`).join('');
                   return (
-                    <td class={`sm ct-cell${a > 0.45 ? ' hi' : ''}`} data-insuf={c.insuf} data-suf={c.suf}
-                        style={`background:rgba(191,64,64,${a.toFixed(2)})`}>{c.insuf}</td>
+                    <td class={`ct-cell mcell${hi}${ci && ci.n < SMALL_N ? ' lown' : ''}`} style={vars} title={title(c, ci)}>
+                      {KEYS.map(([k]) => (
+                        <span class={`m m-${k}`}>{c[k]}<span class="ct-ci">{ciText(ci?.[k])}</span></span>
+                      ))}
+                    </td>
                   );
                 })}
               </tr>
@@ -58,6 +75,10 @@ const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
           </tbody>
         </table>
       </div>
+      <CtFoot cube={CIS}>
+        Числа — % у групі, кому <b class="t-bad">недостатньо</b> (скоріше + критично) або
+        <b class="t-good">достатньо</b> — за перемикачем вище; темніше — вищий %.
+      </CtFoot>
     </div>
   ))}
 </div>

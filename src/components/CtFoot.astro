@@ -1,0 +1,17 @@
+---
+// Примітка під теплокартою: що означають числа (slot) + невизначеність і мала база.
+import { typicalWidths, SMALL_N } from '../lib/crosstab';
+
+interface Props { cube: unknown; unit?: string }
+const { cube, unit = 'пунктів' } = Astro.props;
+const w = typicalWidths(cube);
+---
+
+<p class="note ct-foot">
+  <slot />
+  «·» — недостатньо даних (n &lt; 5).
+  <span class="lownkey" aria-hidden="true"></span> — база клітинки менше {SMALL_N} відповідей.
+  Типова ширина 95&nbsp;% ДІ — близько {Math.round(w.small)} {unit} у таких клітинках і
+  {Math.round(w.large)} — у більших, тож невеликі різниці між групами не варто інтерпретувати.
+  ДІ кожної клітинки — у підказці або за перемикачем «Показати 95&nbsp;% ДІ».
+</p>

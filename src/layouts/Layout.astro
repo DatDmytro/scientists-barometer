@@ -1,21 +1,16 @@
 ---
 import '../styles/global.css';
+import { BLOCKS } from '../lib/blocks';
+import { CITATION, DOI, DOI_URL, LICENSE } from '../lib/site';
 
 const { title, description } = Astro.props as { title: string; description?: string };
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const nav = [
-  { href: '/', label: 'Головна' },
-  { href: '/motivation', label: 'Мотивація' },
-  { href: '/categorization', label: 'Категоризація' },
-  { href: '/time-structure', label: 'Структура часу' },
-  { href: '/resources', label: 'Забезпеченість' },
-  { href: '/quality', label: 'Якість і очікування' },
-  { href: '/additional', label: 'Додаткові' },
   { href: '/methodology', label: 'Методологія' },
-  { href: '/about', label: 'Про дослідження' },
-  { href: '/data', label: 'Дані' },
-  { href: '/participate', label: 'Долучитися' },
+  { href: '/data', label: 'Дані й цитування' },
+  { href: '/about', label: 'Про проєкт' },
 ];
+const inResults = BLOCKS.some((b) => path.startsWith(b.href));
 const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
 
@@ -26,12 +21,23 @@ const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
     <header class="topnav">
       <a href="/" class="brand">Науковий Барометр</a>
-      <nav>
+      <nav aria-label="Основна навігація">
+        <a href="/" class={active('/') ? 'active' : ''}>Головна</a>
+        <div class="navgroup">
+          <a href="/#rozdily" class={inResults ? 'active' : ''} aria-haspopup="true">Результати <span aria-hidden="true">▾</span></a>
+          <div class="navmenu">
+            {BLOCKS.map((b, i) => (
+              <a href={b.href} class={path.startsWith(b.href) ? 'active' : ''}><span class="bn-num">{i + 1}</span>{b.title}</a>
+            ))}
+          </div>
+        </div>
         {nav.map((n) => <a href={n.href} class={active(n.href) ? 'active' : ''}>{n.label}</a>)}
+        <a href="/participate" class={`cta${active('/participate') ? ' active' : ''}`}>Долучитися</a>
       </nav>
     </header>
 
@@ -41,13 +47,12 @@ const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(
 
     <footer>
       <p>
-        Джерело: дослідження «Оцінка організаційно-економічного забезпечення якості наукової
-        діяльності» (пілот N=200, 2026). Дані публікуються <b>безособово й агреговано</b>.
+        Дані публікуються <b>лише агреговано й безособово</b>. Набір даних хвилі 2026 — на Zenodo,
+        DOI <a href={DOI_URL} target="_blank" rel="noopener">{DOI}</a>, ліцензія <a href={LICENSE.url} target="_blank" rel="noopener">{LICENSE.name}</a>.
       </p>
+      <p class="cite">Як цитувати: {CITATION}</p>
       <p>
-        <a href="/participate">Долучитися до наступної хвилі</a> ·
-        <a href="https://github.com/DatDmytro/scientists-barometer">Код сайту</a> · Науковий Барометр
-        / Scientists Barometer
+        <a href="/participate">Долучитися до наступної хвилі</a> · Науковий Барометр / Scientists Barometer
       </p>
     </footer>
   </body>

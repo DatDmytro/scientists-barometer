@@ -1,0 +1,36 @@
+---
+// Повнорозмірні розподіли п'яти відповідей, що розходяться від нейтральної (див. DistBar).
+// Рядок: назва (+ значення індексу, якщо є) і бар із підписами % у сегментах.
+// Легенда — за першим рядком; valence рядка (якщо задано) змінює лише кольори його плечей.
+import DistBar from './DistBar.astro';
+import { num } from '../lib/format';
+
+interface Cat { label: string; n: number; pct: number }
+interface Row { label: string; code?: string; value?: number; n?: number; dist: Cat[]; valence?: 1 | 0 | -1 }
+interface Props {
+  rows: Row[];
+  valence?: 1 | 0 | -1;
+}
+const { rows, valence = 1 } = Astro.props;
+const L = Math.max(...rows.map((r) => r.dist[3].pct + r.dist[4].pct + r.dist[2].pct / 2), 50);
+const R = Math.max(...rows.map((r) => r.dist[0].pct + r.dist[1].pct + r.dist[2].pct / 2), 50);
+const up = valence > 0 ? 'g' : valence < 0 ? 'b' : 'n';
+const down = valence > 0 ? 'b' : valence < 0 ? 'g' : 'n';
+const legend = rows[0].dist.map((c, k) => ({ label: c.label, cls: [`${up}2`, `${up}1`, 'mid', `${down}1`, `${down}2`][k] }));
+---
+
+<div class="likert">
+  <div class="likert-legend">
+    {[...legend].reverse().map((l) => <span><i class={`seg ${l.cls}`}></i>{l.label}</span>)}
+  </div>
+  {rows.map((r) => (
+    <div class="likert-row">
+      <div class="likert-label">
+        {r.label}
+        {r.code && <span class="ixf-code">{r.code}</span>}
+        {r.value !== undefined && <b class="likert-val">{num(r.value)}</b>}
+      </div>
+      <DistBar dist={r.dist} valence={r.valence ?? valence} left={L} right={R} labels />
+    </div>
+  ))}
+</div>

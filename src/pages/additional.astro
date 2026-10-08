@@ -1,8 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import StackedDist from '../components/StackedDist.astro';
+import LikertDiverging from '../components/LikertDiverging.astro';
 import AddCrossTab from '../components/AddCrossTab.astro';
+import BlockHeader from '../components/BlockHeader.astro';
+import BlockNav from '../components/BlockNav.astro';
 import block from '../data/block-additional-2026.json';
+import ci from '../data/crosstab-ci-2026.json';
+import { pct, num, range } from '../lib/format';
 
 const de = block.deadEnd;
 const deMax = Math.max(...de.options.map((o) => o.pct));
@@ -10,9 +14,14 @@ const removebs = block.impact.find((i) => i.code === 'removebs')!;
 const workload = block.impact.find((i) => i.code === 'workload')!;
 const pub = block.publishing;
 
-// рядки для StackedDist (value = % позитивних як заголовкове число)
-const impactRows = block.impact.map((i) => ({ code: i.code, label: i.label, value: i.positivePct, dist: i.dist }));
-const pubRows = [{ code: 'pub', label: 'Проводив би й публікував без вимог', value: pub.positivePct, dist: pub.dist }];
+// рядки розподілів, що розходяться від нейтральної відповіді
+const impactRows = block.impact.map((i) => ({ label: i.label, dist: i.dist }));
+const pubRows = [{ label: 'Проводив би й публікував без вимог', dist: pub.dist }];
+// 95 % ДІ Вілсона для трьох відсотків (ті самі показники, що на головній)
+const CI = (label: string) => {
+  const c = ci.indicators.find((x) => x.label === label)!.ci;
+  return `95 % ДІ ${range(c[0], c[1])}`;
+};
 
 const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
 ---
@@ -21,8 +30,7 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
   title="Додаткові питання — Науковий Барометр"
   description="Перевірка центральних гіпотез: поведінка в глухому куті, вплив усунення безглуздої діяльності та зниження навантаження на якість, читацька активність, публікації без примусу."
 >
-  <h1>Додаткові питання</h1>
-  <p class="lead">«{block.question}»</p>
+  <BlockHeader slug="additional" />
   <p class="note">
     Шостий блок анкети перевіряє центральні гіпотези дослідження: зв'язок навантаження та якості,
     публікаційний тиск і читацьку активність.
@@ -40,14 +48,14 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
           <tr>
             <td class="opt">{o.label}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(o.pct / deMax) * 100}%`}></span></div></td>
-            <td class="pct">{o.pct.toFixed(1)}%</td>
+            <td class="pct">{pct(o.pct)}</td>
             <td class="nn">{o.n}</td>
           </tr>
         ))}
       </tbody>
     </table>
     <p class="note">
-      Три з чотирьох варіантів — методологічно прийнятні. Але <b>{de.options.find((o) => o.code === 'adjust')?.pct}%</b>
+      Три з чотирьох варіантів — методологічно прийнятні. Але <b>{pct(de.options.find((o) => o.code === 'adjust')!.pct)}</b>
       {' '}обрали «коригувати, щоб закінчити, навіть неякісно» — адаптація до системи, де незавершене
       дослідження не зараховується у звітність незалежно від причин.
     </p>
@@ -60,11 +68,11 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
   <section>
     <h2>Вплив на якість наукової роботи</h2>
     <div class="cat-summary">
-      <div><b class="big up">{removebs.positivePct}%</b> очікують покращення якості за умови <b>усунення безглуздої діяльності</b> (H3)</div>
-      <div><b class="big up">{workload.positivePct}%</b> — за умови <b>зниження загального навантаження</b> (H8)</div>
+      <div><b class="big up">{pct(removebs.positivePct)}</b> очікують покращення якості за умови <b>усунення безглуздої діяльності</b> (H3) · {CI('Усунення БД покращить якість (% покращення)')}</div>
+      <div><b class="big up">{pct(workload.positivePct)}</b> — за умови <b>зниження загального навантаження</b> (H8) · {CI('Зниження навантаж. покращить якість (%)')}</div>
     </div>
-    <p class="note" style="margin:0.6rem 0 0.3rem">Розподіл відповідей (100% = всі відповіді):</p>
-    <StackedDist rows={impactRows} legend={removebs.dist.map((c) => c.label)} />
+    <p class="note" style="margin:0.6rem 0 0.3rem">Розподіл відповідей, %:</p>
+    <LikertDiverging rows={impactRows} />
     <p class="note">
       Усунення БД — <b>найбільш консолідований результат усього дослідження</b>: жоден респондент не
       обрав «значно погіршиться», лише 0,5% — «дещо погіршиться».
@@ -74,10 +82,10 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
   <section>
     <h2>Публікації без зовнішнього примусу</h2>
     <div class="cat-summary">
-      <div><b class="big up">{pub.positivePct}%</b> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b> (H4)</div>
+      <div><b class="big up">{pct(pub.positivePct)}</b> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b> (H4) · {CI('Публікували б без примусу (% так)')}</div>
     </div>
     <p class="note" style="margin:0.6rem 0 0.3rem">«{pub.question}»</p>
-    <StackedDist rows={pubRows} legend={pub.dist.map((c) => c.label)} />
+    <LikertDiverging rows={pubRows} />
     <p class="note">
       Внутрішня мотивація науковців потужна й не формується зовнішнім примусом — формальні вимоги
       радше заважають, ніж допомагають.
@@ -91,14 +99,14 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
     </p>
 
     <h3 style="font-size:0.96rem;margin:1rem 0 0.3rem;color:var(--ink)">Свої прочитання чужих праць</h3>
-    <p class="note" style="margin:0">Медіана <b>{block.reading.own.median}%</b>, середня {block.reading.own.mean}% (n = {block.reading.own.n}).</p>
+    <p class="note" style="margin:0">Медіана <b>{pct(block.reading.own.median)}</b>, середня {pct(block.reading.own.mean)} (n = {block.reading.own.n}).</p>
     <table class="dist">
       <tbody>
         {block.reading.own.dist.map((b) => (
           <tr>
             <td class="opt">{b.label}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(b.pct / readMax(block.reading.own.dist)) * 100}%`}></span></div></td>
-            <td class="pct">{b.pct.toFixed(1)}%</td>
+            <td class="pct">{pct(b.pct)}</td>
             <td class="nn">{b.n}</td>
           </tr>
         ))}
@@ -106,22 +114,22 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
     </table>
 
     <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">Як уважно інші читають ваші праці</h3>
-    <p class="note" style="margin:0">Медіана <b>{block.reading.others.median}%</b>, середня {block.reading.others.mean}% (n = {block.reading.others.n}).</p>
+    <p class="note" style="margin:0">Медіана <b>{pct(block.reading.others.median)}</b>, середня {pct(block.reading.others.mean)} (n = {block.reading.others.n}).</p>
     <table class="dist">
       <tbody>
         {block.reading.others.dist.map((b) => (
           <tr>
             <td class="opt">{b.label}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(b.pct / readMax(block.reading.others.dist)) * 100}%`}></span></div></td>
-            <td class="pct">{b.pct.toFixed(1)}%</td>
+            <td class="pct">{pct(b.pct)}</td>
             <td class="nn">{b.n}</td>
           </tr>
         ))}
       </tbody>
     </table>
     <p class="note">
-      Медіанний науковець уважно читає лише <b>{block.reading.own.median}%</b> публікацій, які відкриває, і
-      припускає, що його праці уважно читають ще рідше (<b>{block.reading.others.median}%</b>). Більшість
+      Медіанний науковець уважно читає лише <b>{pct(block.reading.own.median, 0)}</b> публікацій, які відкриває, і
+      припускає, що його праці уважно читають ще рідше (<b>{pct(block.reading.others.median, 0)}</b>). Більшість
       читання — поверхневе; це сигнал публікаційної інфляції («наукового спаму»).
     </p>
   </section>
@@ -141,4 +149,5 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
       {block.comments.map((c) => <li>{c}</li>)}
     </ul>
   </section>
+  <BlockNav slug="additional" where="bottom" />
 </Layout>

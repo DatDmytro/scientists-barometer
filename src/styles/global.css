@@ -1,29 +1,45 @@
 @import "tailwindcss";
 
+/* Палітра за змістом (перевірено validate_palette.js зі скілу dataviz, світлий режим):
+   синій — краще для науки, червоний — гірше; ΔE для дальтонізму 23,8 (норма ≥ 8).
+   Стара пара зелений/червоний не проходила (ΔE 4,2). Ті самі кольори несуть категорії
+   часу: ДНД — синій, КННД — сіро-синій (без оцінки), БД — червоний. */
 :root {
   --ink: #1a2230;
   --muted: #5b6b7c;
   --line: #e4e9ef;
   --bg: #f7f9fb;
+  --surface: #ffffff;
   --accent: #2c5f8a;
-  --neg: #bf4040;
-  --pos: #4a8c5c;
+  --good: #2a78d6;
+  --bad: #d03b3b;
+  --neutral: #7a8898;
+  --ns: #9aa3ad;
+  --track: #eef1f4;
+  --rgb-good: 42 120 214;
+  --rgb-bad: 208 59 59;
+  --rgb-neutral: 122 136 152;
+  --rgb-accent: 44 95 138;
+  /* сумісність зі старими назвами */
+  --pos: var(--good);
+  --neg: var(--bad);
 }
 
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--ink);
-  max-width: 920px;
+  background: var(--surface);
+  max-width: 980px;
   margin: 0 auto;
-  padding: 2.5rem 1.25rem 5rem;
+  padding: 2rem 1rem 5rem;
   line-height: 1.55;
 }
 
-h1 { margin: 0 0 0.2rem; font-size: 2rem; letter-spacing: -0.01em; }
+h1 { margin: 0 0 0.2rem; font-size: 2rem; letter-spacing: -0.01em; line-height: 1.2; }
 .sub { color: var(--muted); margin: 0 0 1.75rem; font-size: 1.02rem; }
 
 .pilot {
-  display: inline-block; background: #fff3e0; color: #9a5b00;
+  display: inline-block; background: #fff3e0; color: #8a5000;
   border: 1px solid #ffd9a0; border-radius: 999px;
   padding: 0.1rem 0.6rem; font-size: 0.78rem; font-weight: 600; margin-left: 0.4rem;
 }
@@ -46,11 +62,8 @@ th, td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var
 th { font-weight: 600; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .code { font-weight: 700; white-space: nowrap; }
-.val { font-weight: 600; }
-.val.up { color: var(--pos); }
-.val.down { color: var(--neg); }
 .ci { color: var(--muted); font-size: 0.85rem; }
-.flag { color: var(--neg); font-size: 0.72rem; white-space: nowrap; }
+.table-scroll { overflow-x: auto; }
 
 /* ── Перемикач Графік ⇄ Таблиця (CSS-only, zero-JS) ── */
 .viewtoggle { margin-bottom: 0.5rem; }
@@ -67,37 +80,70 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .vt-r-table:checked ~ .vt-tabs label[for$="-table"] {
   background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
+.vt-r:focus-visible ~ .vt-tabs { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* ── Графіки (Observable Plot, статичний SVG) ── */
-.chart { margin: 0; }
-.chart svg { max-width: 100%; height: auto; font-family: inherit; }
-
-footer { margin-top: 3rem; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+footer { margin-top: 3.5rem; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 footer p { margin: 0.3rem 0; }
+footer .cite { font-size: 0.76rem; overflow-wrap: anywhere; }
 a { color: var(--accent); }
 
 /* ── Навігація ── */
-.topnav { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.8rem; margin-bottom: 1.75rem; }
+.topnav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.8rem; margin-bottom: 1.75rem; }
 .topnav .brand { font-weight: 800; font-size: 1.05rem; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
-.topnav nav { display: flex; gap: 0.2rem; flex-wrap: wrap; }
-.topnav nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 6px; }
-.topnav nav a:hover { color: var(--accent); background: var(--bg); }
+.topnav nav { display: flex; gap: 0.15rem; flex-wrap: wrap; align-items: center; }
+.topnav nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.25rem 0.55rem; border-radius: 6px; }
+.topnav nav a:hover, .topnav nav a:focus-visible { color: var(--accent); background: var(--bg); }
 .topnav nav a.active { color: var(--accent); background: var(--bg); }
+.topnav nav a.cta { background: var(--accent); color: #fff; margin-left: 0.3rem; }
+.topnav nav a.cta:hover, .topnav nav a.cta.active { background: #234d71; color: #fff; }
+.navgroup { position: relative; }
+.navmenu {
+  display: none; position: absolute; top: 100%; left: 0; z-index: 20; min-width: 16.5rem;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(26,34,48,0.12); padding: 0.35rem;
+}
+.navgroup:hover .navmenu, .navgroup:focus-within .navmenu { display: block; }
+.topnav .navmenu a { display: block; padding: 0.4rem 0.6rem; font-weight: 500; color: var(--ink); }
+.bn-num { display: inline-block; min-width: 1.1rem; font-weight: 700; color: var(--muted); margin-right: 0.3rem; }
+
+/* смуга блоків і «назад / далі» */
+.blocknav { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: -0.6rem 0 1.4rem; }
+.blocknav a { font-size: 0.8rem; font-weight: 600; padding: 0.22rem 0.65rem; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); text-decoration: none; }
+.blocknav a:hover { color: var(--accent); border-color: #c9d6e3; }
+.blocknav a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.blocknav a.active .bn-num { color: #fff; }
+.blockpager { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem 1rem; margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-weight: 600; }
+.blockpager a { text-decoration: none; }
+.blockpager .next { margin-left: auto; }
 
 /* ── Текстові сторінки ── */
 .prose { font-size: 0.98rem; }
-.prose h3 { font-size: 1.05rem; margin: 1.9rem 0 0.5rem; color: var(--ink); }
+.prose h3 { font-size: 1.1rem; margin: 2rem 0 0.5rem; color: var(--ink); }
+.prose h4 { font-size: 0.98rem; margin: 1.4rem 0 0.4rem; color: var(--ink); }
 .prose p { margin: 0.7rem 0; }
-.prose ul { margin: 0.6rem 0; padding-left: 1.2rem; }
+.prose ul, .prose ol { margin: 0.6rem 0; padding-left: 1.2rem; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
 .prose li { margin: 0.3rem 0; }
 .lead { font-size: 1.12rem; color: var(--ink); margin: 0 0 1.25rem; }
-.formula { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1.1rem; margin: 1rem 0; }
+.lead.topic { font-size: 1rem; color: var(--muted); }
+.lead.topic b { color: var(--ink); font-weight: 600; }
+.formula { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1.1rem; margin: 1rem 0; overflow-x: auto; }
 .formula code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9rem; }
 .note { color: var(--muted); font-size: 0.86rem; }
-.bias-pos { color: var(--pos); font-variant-numeric: tabular-nums; }
-.bias-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
+.bias-pos { color: var(--good); font-variant-numeric: tabular-nums; }
+.bias-neg { color: var(--bad); font-variant-numeric: tabular-nums; }
 .big { font-size: 1.6rem; font-weight: 700; }
-.big.up { color: var(--pos); } .big.down { color: var(--neg); }
+.big.up, .big.down { color: var(--ink); }
+.toc { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0.8rem 1.2rem; margin: 0 0 1.5rem; font-size: 0.92rem; }
+.toc ol { margin: 0.3rem 0; padding-left: 1.2rem; list-style: decimal; columns: 2 16rem; }
+.toc li { margin: 0.15rem 0; }
+.assess { display: inline-block; font-size: 0.74rem; font-weight: 700; padding: 0.05rem 0.5rem; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); white-space: nowrap; }
+.assess.ok { color: #1c5cab; border-color: #b7d3f6; background: #eef5fd; }
+.assess.mid { color: #6b5a00; border-color: #eadb9c; background: #fdf8e6; }
+.assess.lim { color: #9a3412; border-color: #f5c6b4; background: #fdf1ec; }
+.citebox { background: var(--bg); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 0.9rem 1.1rem; margin: 0.8rem 0; overflow-wrap: anywhere; }
+.doi-chip { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid #c9d6e3; background: #f1f6fb; text-decoration: none; white-space: nowrap; }
 
 /* ── Розподіл (таблиця з інлайн-баром) ── */
 .dist { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
@@ -105,15 +151,24 @@ a { color: var(--accent); }
 .dist .opt { width: 46%; }
 .dist .barcell { width: 38%; }
 .dist .bar { background: var(--bg); border-radius: 4px; height: 1.1rem; overflow: hidden; }
-.dist .bar > span { display: block; height: 100%; background: var(--accent); opacity: 0.82; }
+.dist .bar > span { display: block; height: 100%; background: var(--accent); opacity: 0.82; border-radius: 0 4px 4px 0; }
+.dist .bar > span.t-bad { background: var(--bad); }
+.dist .bar > span.t-good { background: var(--good); }
 .dist .pct { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dist .nn { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 620px) { .dist .opt { width: auto; } .dist .nn { display: none; } }
 
 /* ── Cross-tab: селектор демографії + теплокарта (CSS-only) ── */
 .crosstab { margin: 0.4rem 0 1rem; }
-.ct-r { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.ct-tabs { display: flex; gap: 2px; flex-wrap: wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 2px; margin-bottom: 0.7rem; }
+.ct-r, .ct-cib { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ct-tabs { display: flex; gap: 2px; flex-wrap: wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 2px; margin-bottom: 0.5rem; }
 .ct-tabs label { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--muted); padding: 0.2rem 0.6rem; border-radius: 6px; user-select: none; }
+.ct-r:focus-visible ~ .ct-tabs, .ct-cib:focus-visible ~ .ct-cilabel { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ct-cilabel { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.8rem; color: var(--muted); margin: 0 0 0.6rem; user-select: none; }
+.ct-cilabel::before { content: ""; width: 0.9rem; height: 0.9rem; border: 1.5px solid var(--muted); border-radius: 3px; background: #fff; }
+.ct-cib:checked ~ .ct-cilabel::before { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 2px #fff; }
+.ct-ci { display: none; font-size: 0.66rem; font-weight: 400; opacity: 0.85; white-space: nowrap; }
+.ct-cib:checked ~ .ct-pane .ct-ci { display: block; }
 .ct-pane { display: none; }
 #ct-galuz:checked ~ .ct-pane[data-dim="galuz"],
 #ct-stupin:checked ~ .ct-pane[data-dim="stupin"],
@@ -131,10 +186,19 @@ a { color: var(--accent); }
 .ct-table { border-collapse: collapse; font-size: 0.82rem; }
 .ct-table th, .ct-table td { padding: 0.34rem 0.45rem; border: 1px solid var(--line); }
 .ct-table thead th { vertical-align: bottom; font-size: 0.74rem; font-weight: 600; color: var(--ink); text-transform: none; letter-spacing: 0; min-width: 64px; max-width: 110px; white-space: normal; line-height: 1.2; }
+.ct-table thead th.lown { background-image: repeating-linear-gradient(135deg, rgba(91,107,124,0.12) 0 2px, transparent 2px 6px); }
 .ct-table tbody td:first-child { max-width: 240px; font-weight: 500; }
 .ct-n { color: var(--muted); font-weight: 400; font-size: 0.7rem; }
-.ct-cell { text-align: right; font-variant-numeric: tabular-nums; background: rgba(44, 95, 138, var(--a, 0)); }
+.ct-cell { text-align: right; font-variant-numeric: tabular-nums; background-color: rgb(var(--rgb-accent) / var(--a, 0)); }
+.ct-cell.c-good { background-color: rgb(var(--rgb-good) / var(--a, 0)); }
+.ct-cell.c-bad { background-color: rgb(var(--rgb-bad) / var(--a, 0)); }
+.ct-cell.c-neutral { background-color: rgb(var(--rgb-neutral) / var(--a, 0)); }
 .ct-cell.hi { color: #fff; }
+.ct-cell.none { color: var(--muted); background: none; text-align: center; }
+/* мала база (n < 20): штрихування поверх кольору — ДІ тут широкі */
+.ct-cell.lown { background-image: repeating-linear-gradient(135deg, rgba(26,34,48,0.13) 0 2px, transparent 2px 6px); }
+.ct-foot { margin-top: 0.5rem; }
+.ct-foot .lownkey { display: inline-block; width: 1.4rem; height: 0.8rem; vertical-align: -1px; border: 1px solid var(--line); background-image: repeating-linear-gradient(135deg, rgba(26,34,48,0.18) 0 2px, transparent 2px 6px); }
 /* другий cross-tab селектор (cts-) — для достатності часу */
 #cts-galuz:checked ~ .cts-pane[data-dim="galuz"],
 #cts-stupin:checked ~ .cts-pane[data-dim="stupin"],
@@ -149,6 +213,22 @@ a { color: var(--accent); }
 #cts-stazh:checked ~ .ct-tabs label[for="cts-stazh"],
 #cts-oblast:checked ~ .ct-tabs label[for="cts-oblast"] { background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
 
+/* клітинки з кількома показниками (перемикач на сторінці змінює data-metric контейнера) */
+.mcell .m { display: none; }
+[data-metric="nd"] .mcell .m-nd, [data-metric="kn"] .mcell .m-kn, [data-metric="bd"] .mcell .m-bd,
+[data-metric="unprov"] .mcell .m-unprov, [data-metric="prov"] .mcell .m-prov,
+[data-metric="insuf"] .mcell .m-insuf, [data-metric="suf"] .mcell .m-suf { display: inline; }
+[data-metric="nd"] .mcell { background-color: rgb(var(--rgb-good) / var(--a-nd, 0)); }
+[data-metric="kn"] .mcell { background-color: rgb(var(--rgb-neutral) / var(--a-kn, 0)); }
+[data-metric="bd"] .mcell { background-color: rgb(var(--rgb-bad) / var(--a-bd, 0)); }
+[data-metric="unprov"] .mcell { background-color: rgb(var(--rgb-bad) / var(--a-unprov, 0)); }
+[data-metric="prov"] .mcell { background-color: rgb(var(--rgb-good) / var(--a-prov, 0)); }
+[data-metric="insuf"] .mcell { background-color: rgb(var(--rgb-bad) / var(--a-insuf, 0)); }
+[data-metric="suf"] .mcell { background-color: rgb(var(--rgb-good) / var(--a-suf, 0)); }
+[data-metric="nd"] .mcell.hi-nd, [data-metric="kn"] .mcell.hi-kn, [data-metric="bd"] .mcell.hi-bd,
+[data-metric="unprov"] .mcell.hi-unprov, [data-metric="prov"] .mcell.hi-prov,
+[data-metric="insuf"] .mcell.hi-insuf, [data-metric="suf"] .mcell.hi-suf { color: #fff; }
+
 /* ── Цитати: дописані варіанти / коментарі ── */
 .qlist { list-style: none; padding: 0; margin: 0.6rem 0; }
 .qlist li { padding: 0.45rem 0.7rem; border-left: 3px solid var(--line); margin: 0.4rem 0; background: var(--bg); border-radius: 0 6px 6px 0; font-size: 0.92rem; }
@@ -158,20 +238,195 @@ a { color: var(--accent); }
 .cat-summary { display: flex; gap: 1.5rem 2rem; flex-wrap: wrap; margin: 1rem 0 0.5rem; }
 .cat-summary div { font-size: 0.85rem; color: var(--muted); }
 .cat-summary b { font-size: 1.4rem; color: var(--ink); display: block; line-height: 1.2; }
+.cat-summary b:not(:first-child) { display: inline; font-size: inherit; line-height: inherit; }
 .cat-legend { display: flex; gap: 1.2rem; font-size: 0.82rem; color: var(--muted); margin: 0.6rem 0 1rem; flex-wrap: wrap; }
 .cat-legend i { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
-.swnd { background: #4a8c5c; } .swkn { background: #8aafc4; } .swbd { background: #bf4040; }
+.swnd { background: var(--good); } .swkn { background: #8593a3; } .swbd { background: var(--bad); }
 .actrow { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 0.7rem; align-items: center; margin: 0.35rem 0; font-size: 0.9rem; }
 .actname { min-width: 0; }
-.actname .contro { color: #9a5b00; font-size: 0.72rem; }
-.actbar { display: flex; height: 1.4rem; border-radius: 4px; overflow: hidden; background: var(--bg); font-size: 0.7rem; line-height: 1.4rem; color: #fff; }
-.actbar span { display: block; text-align: center; overflow: hidden; }
-.actbar .nd { background: #4a8c5c; } .actbar .kn { background: #8aafc4; } .actbar .bd { background: #bf4040; }
+.actname .contro { color: #8a5000; font-size: 0.72rem; }
+.actbar { display: flex; gap: 2px; height: 1.4rem; border-radius: 4px; overflow: hidden; background: var(--bg); font-size: 0.7rem; line-height: 1.4rem; color: #fff; }
+.actbar span { display: block; text-align: center; overflow: hidden; white-space: nowrap; }
+.actbar .nd { background: var(--good); } .actbar .kn { background: #8593a3; } .actbar .bd { background: var(--bad); }
 @media (max-width: 620px) { .actrow { grid-template-columns: 1fr; gap: 0.15rem; } }
 .catsort { margin: 0.6rem 0; font-size: 0.88rem; color: var(--muted); }
 .catsort select { font: inherit; padding: 0.2rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); margin-left: 0.3rem; }
 .actname .pi { color: var(--muted); font-size: 0.74rem; margin-left: 0.45rem; white-space: nowrap; }
-
-/* ── Likert-стек (StackedDist): світла палітра → темний текст для контрасту ── */
-.actbar.likert span { color: var(--ink); font-weight: 600; }
 .actname .pi b { color: var(--ink); font-size: 0.95rem; }
+
+/* ── Кольори за змістом (позначки; текст лишається кольором тексту) ── */
+.t-good { color: var(--good); }
+.t-bad { color: var(--bad); }
+.t-neutral { color: var(--neutral); }
+.t-ns { color: var(--ns); }
+.t-accent { color: var(--accent); }
+.lg-dot { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: currentColor; margin-right: 0.35rem; vertical-align: -1px; }
+.lg-dot.t-ns { background: #fff; box-shadow: inset 0 0 0 2px var(--ns); }
+
+/* ── Шкала-«барометр» (Meter) ── */
+.meter { margin: 0.55rem 0 0.15rem; }
+.meter-bar { position: relative; height: 8px; background: var(--track); border-radius: 999px; }
+/* ДІ — смуга вища за трек, з «вусами» на кінцях; точка мала, щоб не закривати вузькі інтервали */
+.meter-mid { position: absolute; top: -6px; bottom: -6px; width: 2px; background: #4b5563; transform: translateX(-50%); border-radius: 1px; z-index: 1; }
+.meter-ci { position: absolute; top: -3px; bottom: -3px; box-sizing: border-box; background: color-mix(in srgb, currentColor 32%, transparent); border-left: 2px solid currentColor; border-right: 2px solid currentColor; border-radius: 2px; }
+.meter-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: currentColor; border: 1.5px solid var(--surface); box-shadow: 0 0 0 1px currentColor; transform: translate(-50%, -50%); z-index: 2; }
+.meter-dot.t-ns { background: var(--surface); border: 2px solid var(--ns); box-shadow: none; }
+.meter-scale { position: relative; height: 1.1rem; margin-top: 0.3rem; font-size: 0.68rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meter-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.meter-scale span:first-child { transform: none; }
+.meter-scale span:last-child { transform: translateX(-100%); }
+.meter-scale .mid { color: var(--ink); font-weight: 600; }
+
+/* ── Плитки (IndexTile, StatTile) ── */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem; margin: 0.8rem 0; }
+.tile { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.15rem 0.9rem; background: var(--surface); box-shadow: 0 1px 2px rgba(26,34,48,0.04); }
+.tiles.four { grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); }
+.tile.pair { grid-column: span 2; }
+@media (max-width: 640px) { .tile.pair { grid-column: auto; } }
+.tile-kind { margin: 0; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.tile-title { margin: 0.15rem 0 0; font-size: 1.02rem; line-height: 1.3; }
+.tile-what { margin: 0.1rem 0 0; font-size: 0.86rem; color: var(--muted); }
+.tile-values { display: grid; gap: 0.4rem 1.6rem; }
+.tile.pair .tile-values { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.tile-h { margin: 0.6rem 0 -0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.tile-num { margin: 0.45rem 0 0; display: flex; align-items: baseline; gap: 0.35rem; }
+.tile-big { font-size: 3rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: proportional-nums; }
+.tile-unit { font-size: 1.4rem; font-weight: 600; color: var(--ink); }
+.tile-arrow { font-size: 1.5rem; font-weight: 700; }
+.tile-verdict { margin: 0.25rem 0 0; font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+.tile-balance { margin: 0.1rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.tile-meta { margin: 0.25rem 0 0; font-size: 0.76rem; color: var(--muted); }
+.tile-extra { list-style: none; padding: 0.55rem 0 0; margin: 0.6rem 0 0; border-top: 1px dashed var(--line); font-size: 0.84rem; }
+.tile-extra li { margin: 0.15rem 0; }
+.tile-extra b { font-variant-numeric: tabular-nums; }
+.tile-q { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+.tile-link { margin-top: auto; padding-top: 0.7rem; font-size: 0.86rem; font-weight: 600; text-decoration: none; }
+.tile.stat .tile-big { font-size: 2.6rem; }
+
+/* ── Індекси: точка + ДІ + розподіл (IndexForest) ── */
+.ixf { margin: 0.6rem 0 1.2rem; }
+.ixf-grid { display: grid; grid-template-columns: minmax(8.5rem, 1.25fr) minmax(9rem, 2fr) 6.6rem minmax(7.5rem, 1.45fr); column-gap: 0.9rem; }
+.ixf-grid.nodist { grid-template-columns: minmax(8.5rem, 1.3fr) minmax(10rem, 2.6fr) 6.6rem; }
+.ixf-head, .ixf-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; }
+.ixf-head { font-size: 0.68rem; color: var(--muted); padding-bottom: 0.2rem; border-bottom: 1px solid var(--line); }
+.ixf-hval { text-align: right; }
+.ixf-axis { position: relative; height: 1rem; font-variant-numeric: tabular-nums; }
+.ixf-axis span { position: absolute; transform: translateX(-50%); }
+.ixf-axis .mid { color: var(--ink); font-weight: 700; }
+.ixf-group { grid-column: 1 / -1; font-weight: 700; font-size: 0.86rem; margin-top: 0.75rem; padding: 0.1rem 0; }
+.ixf-row { padding: 0.32rem 0; border-bottom: 1px solid var(--line); }
+.ixf-label { font-size: 0.86rem; line-height: 1.3; color: var(--ink); }
+.ixf-code { font-size: 0.68rem; color: var(--muted); margin-left: 0.3rem; white-space: nowrap; }
+.ixf-track { position: relative; height: 22px; }
+.ixf-tick { position: absolute; top: 2px; bottom: 2px; width: 1px; background: var(--track); }
+.ixf-tick.mid { top: 0; bottom: 0; width: 2px; background: #4b5563; transform: translateX(-50%); }
+.ixf-ci { position: absolute; top: 50%; height: 4px; background: color-mix(in srgb, currentColor 70%, transparent); transform: translateY(-50%); border-radius: 1px; }
+.ixf-ci::before, .ixf-ci::after { content: ""; position: absolute; top: -4px; width: 2px; height: 12px; background: currentColor; border-radius: 1px; }
+.ixf-ci::before { left: -1px; }
+.ixf-ci::after { right: -1px; }
+.ixf-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: currentColor; border: 1.5px solid var(--surface); box-shadow: 0 0 0 1px currentColor; transform: translate(-50%, -50%); z-index: 1; }
+.ixf-row.t-ns .ixf-dot { background: var(--surface); border: 2px solid var(--ns); box-shadow: none; }
+.ixf-val { text-align: right; font-size: 0.88rem; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ixf-val span { display: block; font-size: 0.7rem; color: var(--muted); }
+.ixf-dist { min-width: 0; }
+.ixf-nodist { font-size: 0.72rem; color: var(--muted); }
+.ixf-legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1.1rem; font-size: 0.76rem; color: var(--muted); margin-top: 0.6rem; }
+.ixf-legend .lg-dist, .ixf-legend .lg-cap { flex-basis: 100%; }
+@media (max-width: 640px) {
+  .ixf-grid, .ixf-grid.nodist { grid-template-columns: minmax(0, 1fr) 5.6rem; }
+  .ixf-head > span:first-child, .ixf-hdist { display: none; }
+  .ixf-axis { grid-column: 1; }
+  .ixf-label { grid-column: 1 / -1; }
+  .ixf-track { grid-column: 1; }
+  .ixf-val { grid-column: 2; }
+  .ixf-dist { grid-column: 1 / -1; margin-top: 0.2rem; }
+}
+
+/* ── Розподіл, що розходиться від нейтральної (DistBar, LikertDiverging) ── */
+.distbar { position: relative; height: 12px; }
+.distbar.big { height: 1.45rem; }
+.seg { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border-left: 1px solid var(--surface); border-right: 1px solid var(--surface); font-size: 0.7rem; line-height: 1.45rem; text-align: center; overflow: hidden; color: var(--ink); font-variant-numeric: tabular-nums; }
+.seg.g2 { background: #1c5cab; color: #fff; } .seg.g1 { background: #86b6ef; }
+.seg.b2 { background: #b42f2f; color: #fff; } .seg.b1 { background: #f2a3a0; }
+.seg.n2 { background: #5d6b7a; color: #fff; } .seg.n1 { background: #b9c3cd; }
+.seg.mid { background: #dddbd6; }
+.distbar-zero { position: absolute; top: -2px; bottom: -2px; width: 1.5px; background: #374151; transform: translateX(-50%); }
+/* у великих барах — лише риски зверху й знизу, щоб не перекреслювати число нейтрального сегмента */
+.distbar.big .distbar-zero { top: -5px; bottom: auto; height: 5px; }
+.distbar.big .distbar-zero::after { content: ""; position: absolute; left: 0; width: 100%; top: calc(1.45rem + 5px); height: 5px; background: inherit; }
+.likert { margin: 0.4rem 0 1rem; }
+.likert-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.78rem; color: var(--muted); margin: 0.3rem 0 0.7rem; }
+.likert-legend i.seg { position: static; display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; border: 0; }
+.likert-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 0.8rem; align-items: center; margin: 0.4rem 0; font-size: 0.9rem; }
+.likert-val { margin-left: 0.45rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 620px) { .likert-row { grid-template-columns: 1fr; gap: 0.2rem; } }
+
+/* ── Головна ── */
+.hero { margin: 0.5rem 0 1.6rem; }
+.hero h1 { font-size: 2.3rem; }
+.hero .lead { max-width: 44rem; }
+.hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; font-size: 0.86rem; color: var(--muted); }
+.howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.6rem 1.4rem; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem 1.2rem; font-size: 0.84rem; color: var(--muted); margin: 0 0 1.4rem; }
+.howto b { color: var(--ink); }
+.howto p { margin: 0.2rem 0; }
+.band { margin: 2.4rem 0 0; }
+.band > h2 { font-size: 1.35rem; text-transform: none; letter-spacing: -0.01em; color: var(--ink); margin: 0 0 0.25rem; }
+.band > .band-note { margin: 0 0 0.6rem; color: var(--muted); font-size: 0.9rem; max-width: 46rem; }
+.band .subhead { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin: 1.4rem 0 0.2rem; }
+.callout { border-left: 4px solid #ffd9a0; background: #fffaf2; border-radius: 0 10px 10px 0; padding: 0.7rem 1rem; font-size: 0.88rem; color: #5b4a2e; margin: 0.8rem 0; }
+.timebar { height: 2.4rem; font-size: 0.9rem; line-height: 2.4rem; margin: 0.6rem 0; border-radius: 6px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.9rem; margin: 0.8rem 0; }
+.card { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem 1.05rem; text-decoration: none; color: var(--ink); background: var(--surface); }
+.card:hover, .card:focus-visible { border-color: #b7c8da; box-shadow: 0 4px 14px rgba(26,34,48,0.08); }
+.card-num { font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.card h3 { margin: 0.15rem 0 0.25rem; font-size: 1.02rem; color: var(--accent); }
+.card p { margin: 0; font-size: 0.86rem; color: var(--muted); }
+.card .card-key { margin-top: 0.6rem; font-size: 0.86rem; color: var(--ink); }
+.card .card-key b { font-size: 1.15rem; }
+details.all { margin: 2.4rem 0 0; border: 1px solid var(--line); border-radius: 12px; padding: 0.2rem 1.1rem; }
+details.all > summary { cursor: pointer; font-weight: 700; padding: 0.7rem 0; }
+details.all[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 0.4rem; }
+details.all h3 { font-size: 0.95rem; margin: 1.2rem 0 0.1rem; }
+
+/* ── Методологія: гістограма сум часток часу ── */
+.sumhist { display: flex; align-items: flex-end; gap: 3px; height: 110px; margin: 0.8rem 0 1.4rem; }
+.sh-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
+.sh-bar { display: block; background: #b9c3cd; border-radius: 3px 3px 0 0; min-height: 2px; }
+.sh-col.near .sh-bar { background: var(--accent); }
+.sh-x { position: absolute; bottom: -1.15rem; left: 50%; transform: translateX(-50%); font-size: 0.62rem; color: var(--muted); }
+
+/* ── Дзеркальні гістограми ЗВО ↔ НУ ── */
+.mirrors { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem 1.4rem; margin: 0.7rem 0; }
+.mirror { margin: 0; }
+.mirror figcaption { font-size: 0.88rem; margin-bottom: 0.35rem; }
+.mirror figcaption .note { display: block; font-size: 0.74rem; }
+.mh-head, .mh-row { display: grid; grid-template-columns: 1fr 3.4rem 1fr; align-items: center; column-gap: 0.3rem; }
+.mh-head { font-size: 0.72rem; color: var(--muted); font-weight: 600; margin-bottom: 0.15rem; }
+.mh-head span:first-child { text-align: right; }
+.mh-row { height: 1rem; }
+.mh-l, .mh-r { display: flex; height: 0.72rem; }
+.mh-l { justify-content: flex-end; }
+.mh-l i, .mh-r i { display: block; height: 100%; background: currentColor; border-radius: 2px; opacity: 0.85; }
+.mh-x { text-align: center; font-size: 0.64rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mh-foot { margin: 0.3rem 0 0; font-size: 0.72rem; }
+
+/* ── Таблиця розподілів відповідей ── */
+.disttable { font-size: 0.84rem; margin: 0.4rem 0 1rem; }
+.disttable caption { text-align: left; font-size: 0.78rem; color: var(--muted); padding-bottom: 0.2rem; }
+.disttable th { font-size: 0.7rem; text-transform: none; letter-spacing: 0; }
+
+/* Tailwind preflight скидає жирність заголовків — повертаємо там, де вона несе структуру.
+   Заголовки таблиць у тексті — без верхнього регістру: інакше α і ρ стають схожими на A і P. */
+.prose h3, .prose h4, .band > h2, details.all h3 { font-weight: 700; }
+.tile-title, .card h3 { font-weight: 650; }
+.prose th { text-transform: none; letter-spacing: 0; font-size: 0.8rem; }
+
+/* ── Перемикач горизонту «За рік / За 5 років» (головна, смуга динаміки; CSS-only) ── */
+.hz-r { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.hz-tabs { display: inline-flex; gap: 2px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 2px; margin: 0.3rem 0 0.2rem; }
+.hz-tabs label { cursor: pointer; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 0.25rem 0.85rem; border-radius: 6px; user-select: none; }
+#hz-1:checked ~ .hz-tabs label[for="hz-1"],
+#hz-5:checked ~ .hz-tabs label[for="hz-5"] { background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.hz-r:focus-visible ~ .hz-tabs { outline: 2px solid var(--accent); outline-offset: 2px; }
+#hz-1:checked ~ .tiles .hz-5, #hz-1:checked ~ .hz-5,
+#hz-5:checked ~ .tiles .hz-1, #hz-5:checked ~ .hz-1 { display: none; }

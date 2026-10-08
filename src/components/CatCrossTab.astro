@@ -1,8 +1,14 @@
 ---
-// Теплокарта розрізів: рядки = види (сортовані), колонки = групи демографії.
-// Клітинка несе всі 3 % (data-nd/kn/bd); показує категорію, обрану селектором «Сортувати»
-// (за замовч. БД — червоним). Перемикання метрики/кольору — інлайн-скриптом на сторінці.
-// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·».
+// Теплокарта розрізів «Категоризації»: рядки = види (сортовані), колонки = групи демографії.
+// Клітинка несе всі три показники (ДНД / КННД / БД) з 95 % ДІ Вілсона; видно той, що обрано
+// селектором «Сортувати» (за замовч. БД): скрипт сторінки змінює лише data-metric контейнера,
+// числа й кольори всіх трьох уже відрендерені на збірці. Селектор демографії — CSS-only.
+// Придушення n<5 → «·».
+import CtFoot from './CtFoot.astro';
+import ciData from '../data/crosstab-ci-2026.json';
+import { ciText, SMALL_N, type CI } from '../lib/crosstab';
+import { range, int } from '../lib/format';
+
 interface Act { name: string; nd: number; kn: number; bd: number; pi: number; }
 interface Cell { nd: number; kn: number; bd: number; }
 interface Group { value: string; n: number; }
@@ -14,19 +20,27 @@ const { block } = Astro.props as {
     crosstab: Record<string, Record<string, { n: number; cells: Record<string, Cell | null> }>>;
   };
 };
+type CiCell = { n: number; nd: CI; kn: CI; bd: CI } | null;
+const CIS = ciData.categorization as unknown as Record<string, Record<string, Record<string, CiCell>>>;
 const acts = block.activities;
 const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
+const KEYS = [['nd', 'ДНД'], ['kn', 'КННД'], ['bd', 'БД']] as const;
+const title = (c: Cell, ci: CiCell) =>
+  KEYS.map(([k, l]) => `${l} ${c[k]} %${ci ? ` (${range(ci[k][0], ci[k][1], 0)})` : ''}`).join(' · ') +
+  (ci ? `; 95 % ДІ у дужках, n = ${int(ci.n)}` : '');
 ---
 
-<div class="crosstab">
+<div class="crosstab" data-metric="bd" data-metric-root="cat">
   {block.crosstabDims.map((d, i) => (
     <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
   ))}
+  <input type="checkbox" class="ct-cib" id="ct-cat-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
       <label for={`ct-${d.id}`}>{d.label}</label>
     ))}
   </div>
+  <label class="ct-cilabel" for="ct-cat-ci">Показати 95&nbsp;% ДІ</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -36,7 +50,7 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
             <tr>
               <th>Вид діяльності · %</th>
               {d.groups.map((g) => (
-                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
@@ -46,13 +60,16 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
                 <td>{a.name}</td>
                 {d.groups.map((g) => {
                   const c = block.crosstab[d.id][g.value].cells[a.name];
-                  if (!c) {
-                    return <td class="ct-cell hm" data-nd="" data-kn="" data-bd="" style="color:var(--muted)">·</td>;
-                  }
-                  const A = alpha(c.bd);
+                  if (!c) return <td class="ct-cell none">·</td>;
+                  const ci = CIS[d.id]?.[g.value]?.[a.name] ?? null;
+                  const vars = KEYS.map(([k]) => `--a-${k}:${alpha(c[k]).toFixed(2)}`).join(';');
+                  const hi = KEYS.filter(([k]) => alpha(c[k]) > 0.45).map(([k]) => ` hi-${k}`).join('');
                   return (
-                    <td class={`ct-cell hm${A > 0.45 ? ' hi' : ''}`} data-nd={c.nd} data-kn={c.kn} data-bd={c.bd}
-                        style={`background:rgba(191,64,64,${A.toFixed(2)})`}>{c.bd}</td>
+                    <td class={`ct-cell mcell${hi}${ci && ci.n < SMALL_N ? ' lown' : ''}`} style={vars} title={title(c, ci)}>
+                      {KEYS.map(([k]) => (
+                        <span class={`m m-${k}`}>{c[k]}<span class="ct-ci">{ciText(ci?.[k])}</span></span>
+                      ))}
+                    </td>
                   );
                 })}
               </tr>
@@ -60,10 +77,10 @@ const alpha = (p: number) => Math.min(p / 70, 1) * 0.85;
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.5rem">
-        Числа — % у групі для <b>обраної категорії</b> (селектор «Сортувати»): ДНД (зелений) /
-        КННД (синій) / БД (червоний). «·» — недостатньо даних (n &lt; 5). Темніше = вищий %.
-      </p>
+      <CtFoot cube={CIS}>
+        Числа — % у групі для <b>обраної категорії</b> (селектор «Сортувати»):
+        <span class="t-good">ДНД</span> / <span class="t-neutral">КННД</span> / <span class="t-bad">БД</span>; темніше — вищий %.
+      </CtFoot>
     </div>
   ))}
 </div>

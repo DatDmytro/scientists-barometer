@@ -1,0 +1,61 @@
+---
+// Плитка-«барометр» одного сімейства індексів на головній.
+// codes: один код — велике число зі шкалою; кілька кодів у pair — два рівноправні значення
+// (напр. очікування на рік і на 5 років). extra — дрібні рядки під шкалою (складові, інший горизонт).
+// toggle: codes — горизонти одного індексу; кожне значення у .hz.hz-{1|5}, видиме лише те, що обрано
+// перемикачем смуги (CSS, див. .hzbox у global.css).
+import Meter from './Meter.astro';
+import { byCode, arrow, KIND, type Index } from '../lib/indices';
+import { num, range, pct, int } from '../lib/format';
+
+interface Props {
+  codes: string[];
+  extra?: string[];
+  title?: string;
+  subtitle?: string;
+  extraLabel?: (i: Index) => string;
+  toggle?: boolean;
+}
+const { codes, extra = [], title, subtitle, toggle = false } = Astro.props;
+const items = codes.map(byCode);
+const head = items[0];
+const extras = extra.map(byCode);
+const pair = items.length > 1 && !toggle;
+const extraLabel = Astro.props.extraLabel ?? ((i: Index) => i.horizonText || i.subject);
+const kindLine = [KIND[head.kind].label, pair || toggle ? '' : head.horizonText].filter(Boolean).join(' · ');
+const balance = (i: Index) =>
+  i.dist ? `«${i.scale.up}» ${pct(i.up, 0)} · «${i.scale.down}» ${pct(i.down, 0)}` : '';
+const aria = (i: Index) =>
+  `${i.family.name}, ${i.subject.toLowerCase()} ${i.horizonText}: ${num(i.value)} із 200, 95 % ДІ ${range(i.ciLow, i.ciHigh)}`;
+---
+
+<article class={`tile${pair ? ' pair' : ''}`}>
+  <p class="tile-kind">{kindLine}</p>
+  <h3 class="tile-title">{title ?? head.family.name}</h3>
+  <p class="tile-what">{subtitle ?? head.subject}</p>
+
+  <div class="tile-values">
+    {items.map((i) => (
+      <div class={`tile-v t-${i.tone}${toggle ? ` hz hz-${i.horizon}` : ''}`}>
+        {(pair || toggle) && <p class="tile-h">{i.horizonText}</p>}
+        <p class="tile-num"><span class="tile-big">{num(i.value)}</span><span class="tile-arrow" aria-hidden="true">{arrow(i)}</span></p>
+        <Meter value={i.value} lo={i.ciLow} hi={i.ciHigh} tone={i.tone} label={aria(i)} />
+        <p class="tile-verdict">{i.verdict}</p>
+        {i.dist && <p class="tile-balance">{balance(i)}</p>}
+        <p class="tile-meta">95 % ДІ {range(i.ciLow, i.ciHigh)} · n = {int(i.n)}</p>
+      </div>
+    ))}
+  </div>
+
+  {extras.length > 0 && (
+    <ul class="tile-extra">
+      {extras.map((e) => (
+        <li title={`${e.code}: 95 % ДІ ${range(e.ciLow, e.ciHigh)}, n = ${int(e.n)}`}>
+          <i class={`lg-dot t-${e.tone}`}></i>{extraLabel(e)} <b>{num(e.value)}</b> <span class={`t-${e.tone}`} aria-hidden="true">{arrow(e)}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <a class="tile-link" href={head.family.href}>Докладніше →</a>
+</article>

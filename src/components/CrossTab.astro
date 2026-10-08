@@ -1,7 +1,12 @@
 ---
-// Теплокарта розрізів: рядки = варіанти мети, колонки = групи обраної демографії,
-// клітинка = % у групі, хто обрав варіант. Селектор демографії — CSS-only (zero-JS).
-// Групи з n<minCell вже придушено в даних.
+// Теплокарта розрізів «Мотивації»: рядки = варіанти мети, колонки = групи обраної демографії,
+// клітинка = % у групі, хто обрав варіант (+ 95 % ДІ Вілсона). Селектор демографії — CSS-only.
+// Групи з n<5 вже придушено в даних.
+import CtFoot from './CtFoot.astro';
+import ciData from '../data/crosstab-ci-2026.json';
+import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
+import { pct } from '../lib/format';
+
 interface Opt { code: string; label: string; pct: number; }
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
@@ -12,6 +17,7 @@ const { block } = Astro.props as {
     crosstab: Record<string, Record<string, { n: number; pct: Record<string, number> }>>;
   };
 };
+const CIS = ciData.motivation as Record<string, Record<string, Record<string, { n: number; ci: CI }>>>;
 const opts = block.options;
 const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала кольору 0–55%+
 ---
@@ -20,11 +26,13 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
   {block.dimensions.map((d, i) => (
     <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
   ))}
+  <input type="checkbox" class="ct-cib" id="ct-mot-ci" />
   <div class="ct-tabs">
     {block.dimensions.map((d) => (
       <label for={`ct-${d.id}`}>{d.label}</label>
     ))}
   </div>
+  <label class="ct-cilabel" for="ct-mot-ci">Показати 95&nbsp;% ДІ</label>
 
   {block.dimensions.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -34,7 +42,7 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
             <tr>
               <th>Мета \ {d.label.toLowerCase()}</th>
               {d.groups.map((g) => (
-                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
@@ -44,10 +52,12 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
                 <td>{o.label}</td>
                 {d.groups.map((g) => {
                   const p = block.crosstab[d.id][g.value].pct[o.label] ?? 0;
+                  const c = CIS[d.id]?.[g.value]?.[o.label];
                   const a = alpha(p);
                   return (
-                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}`} style={`--a:${a.toFixed(2)}`}>
-                      {p.toFixed(0)}
+                    <td class={`ct-cell${a > 0.45 ? ' hi' : ''}${g.n < SMALL_N ? ' lown' : ''}`} style={`--a:${a.toFixed(2)}`}
+                        title={tip(pct(p), c?.ci, c?.n)}>
+                      {p.toFixed(0)}<span class="ct-ci">{ciText(c?.ci)}</span>
                     </td>
                   );
                 })}
@@ -56,10 +66,9 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.5rem">
-        Числа — % респондентів у групі, хто обрав варіант (множинний вибір, тож сума &gt; 100%). Групи
-        з n &lt; {/* minCell */ 5} приховано.
-      </p>
+      <CtFoot cube={CIS}>
+        Числа — % респондентів у групі, хто обрав варіант (множинний вибір, тож сума &gt; 100&nbsp;%).
+      </CtFoot>
     </div>
   ))}
 </div>

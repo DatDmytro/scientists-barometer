@@ -1,8 +1,14 @@
 ---
 // Теплокарта: рядки = 8 індексів (ІЯНР/ІОРН), колонки = групи демографії,
-// клітинка = значення індексу у групі. Дивергентна шкала навколо 100:
-// зелене = вище 100 (позитивно), червоне = нижче 100 (негативно), яскравість ∝ |відхилення|.
-// Селектор демографії — CSS-only (reuse .ct-* + id ct-<dim>). Придушення n<5 → «·». Zero-JS.
+// клітинка = значення індексу у групі (+ 95 % ДІ). Дивергентна шкала навколо 100:
+// синє = вище 100, червоне = нижче, яскравість ∝ |відхилення|. Якщо ДІ групи перетинає 100,
+// колір приглушено вдвічі. Селектор демографії — CSS-only. Придушення n<5 → «·». Zero-JS.
+import CtFoot from './CtFoot.astro';
+import ciData from '../data/crosstab-ci-2026.json';
+import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
+import { byCode } from '../lib/indices';
+import { num } from '../lib/format';
+
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
 interface Idx { code: string; label: string; group: string }
@@ -13,25 +19,26 @@ const { block } = Astro.props as {
     crosstab: Record<string, Record<string, { n: number } & Record<string, number | null>>>;
   };
 };
-const rows = block.indices;
-// дивергентна заливка навколо нейтрального рівня 100
-function fill(v: number): string {
-  const d = v - 100;
-  const a = (Math.min(Math.abs(d) / 40, 1) * 0.85).toFixed(2);
-  return d >= 0 ? `rgba(74,140,92,${a})` : `rgba(191,64,64,${a})`;
-}
-const strong = (v: number) => Math.min(Math.abs(v - 100) / 40, 1) * 0.85 > 0.45;
+const CIS = ciData.quality as Record<string, Record<string, Record<string, { n: number; ci: CI } | null>>>;
+const rows = block.indices.map((r) => ({ ...r, meta: byCode(r.code) }));
+const shade = (v: number, c?: { ci: CI }) => {
+  const crosses = c ? c.ci[0] <= 100 && c.ci[1] >= 100 : false;
+  const a = Math.min(Math.abs(v - 100) / 40, 1) * 0.85 * (crosses ? 0.5 : 1);
+  return { a, cls: v >= 100 ? 'c-good' : 'c-bad' };
+};
 ---
 
 <div class="crosstab">
   {block.crosstabDims.map((d, i) => (
     <input type="radio" class="ct-r" name="ct-dim" id={`ct-${d.id}`} checked={i === 0} />
   ))}
+  <input type="checkbox" class="ct-cib" id="ct-qual-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
       <label for={`ct-${d.id}`}>{d.label}</label>
     ))}
   </div>
+  <label class="ct-cilabel" for="ct-qual-ci">Показати 95&nbsp;% ДІ</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -41,22 +48,25 @@ const strong = (v: number) => Math.min(Math.abs(v - 100) / 40, 1) * 0.85 > 0.45;
             <tr>
               <th>Індекс · значення</th>
               {d.groups.map((g) => (
-                <th>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr>
-                <td>{r.label} <span class="ct-n">({r.code})</span></td>
+                <td>{r.meta.subject}{r.meta.horizonText ? `, ${r.meta.horizonText}` : ''} <span class="ct-n">({r.code})</span></td>
                 {d.groups.map((g) => {
                   const v = block.crosstab[d.id][g.value][r.code];
                   if (v === null || v === undefined) {
-                    return <td class="ct-cell" style="color:var(--muted)">·</td>;
+                    return <td class="ct-cell none">·</td>;
                   }
+                  const c = CIS[d.id]?.[g.value]?.[r.code] ?? undefined;
+                  const s = shade(v, c ?? undefined);
                   return (
-                    <td class={`ct-cell${strong(v) ? ' hi' : ''}`} style={`background:${fill(v)}`}>
-                      {Math.round(v)}
+                    <td class={`ct-cell ${s.cls}${s.a > 0.45 ? ' hi' : ''}${c && c.n < SMALL_N ? ' lown' : ''}`} style={`--a:${s.a.toFixed(2)}`}
+                        title={tip(num(v), c?.ci, c?.n, 1)}>
+                      {Math.round(v)}<span class="ct-ci">{ciText(c?.ci)}</span>
                     </td>
                   );
                 })}
@@ -65,10 +75,10 @@ const strong = (v: number) => Math.min(Math.abs(v - 100) / 40, 1) * 0.85 > 0.45;
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.5rem">
-        Числа — значення індексу у групі (100 = нейтральний рівень). <b style="color:#4a8c5c">Зелене</b> — вище 100
-        (позитивно), <b style="color:#bf4040">червоне</b> — нижче 100. «·» — недостатньо даних (n &lt; 5).
-      </p>
+      <CtFoot cube={CIS}>
+        Числа — значення індексу у групі (100 = нейтральний рівень): <b class="t-good">синє</b> — вище 100,
+        <b class="t-bad">червоне</b> — нижче; блідіше — якщо 95&nbsp;% ДІ групи перетинає 100.
+      </CtFoot>
     </div>
   ))}
 </div>
