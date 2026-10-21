@@ -50,7 +50,9 @@ const tip = (i: Index) =>
     <div class="ixf-head" aria-hidden="true">
       <span></span>
       <div class="ixf-axis">
-        {ticks.map((t) => <span class={t === 100 ? 'mid' : ''} style={`left:${x(t)}%`}>{t}</span>)}
+        {ticks.map((t) => (
+          <span class={[t === 100 ? 'mid' : '', x(t) > 96 ? 'end' : x(t) < 4 ? 'start' : ''].join(' ').trim()} style={`left:${x(t)}%`}>{t}</span>
+        ))}
       </div>
       <span class="ixf-hval">Значення (95 % ДІ)</span>
       {dist && <span class="ixf-hdist">Розподіл відповідей</span>}
@@ -61,7 +63,7 @@ const tip = (i: Index) =>
         {g.items.map((i) => (
           <div class={`ixf-row t-${i.tone}`} title={tip(i)}>
             <div class="ixf-label">
-              {rowLabel(g, i)} <span class="ixf-code">{i.code}</span>
+              <span>{rowLabel(g, i)} <span class="ixf-code">{i.code}</span></span>
             </div>
             <div class="ixf-track" role="img" aria-label={tip(i)}>
               {ticks.map((t) => <span class={`ixf-tick${t === 100 ? ' mid' : ''}`} style={`left:${x(t)}%`}></span>)}
