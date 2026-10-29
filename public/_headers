@@ -1,21 +1,20 @@
 # Безпекові заголовки для Cloudflare Pages.
 #
-# CSP — сувора: сайт самодостатній (жодних зовнішніх скриптів/стилів/шрифтів).
-# Весь JS — self-hosted окремими файлами (/_astro/*.js): astro.config.mjs вимикає інлайнінг
+# CSP — сувора: сайт самодостатній (жодних зовнішніх стилів і шрифтів).
+# Власний JS — окремими файлами (/_astro/*.js): astro.config.mjs вимикає інлайнінг
 # скриптів (vite.build.assetsInlineLimit = 0), тож хеші не потрібні. Запобіжник
 # scripts/check-dist.mjs падає на збірці, якщо в HTML з'явиться інлайн-<script>.
 #
-# style-src має 'unsafe-inline' свідомо: Astro scoped-стилі + style="" атрибути
-# (позиції й кольори графіків). Скрипт-вектор (небезпечний) лишається замкненим на 'self'.
-
-/**/index.html
-#   Режим відмови м'який: таблиця рендериться, лише сортування перестає працювати.
+# Єдиний зовнішній скрипт — лічильник Cloudflare Web Analytics (без cookies, знеособлена
+# статистика відвідувань). Cloudflare вставляє його в HTML на своєму боці (не в dist/):
+#   script-src  https://static.cloudflareinsights.com  — сам скрипт beacon.min.js
+#   connect-src https://cloudflareinsights.com         — куди він надсилає статистику
 #
-# style-src має 'unsafe-inline' свідомо: Astro scoped-стилі + style="" атрибути.
-# Скрипт-вектор (небезпечний) лишається замкненим на 'self' + конкретні хеші.
+# style-src має 'unsafe-inline' свідомо: Astro scoped-стилі + style="" атрибути
+# (позиції й кольори графіків). Скрипти лишаються замкненими на 'self' + лічильник.
 
 /*
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), microphone=(), midi=(), payment=(), usb=()

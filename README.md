@@ -10,7 +10,8 @@
 
 - **Astro** (статична генерація, zero-JS за замовчуванням) + Tailwind
 - Графіки — HTML/CSS на етапі збірки (`IndexForest`, `DistBar`, `Meter`, теплокарти розрізів)
-- Хостинг: Cloudflare Pages (`public/_headers` — сувора CSP: лише `script-src 'self'`)
+- Хостинг: Cloudflare Pages (`public/_headers` — сувора CSP: власні скрипти + лічильник
+  Cloudflare Web Analytics — знеособлена статистика відвідувань без cookies)
 
 ## Розробка
 
