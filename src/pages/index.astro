@@ -5,6 +5,7 @@ import Layout from '../layouts/Layout.astro';
 import IndexTile from '../components/IndexTile.astro';
 import IndexForest from '../components/IndexForest.astro';
 import StatTile from '../components/StatTile.astro';
+import TimeTile from '../components/TimeTile.astro';
 import wave from '../data/wave-2026.json';
 import ci from '../data/crosstab-ci-2026.json';
 import verification from '../data/verification-2026.json';
@@ -94,13 +95,21 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
   <section class="hero">
     <h1>Науковий Барометр</h1>
     <p class="lead">
-      Як самі науковці оцінюють стан науки в Україні: ресурси, якість досліджень, на що йде робочий
-      час і чого чекати далі.
+      Як науковці оцінюють стан науки в Україні: доступність ресурсів, якість досліджень, бюрократія,
+      очікування.
     </p>
     <p class="hero-meta">
       <span>Хвиля {w.id} · N = {w.n} · {date(w.field.start)} – {date(w.field.end)} {w.id}</span>
       <a class="doi-chip" href={DOI_URL} target="_blank" rel="noopener">DOI {DOI}</a>
     </p>
+  </section>
+
+  <section class="band lead-band" id="holovne">
+    <div class="tiles">
+      <TimeTile />
+      <IndexTile codes={['ІНМ']} extra={['ІНМ ф', 'ІНМ о', 'ІНМ ч']} subtitle="зведена забезпеченість фінансуванням, обладнанням і часом" extraLabel={extraLabel} />
+      <IndexTile codes={['ІОРН 1']} extra={['ІОРН 5']} subtitle="Як зміниться розвиток науки" />
+    </div>
   </section>
 
   <div class="howto">
@@ -119,16 +128,6 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
     </p>
   </div>
 
-  <section class="band" id="stan">
-    <h2>Стан зараз</h2>
-    <p class="band-note">{KIND.state.note[0].toUpperCase() + KIND.state.note.slice(1)}: наскільки науковці забезпечені ресурсами і як оцінюють якість досліджень.</p>
-    <div class="tiles">
-      <IndexTile codes={['ІНМ']} extra={['ІНМ ф', 'ІНМ о', 'ІНМ ч']} subtitle="зведена забезпеченість фінансуванням, обладнанням і часом" extraLabel={extraLabel} />
-      <IndexTile codes={['ІЯНР в']} />
-      <IndexTile codes={['ІЯНР ч']} />
-    </div>
-  </section>
-
   <section class="band" id="zminy">
     <h2>Динаміка (за оцінками науковців)</h2>
     <p class="band-note">
@@ -142,41 +141,9 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
         <label for="hz-1">За рік</label>
         <label for="hz-5">За 5 років</label>
       </div>
-      <div class="tiles">
-        <IndexTile codes={['ІНЧ 1', 'ІНЧ 5']} toggle />
-        <IndexTile codes={['ІКННЧ 1', 'ІКННЧ 5']} toggle />
-        <IndexTile codes={['ІБВЧ 1', 'ІБВЧ 5']} toggle />
-      </div>
-      <h3 class="subhead">Усі показники динаміки</h3>
       <div class="hz hz-1"><IndexForest groups={DYN(1)} domain={DYN_DOMAIN} /></div>
       <div class="hz hz-5"><IndexForest groups={DYN(5)} domain={DYN_DOMAIN} /></div>
     </div>
-  </section>
-
-  <section class="band" id="ochikuvannya">
-    <h2>Чого очікують</h2>
-    <p class="band-note">Як, на думку респондентів, зміниться розвиток науки.</p>
-    <div class="tiles">
-      <IndexTile codes={['ІОРН 1', 'ІОРН 5']} subtitle="Як зміниться розвиток науки" />
-    </div>
-  </section>
-
-  <section class="band" id="chas">
-    <h2>Структура робочого часу</h2>
-    <p class="band-note">
-      Середні частки робочого тижня за самооцінкою респондентів. Сума близька до 100&nbsp;%, але не
-      точна: відповіді давалися інтервалами.
-    </p>
-    <div class="actbar timebar" role="img" aria-label={`Дійсна наукова ${pct(share['НД'])}, корисна ненаукова ${pct(share['КН'])}, безглузда ${pct(share['БД'])}`}>
-      <span class="nd" style={`width:${share['НД']}%`}>Дійсна наукова {pct(share['НД'])}</span>
-      <span class="kn" style={`width:${share['КН']}%`}>Корисна ненаукова {pct(share['КН'])}</span>
-      <span class="bd" style={`width:${share['БД']}%`}>Безглузда {pct(share['БД'])}</span>
-    </div>
-    <p>
-      За середнього робочого тижня {num(time.hours.mean)} год це приблизно
-      <b>{num(time.hours.bullshitHoursAtMean)} години на тиждень</b> безглуздої діяльності.
-      <a href="/time-structure">Докладніше →</a>
-    </p>
   </section>
 
   <section class="band" id="vidsotky">
