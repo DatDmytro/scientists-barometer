@@ -18,6 +18,8 @@ interface Props {
 const { groups, dist = true, domain, caption } = Astro.props;
 const rows = groups.map((g) => ({ ...g, items: g.codes.map(byCode) }));
 const all: Index[] = rows.flatMap((g) => g.items);
+// пункт легенди «без оцінки» — лише якщо на графіку є такий індекс (ІКННЧ)
+const hasNeutral = all.some((i) => i.family.valence === 0);
 
 const lo0 = Math.min(100, ...all.map((i) => i.ciLow));
 const hi0 = Math.max(100, ...all.map((i) => i.ciHigh));
@@ -86,7 +88,7 @@ const tip = (i: Index) =>
   <figcaption class="ixf-legend">
     <span><i class="lg-dot t-good"></i>краще для науки</span>
     <span><i class="lg-dot t-bad"></i>гірше</span>
-    <span><i class="lg-dot t-neutral"></i>без оцінки «добре / погано»</span>
+    {hasNeutral && <span><i class="lg-dot t-neutral"></i>без оцінки «добре / погано»</span>}
     <span><i class="lg-dot t-ns"></i>95 % ДІ перетинає 100 — від нейтрального значення не відрізняється</span>
     {dist && <span class="lg-dist">розподіл: праворуч від центру — позитивні відповіді, ліворуч — негативні, сіре — нейтральна</span>}
     {caption && <span class="lg-cap">{caption}</span>}
