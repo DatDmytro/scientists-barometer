@@ -39,12 +39,6 @@ const graeber = zOriginal?.replace(/[«»()]/g, '').trim();
         ))}
       </tbody>
     </table>
-    <p class="note">
-      Лише <b>{pct(block.options.find((o) => o.code === 'most_papers')!.pct)}</b> обрали «опублікувати більше
-      всіх статей» і <b>{pct(block.options.find((o) => o.code === 'hirsch')!.pct)}</b> — «найвищий індекс
-      Гірша». Формальні метрики майже ніхто не вважає метою — переважають прикладний і фундаментальний
-      результати.
-    </p>
   </section>
 
   <section>
@@ -62,9 +56,6 @@ const graeber = zOriginal?.replace(/[«»()]/g, '').trim();
 
   <section>
     <h2>Розрізи за демографією</h2>
-    <p class="note" style="margin-top:-0.2rem">
-      Обери вимір — побачиш, як частка кожної мети змінюється між групами (теплокарта: темніше = вищий %).
-    </p>
     <CrossTab block={block} />
   </section>
 

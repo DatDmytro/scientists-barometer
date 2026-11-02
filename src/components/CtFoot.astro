@@ -1,17 +1,32 @@
 ---
-// Примітка під теплокартою: що означають числа (slot) + невизначеність і мала база.
+// Підпис під теплокартою — «Як читати таблицю» списком: що означає число (slot),
+// штрихування малих груп, «·», і наскільки точні оцінки (типова половина 95 % ДІ).
 import { typicalWidths, SMALL_N } from '../lib/crosstab';
 
-interface Props { cube: unknown; unit?: string }
-const { cube, unit = 'пунктів' } = Astro.props;
+interface Props { cube: unknown }
+const { cube } = Astro.props;
 const w = typicalWidths(cube);
+const half = (x: number) => Math.round(x / 2);
+// 1 пункт · 2 пункти · 5 пунктів
+const points = (n: number) =>
+  n % 10 === 1 && n % 100 !== 11 ? 'пункт'
+  : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'пункти' : 'пунктів';
+const hasSmall = Number.isFinite(w.small);
 ---
 
-<p class="note ct-foot">
-  <slot />
-  «·» — недостатньо даних (n &lt; 5).
-  <span class="lownkey" aria-hidden="true"></span> — база клітинки менше {SMALL_N} відповідей.
-  Типова ширина 95&nbsp;% ДІ — близько {Math.round(w.small)} {unit} у таких клітинках і
-  {Math.round(w.large)} — у більших, тож невеликі різниці між групами не варто інтерпретувати.
-  ДІ кожної клітинки — у підказці або за перемикачем «Показати 95&nbsp;% ДІ».
-</p>
+<div class="note ct-foot">
+  <p class="ct-foot-h">Як читати таблицю</p>
+  <ul>
+    <li><slot /></li>
+    <li><span class="lownkey" aria-hidden="true"></span> Заштрихована клітинка — у групі менше {SMALL_N} відповідей, тож оцінка неточна.</li>
+    <li>«·» — менше 5 відповідей, значення не показуємо.</li>
+    <li>
+      Точність: типовий 95&nbsp;% довірчий інтервал —
+      {hasSmall
+        ? `приблизно ±${half(w.small)} ${points(half(w.small))} у малих групах і ±${half(w.large)} у більших`
+        : `приблизно ±${half(w.large)} ${points(half(w.large))}`},
+      тож невеликі різниці між групами можуть бути випадковими. Інтервал кожної клітинки — у підказці
+      при наведенні або з перемикачем «Показати 95&nbsp;% ДІ».
+    </li>
+  </ul>
+</div>
