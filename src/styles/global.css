@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
-/* Палітра за змістом (перевірено validate_palette.js зі скілу dataviz, світлий режим):
-   синій — краще для науки, червоний — гірше; ΔE для дальтонізму 23,8 (норма ≥ 8).
-   Стара пара зелений/червоний не проходила (ΔE 4,2). Ті самі кольори несуть категорії
-   часу: ДНД — синій, КННД — сіро-синій (без оцінки), БД — червоний. */
+/* Дві окремі палітри (перевірено validate_palette.js зі скілу dataviz, світлий режим).
+   1. За змістом (індекси): синій — краще для науки, червоний — гірше (ΔE для дальтонізму 23,8);
+      бурштиновий — без оцінки «добре / погано» (лише ІКННЧ); сірий — нейтральна відповідь
+      або ДІ перетинає 100.
+   2. Категорії часу: ДНД — зелений, КННД — бурштиновий, БД — теракотовий (ΔE ≥ 16,6). Свої
+      кольори, щоб ДНД не плутали з «краще», а БД — з «гірше» (рішення автора 2026-11-02). */
 :root {
   --ink: #1a2230;
   --muted: #5b6b7c;
@@ -13,12 +15,18 @@
   --accent: #2c5f8a;
   --good: #2a78d6;
   --bad: #d03b3b;
-  --neutral: #7a8898;
+  --neutral: #b8860b;
+  --cat-nd: #0f8b6c;
+  --cat-kn: #d9a520;
+  --cat-bd: #c2410c;
+  --rgb-nd: 15 139 108;
+  --rgb-kn: 217 165 32;
+  --rgb-bd: 194 65 12;
   --ns: #9aa3ad;
   --track: #eef1f4;
   --rgb-good: 42 120 214;
   --rgb-bad: 208 59 59;
-  --rgb-neutral: 122 136 152;
+  --rgb-neutral: 184 134 11;
   --rgb-accent: 44 95 138;
   /* сумісність зі старими назвами */
   --pos: var(--good);
@@ -193,6 +201,10 @@ a { color: var(--accent); }
 .ct-cell.c-good { background-color: rgb(var(--rgb-good) / var(--a, 0)); }
 .ct-cell.c-bad { background-color: rgb(var(--rgb-bad) / var(--a, 0)); }
 .ct-cell.c-neutral { background-color: rgb(var(--rgb-neutral) / var(--a, 0)); }
+.ct-cell.c-nd { background-color: rgb(var(--rgb-nd) / var(--a, 0)); }
+.ct-cell.c-kn { background-color: rgb(var(--rgb-kn) / var(--a, 0)); }
+.ct-cell.c-bd { background-color: rgb(var(--rgb-bd) / var(--a, 0)); }
+.ct-cell.c-kn.hi { color: var(--ink); }
 .ct-cell.hi { color: #fff; }
 .ct-cell.none { color: var(--muted); background: none; text-align: center; }
 /* мала база (n < 20): штрихування поверх кольору — ДІ тут широкі */
@@ -221,14 +233,14 @@ a { color: var(--accent); }
 [data-metric="nd"] .mcell .m-nd, [data-metric="kn"] .mcell .m-kn, [data-metric="bd"] .mcell .m-bd,
 [data-metric="unprov"] .mcell .m-unprov, [data-metric="prov"] .mcell .m-prov,
 [data-metric="insuf"] .mcell .m-insuf, [data-metric="suf"] .mcell .m-suf { display: inline; }
-[data-metric="nd"] .mcell { background-color: rgb(var(--rgb-good) / var(--a-nd, 0)); }
-[data-metric="kn"] .mcell { background-color: rgb(var(--rgb-neutral) / var(--a-kn, 0)); }
-[data-metric="bd"] .mcell { background-color: rgb(var(--rgb-bad) / var(--a-bd, 0)); }
+[data-metric="nd"] .mcell { background-color: rgb(var(--rgb-nd) / var(--a-nd, 0)); }
+[data-metric="kn"] .mcell { background-color: rgb(var(--rgb-kn) / var(--a-kn, 0)); }
+[data-metric="bd"] .mcell { background-color: rgb(var(--rgb-bd) / var(--a-bd, 0)); }
 [data-metric="unprov"] .mcell { background-color: rgb(var(--rgb-bad) / var(--a-unprov, 0)); }
 [data-metric="prov"] .mcell { background-color: rgb(var(--rgb-good) / var(--a-prov, 0)); }
 [data-metric="insuf"] .mcell { background-color: rgb(var(--rgb-bad) / var(--a-insuf, 0)); }
 [data-metric="suf"] .mcell { background-color: rgb(var(--rgb-good) / var(--a-suf, 0)); }
-[data-metric="nd"] .mcell.hi-nd, [data-metric="kn"] .mcell.hi-kn, [data-metric="bd"] .mcell.hi-bd,
+[data-metric="nd"] .mcell.hi-nd, [data-metric="bd"] .mcell.hi-bd,
 [data-metric="unprov"] .mcell.hi-unprov, [data-metric="prov"] .mcell.hi-prov,
 [data-metric="insuf"] .mcell.hi-insuf, [data-metric="suf"] .mcell.hi-suf { color: #fff; }
 
@@ -244,13 +256,14 @@ a { color: var(--accent); }
 .cat-summary b:not(:first-child) { display: inline; font-size: inherit; line-height: inherit; }
 .cat-legend { display: flex; gap: 1.2rem; font-size: 0.82rem; color: var(--muted); margin: 0.6rem 0 1rem; flex-wrap: wrap; }
 .cat-legend i { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
-.swnd { background: var(--good); } .swkn { background: #8593a3; } .swbd { background: var(--bad); }
+.swnd { background: var(--cat-nd); } .swkn { background: var(--cat-kn); } .swbd { background: var(--cat-bd); }
 .actrow { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 0.7rem; align-items: center; margin: 0.35rem 0; font-size: 0.9rem; }
 .actname { min-width: 0; }
 .actname .contro { color: #8a5000; font-size: 0.72rem; }
 .actbar { display: flex; gap: 2px; height: 1.4rem; border-radius: 4px; overflow: hidden; background: var(--bg); font-size: 0.7rem; line-height: 1.4rem; color: #fff; }
 .actbar span { display: block; text-align: center; overflow: hidden; white-space: nowrap; }
-.actbar .nd { background: var(--good); } .actbar .kn { background: #8593a3; } .actbar .bd { background: var(--bad); }
+.actbar .nd { background: var(--cat-nd); } .actbar .kn { background: var(--cat-kn); color: var(--ink); } .actbar .bd { background: var(--cat-bd); }
+.t-nd { color: var(--cat-nd); } .t-kn { color: var(--cat-kn); } .t-bd { color: var(--cat-bd); }
 @media (max-width: 620px) { .actrow { grid-template-columns: 1fr; gap: 0.15rem; } }
 .catsort { margin: 0.6rem 0; font-size: 0.88rem; color: var(--muted); }
 .catsort select { font: inherit; padding: 0.2rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); margin-left: 0.3rem; }
@@ -361,7 +374,7 @@ a { color: var(--accent); }
 .seg { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border-left: 1px solid var(--surface); border-right: 1px solid var(--surface); font-size: 0.7rem; line-height: 1.45rem; text-align: center; overflow: hidden; color: var(--ink); font-variant-numeric: tabular-nums; }
 .seg.g2 { background: #1c5cab; color: #fff; } .seg.g1 { background: #86b6ef; }
 .seg.b2 { background: #b42f2f; color: #fff; } .seg.b1 { background: #f2a3a0; }
-.seg.n2 { background: #5d6b7a; color: #fff; } .seg.n1 { background: #b9c3cd; }
+.seg.n2 { background: #b8860b; color: #fff; } .seg.n1 { background: #ecd38f; }
 .seg.mid { background: #dddbd6; }
 .distbar-zero { position: absolute; top: -2px; bottom: -2px; width: 1.5px; background: #374151; transform: translateX(-50%); }
 /* у великих барах — лише риски зверху й знизу, щоб не перекреслювати число нейтрального сегмента */
@@ -451,3 +464,7 @@ details.all h3 { font-size: 0.95rem; margin: 1.2rem 0 0.1rem; }
 .tt-sw { display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 2px; flex: none; align-self: center; }
 .tt-bar { height: 0.7rem; margin: 0.5rem 0 0.2rem; }
 .band.lead-band { margin-top: 0.4rem; }
+/* бурштиновий фон — темний текст (білий на ньому нечитабельний) */
+[data-metric="kn"] .mcell.hi-kn { color: var(--ink); }
+
+.note .tt-sw, .ct-foot .tt-sw { vertical-align: -1px; }

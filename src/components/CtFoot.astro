@@ -19,7 +19,7 @@ const hasSmall = Number.isFinite(w.small);
   <ul>
     <li><slot /></li>
     <li><span class="lownkey" aria-hidden="true"></span> Заштрихована клітинка — у групі менше {SMALL_N} відповідей, тож оцінка неточна.</li>
-    <li>«·» — менше 5 відповідей, значення не показуємо.</li>
+    <li>«·» — менше 5 відповідей, значення приховане.</li>
     <li>
       Точність: типовий 95&nbsp;% довірчий інтервал —
       {hasSmall

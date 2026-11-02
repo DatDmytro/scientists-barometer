@@ -21,9 +21,9 @@ const CHANGE = [
 const inch5 = byCode('ІНЧ 5');
 const ibvch5 = byCode('ІБВЧ 5');
 const CAT: Record<string, { label: string; tone: string }> = {
-  НД: { label: 'Дійсна наукова (ДНД)', tone: 'good' },
-  КН: { label: 'Корисна ненаукова (КННД)', tone: 'neutral' },
-  БД: { label: 'Безглузда (БД)', tone: 'bad' },
+  НД: { label: 'Дійсна наукова (ДНД)', tone: 'nd' },
+  КН: { label: 'Корисна ненаукова (КННД)', tone: 'kn' },
+  БД: { label: 'Безглузда (БД)', tone: 'bd' },
 };
 ---
 
@@ -68,7 +68,7 @@ const CAT: Record<string, { label: string; tone: string }> = {
     </div>
     <p class="note">
       Законодавча норма в Україні — 40 год/тиждень. Тобто в середньому на <b>безглузду діяльність</b>
-      іде понад {num(h.bullshitHoursAtMean)} годин щотижня (а при нормованому тижні — ≈{num(h.bullshitHoursAt40)}).
+      іде понад {num(h.bullshitHoursAtMean)} годин щотижня.
     </p>
   </section>
 
@@ -97,20 +97,14 @@ const CAT: Record<string, { label: string; tone: string }> = {
       (індекс; 100 — порівну відповідей «зросла» і «скоротилася»). {CHANGE_CAVEAT}
     </p>
     <IndexForest groups={CHANGE} />
-    <p class="note">
-      За оцінкою респондентів, найшвидше зростав час на <b>безглузду діяльність</b>
-      (за 5 років — {num(ibvch5.value)}: {pct(ibvch5.up, 0)} «зросла» проти {pct(ibvch5.down, 0)}
-      «скоротилася»). Щодо часу на <b>наукову</b> діяльність думки розділилися: {num(inch5.value)} — це
-      {pct(inch5.up, 0)} «зросла» і {pct(inch5.down, 0)} «скоротилася», а не «без змін».
-    </p>
     <DistTable codes={CHANGE.flatMap((g) => g.codes)} caption="Розподіл відповідей, %" />
   </section>
 
   <section>
     <h2>Розрізи за демографією</h2>
     <p class="note" style="margin-top:-0.2rem">
-      Середня частка робочого часу на кожну категорію (<span class="t-good">ДНД</span> /
-      <span class="t-neutral">КННД</span> / <span class="t-bad">БД</span>) у розрізі груп.
+      Середня частка робочого часу на кожну категорію (<i class="tt-sw swnd"></i> ДНД /
+      <i class="tt-sw swkn"></i> КННД / <i class="tt-sw swbd"></i> БД) у розрізі груп.
     </p>
     <TimeCrossTab block={block} />
   </section>

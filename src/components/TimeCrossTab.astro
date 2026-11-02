@@ -17,9 +17,9 @@ const { block } = Astro.props as {
 };
 const CIS = ciData.timestructure as Record<string, Record<string, Record<string, { n: number; ci: CI } | null>>>;
 const rows = [
-  { cat: 'НД', label: 'Дійсна наукова', color: 'c-good' },
-  { cat: 'КН', label: 'Корисна ненаукова', color: 'c-neutral' },
-  { cat: 'БД', label: 'Безглузда', color: 'c-bad' },
+  { cat: 'НД', label: 'Дійсна наукова', color: 'c-nd' },
+  { cat: 'КН', label: 'Корисна ненаукова', color: 'c-kn' },
+  { cat: 'БД', label: 'Безглузда', color: 'c-bd' },
 ];
 const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
 ---
