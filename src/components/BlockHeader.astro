@@ -11,6 +11,6 @@ const b = blockBySlug(slug);
 
 <BlockNav slug={slug} />
 <h1>{title ?? b.title}</h1>
-{b.lead.kind === 'question'
+{b.lead && (b.lead.kind === 'question'
   ? <p class="lead">«{b.lead.text}»</p>
-  : <p class="lead topic">Тема блоку: <b>{b.lead.text}</b></p>}
+  : <p class="lead topic">Тема блоку: <b>{b.lead.text}</b></p>)}

@@ -1,29 +1,45 @@
 ---
-// Дзеркальна гістограма двох груп: ліворуч — ЗВО, праворуч — наукові установи;
-// рядки — інтервали частки часу, довжина — % групи (кожна група — від своєї бази).
-// Дані — verification-2026.json → knownGroups (те, з чого рахується критерій Манна-Уітні).
-import { num, pct, pval, signed } from '../lib/format';
+// Дзеркальна гістограма двох груп відповідей на одне питання з однаковими інтервалами:
+// ліворуч — перша група, праворуч — друга, рядки — інтервали, довжина — % своєї групи
+// (кожна група — від своєї бази, тож різні n не спотворюють порівняння).
+// Використання: ЗВО ↔ НУ на «Структурі часу» (verification → knownGroups);
+// свої прочитання ↔ прочитання моїх праць на «Додаткових» (block-additional → reading).
+import { pct } from '../lib/format';
 
-interface Bin { interval: string; zvo: number; nu: number }
-interface Side { n: number; mean: number; median: number }
-interface Props { title: string; bins: Bin[]; zvo: Side; nu: Side; delta: number; p: number; tone: string }
-const { title, bins, zvo, nu, delta, p, tone } = Astro.props;
-const zp = bins.map((b) => (b.zvo / zvo.n) * 100);
-const np = bins.map((b) => (b.nu / nu.n) * 100);
-const max = Math.max(...zp, ...np);
+interface Bin { label: string; left: number; right: number } // кількості відповідей
+interface Side { label: string; n: number }
+interface Props {
+  bins: Bin[];
+  left: Side;
+  right: Side;
+  title?: string;
+  sub?: string; // рядок під заголовком (напр. результат критерію)
+  head?: [string, string]; // підписи над стовпцями; за замовч. — назви груп
+  foot?: string;
+  tone: string;
+  wide?: boolean;
+}
+const { bins, left, right, title, sub, head, foot, tone, wide = false } = Astro.props;
+const lp = bins.map((b) => (b.left / left.n) * 100);
+const rp = bins.map((b) => (b.right / right.n) * 100);
+const max = Math.max(...lp, ...rp);
+const short = (s: string) => s.replace(/\s?%$/, '');
 ---
 
-<figure class="mirror">
-  <figcaption><b>{title}</b>
-    <span class="note">різниця середніх {signed(delta)} в.п. · p = {pval(p)}{p >= 0.05 ? ' (н/з)' : ''}</span>
-  </figcaption>
-  <div class="mh-head"><span>ЗВО · {num(zvo.mean)} %</span><span></span><span>НУ · {num(nu.mean)} %</span></div>
+<figure class={`mirror${wide ? ' wide' : ''}`}>
+  {(title || sub) && (
+    <figcaption>
+      {title && <b>{title}</b>}
+      {sub && <span class="note">{sub}</span>}
+    </figcaption>
+  )}
+  <div class="mh-head"><span>{head?.[0] ?? left.label}</span><span></span><span>{head?.[1] ?? right.label}</span></div>
   {bins.map((b, k) => (
-    <div class="mh-row" title={`${b.interval}: ЗВО ${pct(zp[k])} (${b.zvo}), НУ ${pct(np[k])} (${b.nu})`}>
-      <span class="mh-l"><i class={`t-${tone}`} style={`width:${(zp[k] / max) * 100}%`}></i></span>
-      <span class="mh-x">{b.interval.replace(' %', '')}</span>
-      <span class="mh-r"><i class={`t-${tone}`} style={`width:${(np[k] / max) * 100}%`}></i></span>
+    <div class="mh-row" title={`${b.label}: ${left.label} ${pct(lp[k])} (${b.left}), ${right.label} ${pct(rp[k])} (${b.right})`}>
+      <span class="mh-l"><i class={`t-${tone}`} style={`width:${(lp[k] / max) * 100}%`}></i></span>
+      <span class="mh-x">{short(b.label)}</span>
+      <span class="mh-r"><i class={`t-${tone}`} style={`width:${(rp[k] / max) * 100}%`}></i></span>
     </div>
   ))}
-  <p class="note mh-foot">медіана: ЗВО {num(zvo.median, 0)} %, НУ {num(nu.median, 0)} % · n = {zvo.n} / {nu.n}</p>
+  {foot && <p class="note mh-foot">{foot}</p>}
 </figure>

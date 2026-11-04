@@ -4,6 +4,7 @@ import LikertDiverging from '../components/LikertDiverging.astro';
 import AddCrossTab from '../components/AddCrossTab.astro';
 import BlockHeader from '../components/BlockHeader.astro';
 import BlockNav from '../components/BlockNav.astro';
+import MirrorHist from '../components/MirrorHist.astro';
 import block from '../data/block-additional-2026.json';
 import ci from '../data/crosstab-ci-2026.json';
 import { pct, num, range } from '../lib/format';
@@ -24,17 +25,20 @@ const CI = (label: string) => {
 };
 
 const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
+// свої прочитання ↔ прочитання моїх праць іншими: однакові інтервали частки уважного читання
+const own = block.reading.own;
+const others = block.reading.others;
+const READ_BINS = own.dist.map((d, k) => {
+  if (others.dist[k].label !== d.label) throw new Error('Інтервали читання не збігаються');
+  return { label: d.label, left: d.n, right: others.dist[k].n };
+});
 ---
 
 <Layout
   title="Додаткові питання — Науковий Барометр"
-  description="Перевірка центральних гіпотез: поведінка в глухому куті, вплив усунення безглуздої діяльності та зниження навантаження на якість, читацька активність, публікації без примусу."
+  description="Поведінка в глухому куті, вплив усунення безглуздої діяльності та зниження навантаження на якість, публікації без примусу, читацька активність."
 >
   <BlockHeader slug="additional" />
-  <p class="note">
-    Шостий блок анкети перевіряє центральні гіпотези дослідження: зв'язок навантаження та якості,
-    публікаційний тиск і читацьку активність.
-  </p>
 
   <section>
     <h2>Поведінка в умовах «глухого кута»</h2>
@@ -54,11 +58,6 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
         ))}
       </tbody>
     </table>
-    <p class="note">
-      Три з чотирьох варіантів — методологічно прийнятні. Але <b>{pct(de.options.find((o) => o.code === 'adjust')!.pct)}</b>
-      {' '}обрали «коригувати, щоб закінчити, навіть неякісно» — адаптація до системи, де незавершене
-      дослідження не зараховується у звітність незалежно від причин.
-    </p>
     <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">Дописані варіанти ({de.writeIns.length})</h3>
     <ul class="qlist">
       {de.writeIns.map((w) => <li>{w}</li>)}
@@ -68,28 +67,28 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
   <section>
     <h2>Вплив на якість наукової роботи</h2>
     <div class="cat-summary">
-      <div><b class="big up">{pct(removebs.positivePct)}</b> очікують покращення якості за умови <b>усунення безглуздої діяльності</b> (H3) · {CI('Усунення БД покращить якість (% покращення)')}</div>
-      <div><b class="big up">{pct(workload.positivePct)}</b> — за умови <b>зниження загального навантаження</b> (H8) · {CI('Зниження навантаж. покращить якість (%)')}</div>
+      <div><b class="big up">{pct(removebs.positivePct)}</b> очікують покращення якості за умови <b>усунення безглуздої діяльності</b> · {CI('Усунення БД покращить якість (% покращення)')}</div>
+      <div><b class="big up">{pct(workload.positivePct)}</b> — за умови <b>зниження загального навантаження</b> · {CI('Зниження навантаж. покращить якість (%)')}</div>
     </div>
     <p class="note" style="margin:0.6rem 0 0.3rem">Розподіл відповідей, %:</p>
     <LikertDiverging rows={impactRows} />
-    <p class="note">
-      Усунення БД — <b>найбільш консолідований результат усього дослідження</b>: жоден респондент не
-      обрав «значно погіршиться», лише 0,5% — «дещо погіршиться».
-    </p>
   </section>
 
   <section>
     <h2>Публікації без зовнішнього примусу</h2>
     <div class="cat-summary">
-      <div><b class="big up">{pct(pub.positivePct)}</b> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b> (H4) · {CI('Публікували б без примусу (% так)')}</div>
+      <div><b class="big up">{pct(pub.positivePct)}</b> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b> · {CI('Публікували б без примусу (% так)')}</div>
     </div>
     <p class="note" style="margin:0.6rem 0 0.3rem">«{pub.question}»</p>
     <LikertDiverging rows={pubRows} />
-    <p class="note">
-      Внутрішня мотивація науковців потужна й не формується зовнішнім примусом — формальні вимоги
-      радше заважають, ніж допомагають.
+  </section>
+
+  <section>
+    <h2>Розрізи за демографією</h2>
+    <p class="note" style="margin-top:-0.2rem">
+      % згодних по трьох показниках у розрізі груп (теплокарта: темніше = сильніша згода).
     </p>
+    <AddCrossTab block={block} />
   </section>
 
   <section>
@@ -98,6 +97,19 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
       Яка частка прочитань є справді уважними (повне засвоєння), а не поверхневим переглядом.
     </p>
 
+    <MirrorHist
+      bins={READ_BINS}
+      left={{ label: 'Свої прочитання', n: own.n }}
+      right={{ label: 'Прочитання моїх праць', n: others.n }}
+      head={[`Я читаю чужі праці · медіана ${pct(own.median, 0)}`, `Інші читають мої · медіана ${pct(others.median, 0)}`]}
+      foot={`% респондентів у кожному інтервалі частки уважно прочитаного · n = ${own.n} / ${others.n}`}
+      tone="accent"
+      wide
+    />
+    <p class="note">Ліворуч: «{own.question}» Праворуч: «{others.question}»</p>
+
+    <details class="all tables">
+      <summary>Точні частки — таблиці</summary>
     <h3 style="font-size:0.96rem;margin:1rem 0 0.3rem;color:var(--ink)">Свої прочитання чужих праць</h3>
     <p class="note" style="margin:0">Медіана <b>{pct(block.reading.own.median)}</b>, середня {pct(block.reading.own.mean)} (n = {block.reading.own.n}).</p>
     <table class="dist">
@@ -127,19 +139,7 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
         ))}
       </tbody>
     </table>
-    <p class="note">
-      Медіанний науковець уважно читає лише <b>{pct(block.reading.own.median, 0)}</b> публікацій, які відкриває, і
-      припускає, що його праці уважно читають ще рідше (<b>{pct(block.reading.others.median, 0)}</b>). Більшість
-      читання — поверхневе; це сигнал публікаційної інфляції («наукового спаму»).
-    </p>
-  </section>
-
-  <section>
-    <h2>Розрізи за демографією</h2>
-    <p class="note" style="margin-top:-0.2rem">
-      % згодних по трьох показниках у розрізі груп (теплокарта: темніше = сильніша згода).
-    </p>
-    <AddCrossTab block={block} />
+    </details>
   </section>
 
   <section>

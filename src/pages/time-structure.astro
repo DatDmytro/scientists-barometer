@@ -9,7 +9,7 @@ import TimeCrossTab from '../components/TimeCrossTab.astro';
 import block from '../data/block-timestructure-2026.json';
 import verification from '../data/verification-2026.json';
 import { byCode, CHANGE_CAVEAT } from '../lib/indices';
-import { num, pct } from '../lib/format';
+import { num, pct, pval, signed } from '../lib/format';
 
 const sh = Object.fromEntries(block.shares.map((s) => [s.cat, s]));
 const h = block.hours;
@@ -80,7 +80,16 @@ const CAT: Record<string, { label: string; tone: string }> = {
     </p>
     <div class="mirrors">
       {verification.knownGroups.map((g) => (
-        <MirrorHist title={CAT[g.category].label} bins={g.distribution} zvo={g.zvo} nu={g.nu} delta={g.delta} p={g.p} tone={CAT[g.category].tone} />
+        <MirrorHist
+          title={CAT[g.category].label}
+          sub={`різниця середніх ${signed(g.delta)} в.п. · p = ${pval(g.p)}${g.p >= 0.05 ? ' (н/з)' : ''}`}
+          bins={g.distribution.map((d) => ({ label: d.interval, left: d.zvo, right: d.nu }))}
+          left={{ label: 'ЗВО', n: g.zvo.n }}
+          right={{ label: 'НУ', n: g.nu.n }}
+          head={[`ЗВО · ${num(g.zvo.mean)} %`, `НУ · ${num(g.nu.mean)} %`]}
+          foot={`медіана: ЗВО ${num(g.zvo.median, 0)} %, НУ ${num(g.nu.median, 0)} % · n = ${g.zvo.n} / ${g.nu.n}`}
+          tone={CAT[g.category].tone}
+        />
       ))}
     </div>
     <p class="note">

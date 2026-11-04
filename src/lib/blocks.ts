@@ -6,7 +6,7 @@ export interface Block {
   slug: string;
   href: string;
   title: string;
-  lead: { kind: 'question' | 'topic'; text: string };
+  lead?: { kind: 'question' | 'topic'; text: string };
   teaser: string;
 }
 
@@ -38,7 +38,6 @@ export const BLOCKS: Block[] = [
   },
   {
     slug: 'additional', href: '/additional', title: 'Додаткові питання',
-    lead: { kind: 'topic', text: 'перевірка центральних гіпотез дослідження' },
     teaser: 'Глухий кут у дослідженні, вплив навантаження на якість, публікації без примусу, уважне читання.',
   },
 ];
