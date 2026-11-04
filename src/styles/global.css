@@ -469,9 +469,3 @@ details.all h3 { font-size: 0.95rem; margin: 1.2rem 0 0.1rem; }
 
 .note .tt-sw, .ct-foot .tt-sw { vertical-align: -1px; }
 
-/* дзеркальна гістограма на всю ширину колонки (читання) і згорнуті таблиці під нею */
-.mirror.wide { max-width: 620px; margin: 0.8rem 0 0.4rem; }
-.mirror.wide .mh-head, .mirror.wide .mh-row { grid-template-columns: 1fr 4rem 1fr; }
-.mirror.wide .mh-row { height: 1.15rem; }
-.mirror.wide .mh-l, .mirror.wide .mh-r { height: 0.85rem; }
-details.all.tables { margin: 1rem 0 0; }

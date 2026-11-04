@@ -4,7 +4,6 @@ import LikertDiverging from '../components/LikertDiverging.astro';
 import AddCrossTab from '../components/AddCrossTab.astro';
 import BlockHeader from '../components/BlockHeader.astro';
 import BlockNav from '../components/BlockNav.astro';
-import MirrorHist from '../components/MirrorHist.astro';
 import block from '../data/block-additional-2026.json';
 import ci from '../data/crosstab-ci-2026.json';
 import { pct, num, range } from '../lib/format';
@@ -25,13 +24,6 @@ const CI = (label: string) => {
 };
 
 const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
-// свої прочитання ↔ прочитання моїх праць іншими: однакові інтервали частки уважного читання
-const own = block.reading.own;
-const others = block.reading.others;
-const READ_BINS = own.dist.map((d, k) => {
-  if (others.dist[k].label !== d.label) throw new Error('Інтервали читання не збігаються');
-  return { label: d.label, left: d.n, right: others.dist[k].n };
-});
 ---
 
 <Layout
@@ -97,20 +89,8 @@ const READ_BINS = own.dist.map((d, k) => {
       Яка частка прочитань є справді уважними (повне засвоєння), а не поверхневим переглядом.
     </p>
 
-    <MirrorHist
-      bins={READ_BINS}
-      left={{ label: 'Свої прочитання', n: own.n }}
-      right={{ label: 'Прочитання моїх праць', n: others.n }}
-      head={[`Я читаю чужі праці · медіана ${pct(own.median, 0)}`, `Інші читають мої · медіана ${pct(others.median, 0)}`]}
-      foot={`% респондентів у кожному інтервалі частки уважно прочитаного · n = ${own.n} / ${others.n}`}
-      tone="accent"
-      wide
-    />
-    <p class="note">Ліворуч: «{own.question}» Праворуч: «{others.question}»</p>
-
-    <details class="all tables">
-      <summary>Точні частки — таблиці</summary>
     <h3 style="font-size:0.96rem;margin:1rem 0 0.3rem;color:var(--ink)">Свої прочитання чужих праць</h3>
+    <p class="note" style="margin:0 0 0.2rem">«{block.reading.own.question}»</p>
     <p class="note" style="margin:0">Медіана <b>{pct(block.reading.own.median)}</b>, середня {pct(block.reading.own.mean)} (n = {block.reading.own.n}).</p>
     <table class="dist">
       <tbody>
@@ -126,6 +106,7 @@ const READ_BINS = own.dist.map((d, k) => {
     </table>
 
     <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">Як уважно інші читають ваші праці</h3>
+    <p class="note" style="margin:0 0 0.2rem">«{block.reading.others.question}»</p>
     <p class="note" style="margin:0">Медіана <b>{pct(block.reading.others.median)}</b>, середня {pct(block.reading.others.mean)} (n = {block.reading.others.n}).</p>
     <table class="dist">
       <tbody>
@@ -139,7 +120,6 @@ const READ_BINS = own.dist.map((d, k) => {
         ))}
       </tbody>
     </table>
-    </details>
   </section>
 
   <section>
