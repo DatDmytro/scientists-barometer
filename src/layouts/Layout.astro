@@ -7,7 +7,6 @@ const { title, description } = Astro.props as { title: string; description?: str
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const nav = [
   { href: '/methodology', label: 'Методологія' },
-  { href: '/data', label: 'Дані й цитування' },
   { href: '/about', label: 'Про проєкт' },
 ];
 const inResults = BLOCKS.some((b) => path.startsWith(b.href));

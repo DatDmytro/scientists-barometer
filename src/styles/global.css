@@ -150,7 +150,6 @@ a { color: var(--accent); }
 .assess.ok { color: #1c5cab; border-color: #b7d3f6; background: #eef5fd; }
 .assess.mid { color: #6b5a00; border-color: #eadb9c; background: #fdf8e6; }
 .assess.lim { color: #9a3412; border-color: #f5c6b4; background: #fdf1ec; }
-.citebox { background: var(--bg); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 0.9rem 1.1rem; margin: 0.8rem 0; overflow-wrap: anywhere; }
 .doi-chip { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid #c9d6e3; background: #f1f6fb; text-decoration: none; white-space: nowrap; }
 
 /* ── Розподіл (таблиця з інлайн-баром) ── */
