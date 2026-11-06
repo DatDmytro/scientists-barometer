@@ -6,30 +6,10 @@ const { en } = i18n(Astro);
 
 const email = 'dmitrymaslov@ukr.net';
 
-const joinSubject = en ? 'Taking part in the next wave of the Scientists Barometer' : 'Долучитися до наступної хвилі «Науковий барометр»';
-const joinBody = en ? `Hello! I would like to receive an invitation to the next wave of the Scientists Barometer survey.
-
-Name:
-Role (researcher / PhD student / student / other), optional:
-Field, optional:
-
-I agree to my address being kept for the sole purpose of sending me the survey form at the next wave. I understand that this is not part of the research data and that I can ask for it to be deleted at any time.` : `Доброго дня! Хочу отримати запрошення на наступну хвилю опитування «Науковий барометр».
-
-Ім'я:
-Роль (науковець / аспірант / студент / інше) — за бажанням:
-Галузь — за бажанням:
-
-Даю згоду зберегти мою адресу з єдиною метою — надіслати форму опитування при наступній хвилі. Розумію, що це не частина даних дослідження і що можу попросити видалення будь-коли.`;
-
-const feedbackSubject = en ? 'Feedback on the Scientists Barometer site' : 'Відгук про сайт «Науковий барометр»';
-const feedbackBody = en ? `Type (bug / suggestion / comment on the methodology / other):
-
-Message:` : `Тип (баг / пропозиція / зауваження до методології / інше):
-
-Повідомлення:`;
-
-const joinHref = `mailto:${email}?subject=${encodeURIComponent(joinSubject)}&body=${encodeURIComponent(joinBody)}`;
-const feedbackHref = `mailto:${email}?subject=${encodeURIComponent(feedbackSubject)}&body=${encodeURIComponent(feedbackBody)}`;
+// Форми Tally. Запрошення й відгуки — окремо, щоб адреси для запрошень не змішувалися з відгуками.
+const FORMS = en ? { join: 'Vpj8by', feedback: 'Eq50vB' } : { join: 'PRD09Q', feedback: '6DexQA' };
+const formUrl = (id: string) => `https://tally.so/r/${id}`;
+const embedUrl = (id: string) => `https://tally.so/embed/${id}?alignLeft=1&hideTitle=1&transparentBackground=1`;
 ---
 
 <Layout
@@ -49,13 +29,13 @@ const feedbackHref = `mailto:${email}?subject=${encodeURIComponent(feedbackSubje
     <div class="cta">
       <h3>{en ? 'Get an invitation to the next wave' : 'Отримати запрошення на наступну хвилю'}</h3>
       <p>
-        {en ? <>Write to us and we will send you the form when a new wave of the survey starts. That is the only
+        {en ? <>Leave your address and we will send you the form when a new wave of the survey starts. That is the only
         thing we will use your address for. Your contact details are kept <b>separately</b> from the research
-        data and never become part of them.</> : <>Напишіть нам — і коли стартує нова хвиля опитування, ми надішлемо вам форму. Це єдине, для
+        data and never become part of them.</> : <>Лишіть адресу — і коли стартує нова хвиля опитування, ми надішлемо вам форму. Це єдине, для
         чого ми використаємо вашу адресу. Ваш контакт зберігається <b>окремо</b> від даних дослідження
         і ніколи не стає їх частиною.</>}
       </p>
-      <a class="btn" href={joinHref}>{en ? 'Write to take part' : 'Написати, щоб долучитися'}</a>
+      <a class="btn" href={formUrl(FORMS.join)} target="_blank" rel="noopener" data-embed={embedUrl(FORMS.join)} data-kind="join">{en ? 'Leave your address' : 'Лишити адресу'}</a>
     </div>
 
     <div class="cta">
@@ -65,15 +45,16 @@ const feedbackHref = `mailto:${email}?subject=${encodeURIComponent(feedbackSubje
         improve the instrument before the next iteration. Feedback is not part of the study.</> : <>Помітили помилку, маєте пропозицію чи зауваження до методології? Напишіть — це допомагає
         покращити інструмент до наступної ітерації. Відгук не є частиною дослідження.</>}
       </p>
-      <a class="btn btn-sec" href={feedbackHref}>{en ? 'Write feedback' : 'Написати відгук'}</a>
+      <a class="btn btn-sec" href={formUrl(FORMS.feedback)} target="_blank" rel="noopener" data-embed={embedUrl(FORMS.feedback)} data-kind="feedback">{en ? 'Write feedback' : 'Написати відгук'}</a>
     </div>
   </div>
 
   <div class="meta">
     <p><b>{en ? 'How we handle your contact details' : 'Як ми поводимося з вашим контактом'}</b></p>
     <p>{en ? <><b>Who collects them:</b> D. Maslov (ORCID 0000-0002-1721-8319), author of the study.</> : <><b>Хто збирає:</b> Маслов Д.С. (ORCID 0000-0002-1721-8319), автор дослідження.</>}</p>
-    <p>{en ? <><b>What:</b> only your email address (plus, if you wish, your name, role and field).</> : <><b>Що:</b> лише вашу електронну адресу (+ за бажанням ім'я, роль, галузь).</>}</p>
-    <p>{en ? <><b>Why:</b> solely to send you the survey form at the next wave. No mailing lists, advertising or transfer to third parties.</> : <><b>Навіщо:</b> виключно щоб надіслати форму опитування при наступній хвилі. Жодної розсилки, реклами чи передачі третім сторонам.</>}</p>
+    <p>{en ? <><b>What:</b> your email address; in the feedback form, your message, and your address only if you wish.</> : <><b>Що:</b> вашу електронну адресу; у формі відгуку — повідомлення, а адресу лише за бажанням.</>}</p>
+    <p>{en ? <><b>Why:</b> an address left for an invitation is used solely to send you the survey form at the next wave; an address left with feedback is used only to reply. No mailing lists or advertising.</> : <><b>Навіщо:</b> адресу для запрошення — виключно щоб надіслати форму опитування при наступній хвилі; адресу з відгуку — лише щоб відповісти. Жодної розсилки чи реклами.</>}</p>
+    <p>{en ? <><b>Where:</b> the forms run on the Tally service (Belgium, data stored in the EU). The data are not passed to any other third parties. A form loads only after you press the button; while it is open, Tally keeps a technical form identifier in your browser.</> : <><b>Де:</b> форми працюють на сервісі Tally (Бельгія, дані зберігаються в ЄС). Іншим третім сторонам дані не передаються. Форма завантажується лише після натискання кнопки; під час заповнення Tally зберігає у браузері службовий ідентифікатор форми.</>}</p>
     <p>{en ? <><b>How long:</b> until you ask for deletion or until the project ends.</> : <><b>Скільки:</b> до вашого запиту про видалення або до завершення проєкту.</>}</p>
     <p>
       {en ? <><b>Separate from the study:</b> the contact details of those who wish to take part and feedback are not
@@ -88,6 +69,22 @@ const feedbackHref = `mailto:${email}?subject=${encodeURIComponent(feedbackSubje
     </p>
   </div>
 </Layout>
+
+<script>
+  // Форма Tally завантажується лише після натискання кнопки, тож решта відвідувачів нічого з Tally не отримує.
+  // Без скриптів кнопка просто відкриває форму в новій вкладці.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-embed]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const frame = document.createElement('iframe');
+      frame.src = btn.dataset.embed ?? '';
+      frame.title = btn.textContent?.trim() ?? '';
+      frame.className = `tally-frame ${btn.dataset.kind}`;
+      btn.closest('.cta')?.classList.add('open');
+      btn.replaceWith(frame);
+    });
+  });
+</script>
 
 <style>
   .cta-grid {
@@ -136,6 +133,10 @@ const feedbackHref = `mailto:${email}?subject=${encodeURIComponent(feedbackSubje
   }
   .meta a {
     color: var(--accent);
+  }
+  /* відкрита форма займає всю ширину сітки */
+  .cta.open {
+    grid-column: 1 / -1;
   }
   @media (max-width: 620px) {
     .cta-grid {

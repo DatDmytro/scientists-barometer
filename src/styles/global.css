@@ -471,3 +471,12 @@ details.all h3 { font-size: 0.95rem; margin: 1.2rem 0 0.1rem; }
 
 .note .tt-sw, .ct-foot .tt-sw { vertical-align: -1px; }
 
+/* Вбудовані форми Tally («Долучитися»). Рамку створює скрипт, тому стиль глобальний. Висота задана
+   вручну за вмістом форм: автовисота потребує скрипта Tally, а його на сайті немає. */
+.tally-frame { display: block; width: 100%; border: 0; margin-top: 0.4rem; }
+.tally-frame.join { height: 330px; }
+.tally-frame.feedback { height: 630px; }
+@media (max-width: 620px) {
+  .tally-frame.join { height: 450px; }
+  .tally-frame.feedback { height: 760px; }
+}
