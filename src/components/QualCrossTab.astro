@@ -5,9 +5,12 @@
 // колір приглушено вдвічі. Селектор демографії — CSS-only. Придушення n<5 → «·». Zero-JS.
 import CtFoot from './CtFoot.astro';
 import ciData from '../data/crosstab-ci-2026.json';
-import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
-import { byCode } from '../lib/indices';
-import { num } from '../lib/format';
+import { SMALL_N, type CI } from '../lib/crosstab';
+import { indexApi } from '../lib/indices';
+import { i18n } from '../i18n';
+
+const { lang, en, tr, num, tip, ciText } = i18n(Astro);
+const { byCode } = indexApi(lang);
 
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
@@ -35,10 +38,10 @@ const shade = (v: number, c?: { ci: CI }) => {
   <input type="checkbox" class="ct-cib" id="ct-qual-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
-      <label for={`ct-${d.id}`}>{d.label}</label>
+      <label for={`ct-${d.id}`}>{tr(d.label)}</label>
     ))}
   </div>
-  <label class="ct-cilabel" for="ct-qual-ci">Показати 95&nbsp;% ДІ</label>
+  <label class="ct-cilabel" for="ct-qual-ci">{en ? <>Show 95% CI</> : <>Показати 95&nbsp;% ДІ</>}</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -46,16 +49,16 @@ const shade = (v: number, c?: { ci: CI }) => {
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Індекс · значення</th>
+              <th>{en ? 'Index · value' : 'Індекс · значення'}</th>
               {d.groups.map((g) => (
-                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{tr(g.value)}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr>
-                <td>{r.meta.subject}{r.meta.horizonText ? `, ${r.meta.horizonText}` : ''} <span class="ct-n">({r.code})</span></td>
+                <td>{r.meta.subject}{r.meta.horizonText ? `, ${r.meta.horizonText}` : ''} <span class="ct-n">({r.meta.code})</span></td>
                 {d.groups.map((g) => {
                   const v = block.crosstab[d.id][g.value][r.code];
                   if (v === null || v === undefined) {
@@ -76,8 +79,9 @@ const shade = (v: number, c?: { ci: CI }) => {
         </table>
       </div>
       <CtFoot cube={CIS}>
-        Числа — значення індексу у групі (100 = нейтральний рівень): <b class="t-good">синє</b> — вище 100,
-        <b class="t-bad">червоне</b> — нижче; блідіше — якщо 95&nbsp;% ДІ групи перетинає 100.
+        {en ? <>Figures: the index value in the group (100 = neutral level): <b class="t-good">blue</b> is above 100,
+        <b class="t-bad">red</b> is below; paler if the group’s 95% CI crosses 100.</> : <>Числа — значення індексу у групі (100 = нейтральний рівень): <b class="t-good">синє</b> — вище 100,
+        <b class="t-bad">червоне</b> — нижче; блідіше — якщо 95&nbsp;% ДІ групи перетинає 100.</>}
       </CtFoot>
     </div>
   ))}

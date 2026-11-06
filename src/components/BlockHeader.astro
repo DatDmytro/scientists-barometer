@@ -3,14 +3,17 @@
 // (у лапках) або тема блоку (без лапок, бо єдиного формулювання немає).
 import BlockNav from './BlockNav.astro';
 import { blockBySlug } from '../lib/blocks';
+import { i18n } from '../i18n';
+
+const { lang, en } = i18n(Astro);
 
 interface Props { slug: string; title?: string }
 const { slug, title } = Astro.props;
-const b = blockBySlug(slug);
+const b = blockBySlug(slug, lang);
 ---
 
 <BlockNav slug={slug} />
 <h1>{title ?? b.title}</h1>
 {b.lead && (b.lead.kind === 'question'
-  ? <p class="lead">«{b.lead.text}»</p>
-  : <p class="lead topic">Тема блоку: <b>{b.lead.text}</b></p>)}
+  ? <p class="lead">{en ? `“${b.lead.text}”` : `«${b.lead.text}»`}</p>
+  : <p class="lead topic">{en ? 'Block topic:' : 'Тема блоку:'} <b>{b.lead.text}</b></p>)}

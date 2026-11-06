@@ -5,8 +5,10 @@
 // Придушення n<5 → «·». Селектор демографії — CSS-only (окремий префікс cts-).
 import CtFoot from './CtFoot.astro';
 import ciData from '../data/crosstab-ci-2026.json';
-import { ciText, SMALL_N, type CI } from '../lib/crosstab';
-import { range, int } from '../lib/format';
+import { SMALL_N, type CI } from '../lib/crosstab';
+import { i18n } from '../i18n';
+
+const { en, tr, range, int, ciText } = i18n(Astro);
 
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
@@ -22,10 +24,10 @@ type CiCell = { n: number; insuf: CI; suf: CI } | null;
 const CIS = ciData.sufficiency as unknown as Record<string, Record<string, Record<string, CiCell>>>;
 const rows = block.sufficiency;
 const alpha = (p: number) => Math.min(p / 80, 1) * 0.85;
-const KEYS = [['insuf', 'недостатньо'], ['suf', 'достатньо']] as const;
+const KEYS = [['insuf', en ? 'insufficient' : 'недостатньо'], ['suf', en ? 'sufficient' : 'достатньо']] as const;
 const title = (c: Cell, ci: CiCell) =>
-  KEYS.map(([k, l]) => `${l} ${c[k]} %${ci ? ` (${range(ci[k][0], ci[k][1], 0)})` : ''}`).join(' · ') +
-  (ci ? `; 95 % ДІ у дужках, n = ${int(ci.n)}` : '');
+  KEYS.map(([k, l]) => `${l} ${c[k]}${en ? '%' : ' %'}${ci ? ` (${range(ci[k][0], ci[k][1], 0)})` : ''}`).join(' · ') +
+  (ci ? `; ${en ? '95% CI in brackets' : '95 % ДІ у дужках'}, n = ${int(ci.n)}` : '');
 ---
 
 <div class="crosstab" data-metric="insuf" data-metric-root="suf">
@@ -35,10 +37,10 @@ const title = (c: Cell, ci: CiCell) =>
   <input type="checkbox" class="ct-cib" id="cts-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
-      <label for={`cts-${d.id}`}>{d.label}</label>
+      <label for={`cts-${d.id}`}>{tr(d.label)}</label>
     ))}
   </div>
-  <label class="ct-cilabel" for="cts-ci">Показати 95&nbsp;% ДІ</label>
+  <label class="ct-cilabel" for="cts-ci">{en ? <>Show 95% CI</> : <>Показати 95&nbsp;% ДІ</>}</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane cts-pane" data-dim={d.id}>
@@ -46,16 +48,16 @@ const title = (c: Cell, ci: CiCell) =>
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Потреба · %</th>
+              <th>{en ? 'Need · %' : 'Потреба · %'}</th>
               {d.groups.map((g) => (
-                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{tr(g.value)}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr>
-                <td>{r.label}</td>
+                <td>{tr(r.label)}</td>
                 {d.groups.map((g) => {
                   const c = block.sufficiencyCrosstab[d.id][g.value][r.need];
                   if (!c) return <td class="ct-cell none">·</td>;
@@ -76,8 +78,9 @@ const title = (c: Cell, ci: CiCell) =>
         </table>
       </div>
       <CtFoot cube={CIS}>
-        Числа — % у групі, кому <b class="t-bad">недостатньо</b> (скоріше + критично) або
-        <b class="t-good">достатньо</b> — за перемикачем вище; темніше — вищий %.
+        {en ? <>Figures: % in the group for whom time is <b class="t-bad">insufficient</b> (rather + critically) or
+        <b class="t-good">sufficient</b>, depending on the switch above; darker means a higher %.</> : <>Числа — % у групі, кому <b class="t-bad">недостатньо</b> (скоріше + критично) або
+        <b class="t-good">достатньо</b> — за перемикачем вище; темніше — вищий %.</>}
       </CtFoot>
     </div>
   ))}

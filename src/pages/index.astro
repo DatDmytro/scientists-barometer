@@ -13,20 +13,24 @@ import time from '../data/block-timestructure-2026.json';
 import motivation from '../data/block-motivation-2026.json';
 import categorization from '../data/block-categorization-2026.json';
 import additional from '../data/block-additional-2026.json';
-import { BLOCKS } from '../lib/blocks';
-import { KIND, byCode, type Index } from '../lib/indices';
-import { DOI, DOI_URL, SAMPLE_BIAS, SAMPLE_ARGUMENT } from '../lib/site';
-import { num, pct, int } from '../lib/format';
+import { blocksFor } from '../lib/blocks';
+import { indexApi, type Index } from '../lib/indices';
+import { DOI, DOI_URL, SAMPLE_BIAS, SAMPLE_ARGUMENT, SAMPLE_BIAS_EN, SAMPLE_ARGUMENT_EN } from '../lib/site';
+import { i18n } from '../i18n';
 
+const { lang, en, tr, link, num, pct, int } = i18n(Astro);
+const { KIND, byCode } = indexApi(lang);
+
+const BLOCKS = blocksFor(lang);
 const w = wave.wave;
-const date = (s: string) => new Intl.DateTimeFormat('uk-UA', { day: 'numeric', month: 'long' }).format(new Date(s));
+const date = (s: string) => new Intl.DateTimeFormat(en ? 'en-GB' : 'uk-UA', { day: 'numeric', month: 'long' }).format(new Date(s));
 const share = Object.fromEntries(time.shares.map((s) => [s.cat, s.mean]));
 
 // динаміка для перемикача «За рік / За 5 років»: 8 показників одного горизонту
 const DYN = (h: 1 | 5) => [
-  { title: 'Структура робочого часу', codes: [`ІНЧ ${h}`, `ІКННЧ ${h}`, `ІБВЧ ${h}`] },
-  { title: 'Забезпеченість ресурсами', codes: [`ІНМ ф${h}`, `ІНМ о${h}`, `ІНМ ч${h}`] },
-  { title: 'Якість досліджень', codes: [`ІЯНР в${h}`, `ІЯНР ч${h}`] },
+  { title: (en ? 'Working time structure' : 'Структура робочого часу'), codes: [`ІНЧ ${h}`, `ІКННЧ ${h}`, `ІБВЧ ${h}`] },
+  { title: (en ? 'Adequacy of resources' : 'Забезпеченість ресурсами'), codes: [`ІНМ ф${h}`, `ІНМ о${h}`, `ІНМ ч${h}`] },
+  { title: (en ? 'Research quality' : 'Якість досліджень'), codes: [`ІЯНР в${h}`, `ІЯНР ч${h}`] },
 ];
 // спільна шкала для обох горизонтів, щоб перемикання не зсувало вісь
 const dynAll = [...DYN(1), ...DYN(5)].flatMap((g) => g.codes).map(byCode);
@@ -37,38 +41,38 @@ const DYN_DOMAIN: [number, number] = [
 
 // усі 16 показників динаміки (для згорнутого блоку): пункт → рядки «за рік» / «за 5 років»
 const CHANGE_GROUPS = [
-  { title: 'Час на дійсну наукову діяльність', codes: ['ІНЧ 1', 'ІНЧ 5'] },
-  { title: 'Час на корисну ненаукову діяльність', codes: ['ІКННЧ 1', 'ІКННЧ 5'] },
-  { title: 'Час на безглузду діяльність', codes: ['ІБВЧ 1', 'ІБВЧ 5'] },
-  { title: 'Забезпеченість фінансуванням', codes: ['ІНМ ф1', 'ІНМ ф5'] },
-  { title: 'Забезпеченість обладнанням', codes: ['ІНМ о1', 'ІНМ о5'] },
-  { title: 'Забезпеченість часом', codes: ['ІНМ ч1', 'ІНМ ч5'] },
-  { title: 'Якість власних досліджень', codes: ['ІЯНР в1', 'ІЯНР в5'] },
-  { title: 'Якість досліджень інших', codes: ['ІЯНР ч1', 'ІЯНР ч5'] },
+  { title: (en ? 'Time on actual scientific activity' : 'Час на дійсну наукову діяльність'), codes: ['ІНЧ 1', 'ІНЧ 5'] },
+  { title: (en ? 'Time on useful non-scientific activity' : 'Час на корисну ненаукову діяльність'), codes: ['ІКННЧ 1', 'ІКННЧ 5'] },
+  { title: (en ? 'Time on meaningless activity' : 'Час на безглузду діяльність'), codes: ['ІБВЧ 1', 'ІБВЧ 5'] },
+  { title: (en ? 'Adequacy of funding' : 'Забезпеченість фінансуванням'), codes: ['ІНМ ф1', 'ІНМ ф5'] },
+  { title: (en ? 'Adequacy of equipment' : 'Забезпеченість обладнанням'), codes: ['ІНМ о1', 'ІНМ о5'] },
+  { title: (en ? 'Adequacy of time' : 'Забезпеченість часом'), codes: ['ІНМ ч1', 'ІНМ ч5'] },
+  { title: (en ? 'Quality of own research' : 'Якість власних досліджень'), codes: ['ІЯНР в1', 'ІЯНР в5'] },
+  { title: (en ? 'Quality of others’ research' : 'Якість досліджень інших'), codes: ['ІЯНР ч1', 'ІЯНР ч5'] },
 ];
 const STATE_GROUPS = [
-  { title: 'Наукові можливості', codes: ['ІНМ ф', 'ІНМ о', 'ІНМ ч', 'ІНМ'] },
-  { title: 'Якість наукових результатів', codes: ['ІЯНР в', 'ІЯНР ч'] },
+  { title: (en ? 'Research capacity' : 'Наукові можливості'), codes: ['ІНМ ф', 'ІНМ о', 'ІНМ ч', 'ІНМ'] },
+  { title: (en ? 'Quality of research results' : 'Якість наукових результатів'), codes: ['ІЯНР в', 'ІЯНР ч'] },
 ];
-const EXPECT_GROUPS = [{ title: 'Розвиток науки', codes: ['ІОРН 1', 'ІОРН 5'] }];
+const EXPECT_GROUPS = [{ title: (en ? 'Development of science' : 'Розвиток науки'), codes: ['ІОРН 1', 'ІОРН 5'] }];
 
 // чотири відсоткові показники: дослівні питання анкети + ДІ Вілсона
 const Q = verification.questionnaire.indicators as Record<string, string>;
-const question = (label: string) => Q[label].split(' (в оригіналі')[0].trim();
+const question = (label: string) => (en ? tr(Q[label]).split(' (D. Graeber')[0] : Q[label].split(' (в оригіналі')[0]).trim();
 const ind = (label: string) => {
   const i = ci.indicators.find((x) => x.label === label);
   if (!i) throw new Error(`Немає показника ${label}`);
   return i;
 };
 const STATS = [
-  { label: 'Усунення БД покращить якість (% покращення)', title: 'Без безглуздої діяльності якість роботи зросла б',
-    answer: '«значно» + «дещо покращиться»', href: '/additional' },
-  { label: 'Публікували б без примусу (% так)', title: 'Досліджували й публікували б і без обов’язкових вимог',
-    answer: '«точно так» + «швидше так»', href: '/additional' },
-  { label: 'Зниження навантаж. покращить якість (%)', title: 'Менше навантаження — вища якість роботи',
-    answer: '«значно» + «дещо покращиться»', href: '/additional' },
-  { label: 'Змістовність роботи (% згодних)', title: 'Моя робота робить змістовний внесок у світ',
-    answer: '«повністю» + «скоріше погоджуюсь»', href: '/motivation' },
+  { label: 'Усунення БД покращить якість (% покращення)', title: (en ? 'Without meaningless activity, the quality of work would improve' : 'Без безглуздої діяльності якість роботи зросла б'),
+    answer: en ? '“significantly” + “somewhat” improve' : '«значно» + «дещо покращиться»', href: link('/additional') },
+  { label: 'Публікували б без примусу (% так)', title: (en ? 'Would do research and publish even without mandatory requirements' : 'Досліджували й публікували б і без обов’язкових вимог'),
+    answer: en ? '“definitely yes” + “probably yes”' : '«точно так» + «швидше так»', href: link('/additional') },
+  { label: 'Зниження навантаж. покращить якість (%)', title: (en ? 'Lower workload, higher quality of work' : 'Менше навантаження — вища якість роботи'),
+    answer: en ? '“significantly” + “somewhat” improve' : '«значно» + «дещо покращиться»', href: link('/additional') },
+  { label: 'Змістовність роботи (% згодних)', title: (en ? 'My work makes a meaningful contribution to the world' : 'Моя робота робить змістовний внесок у світ'),
+    answer: en ? '“fully agree” + “rather agree”' : '«повністю» + «скоріше погоджуюсь»', href: link('/motivation') },
 ].map((s) => ({ ...s, ...ind(s.label), question: question(s.label) }));
 
 // ключове число для кожної картки розділу
@@ -76,7 +80,14 @@ const topGoal = [...motivation.options].sort((a, b) => b.n - a.n)[0];
 const removebs = additional.impact.find((x) => x.code === 'removebs')!;
 const inm = byCode('ІНМ');
 const own = byCode('ІЯНР в');
-const KEY: Record<string, string> = {
+const KEY: Record<string, string> = en ? {
+  motivation: `<b>${pct(topGoal.pct)}</b> choose the purpose “${tr(topGoal.label).split(' (')[0].toLowerCase()}”`,
+  categorization: `<b>${categorization.summary['БД']}</b> of ${categorization.activities.length} activities are seen as meaningless by the majority`,
+  'time-structure': `<b>${pct(share['БД'])}</b> of working time goes on meaningless activity`,
+  resources: `Research Capacity Index <b>${num(inm.value)}</b>: below the neutral value of 100`,
+  quality: `Quality of own research <b>${num(own.value)}</b>: above the neutral value of 100`,
+  additional: `<b>${pct(removebs.positivePct)}</b> expect better quality if meaningless activity were removed`,
+} : {
   motivation: `<b>${num(topGoal.pct)}&nbsp;%</b> обирають мету «${topGoal.label.split(' (')[0].toLowerCase()}»`,
   categorization: `<b>${categorization.summary['БД']}</b> із ${categorization.activities.length} видів діяльності більшість вважає безглуздими`,
   'time-structure': `<b>${num(share['БД'])}&nbsp;%</b> робочого часу — безглузда діяльність`,
@@ -84,22 +95,25 @@ const KEY: Record<string, string> = {
   quality: `Якість власних досліджень <b>${num(own.value)}</b> — вище нейтрального значення 100`,
   additional: `<b>${num(removebs.positivePct)}&nbsp;%</b> чекають кращої якості, якщо прибрати безглузду діяльність`,
 };
-const PART: Record<string, string> = { 'ІНМ ф': 'фінансування', 'ІНМ о': 'обладнання', 'ІНМ ч': 'час' };
-const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
+const PART: Record<string, string> = en
+  ? { 'ІНМ ф': 'funding', 'ІНМ о': 'equipment', 'ІНМ ч': 'time' }
+  : { 'ІНМ ф': 'фінансування', 'ІНМ о': 'обладнання', 'ІНМ ч': 'час' };
+const extraLabel = (i: Index) => PART[i.key] ?? i.subject;
 ---
 
 <Layout
-  title="Науковий Барометр — стан науки в Україні очима науковців"
-  description="Інтерсуб'єктивні індекси якості наукової діяльності в Україні: як науковці оцінюють стан науки, зміни й перспективи. Хвиля 2026, пілот N = 200."
+  title={en ? 'Scientists Barometer: the state of science in Ukraine through researchers’ eyes' : 'Науковий Барометр — стан науки в Україні очима науковців'}
+  description={en ? 'Intersubjective indices of the quality of research activity in Ukraine: how researchers assess the state of science, its changes and prospects. Wave 2026, pilot, N = 200.' : "Інтерсуб'єктивні індекси якості наукової діяльності в Україні: як науковці оцінюють стан науки, зміни й перспективи. Хвиля 2026, пілот N = 200."}
 >
   <section class="hero">
-    <h1>Науковий Барометр</h1>
+    <h1>{en ? 'Scientists Barometer' : 'Науковий Барометр'}</h1>
     <p class="lead">
-      Як науковці оцінюють стан науки в Україні: доступність ресурсів, якість досліджень, бюрократія,
-      очікування.
+      {en ? <>How researchers assess the state of science in Ukraine: access to resources, research quality,
+      bureaucracy, expectations.</> : <>Як науковці оцінюють стан науки в Україні: доступність ресурсів, якість досліджень, бюрократія,
+      очікування.</>}
     </p>
     <p class="hero-meta">
-      <span>Хвиля {w.id} · N = {w.n} · {date(w.field.start)} – {date(w.field.end)} {w.id}</span>
+      <span>{en ? 'Wave' : 'Хвиля'} {w.id} · N = {w.n} · {date(w.field.start)} – {date(w.field.end)} {w.id}</span>
       <a class="doi-chip" href={DOI_URL} target="_blank" rel="noopener">DOI {DOI}</a>
     </p>
   </section>
@@ -107,39 +121,44 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
   <section class="band lead-band" id="holovne">
     <div class="tiles">
       <TimeTile />
-      <IndexTile codes={['ІНМ']} extra={['ІНМ ф', 'ІНМ о', 'ІНМ ч']} subtitle="зведена забезпеченість фінансуванням, обладнанням і часом" extraLabel={extraLabel} />
-      <IndexTile codes={['ІОРН 1']} extra={['ІОРН 5']} subtitle="Як зміниться розвиток науки" />
+      <IndexTile codes={['ІНМ']} extra={['ІНМ ф', 'ІНМ о', 'ІНМ ч']} subtitle={en ? 'composite adequacy of funding, equipment and time' : 'зведена забезпеченість фінансуванням, обладнанням і часом'} extraLabel={extraLabel} />
+      <IndexTile codes={['ІОРН 1']} extra={['ІОРН 5']} subtitle={en ? 'How the development of science will change' : 'Як зміниться розвиток науки'} />
     </div>
   </section>
 
   <div class="howto">
     <p>
-      <b>Шкала індексу 0–200.</b> 100 — нейтральне значення. Вище 100 переважають позитивні оцінки
-      («зросла», «забезпечені», «краще»), нижче — негативні.
+      {en ? <><b>Index scale 0–200.</b> 100 is the neutral value. Above 100, positive assessments prevail
+      (“increased”, “adequate”, “better”); below 100, negative ones.</> : <><b>Шкала індексу 0–200.</b> 100 — нейтральне значення. Вище 100 переважають позитивні оцінки
+      («зросла», «забезпечені», «краще»), нижче — негативні.</>}
     </p>
     <p>
-      <b>Точка і смуга.</b> Смуга — 95&nbsp;% довірчий інтервал. Заповнена точка — значення відрізняється
-      від 100; порожня сіра — інтервал перетинає 100, тож від нейтрального значення не відрізняється.
+      {en ? <><b>Dot and band.</b> The band is the 95% confidence interval. A filled dot means the value differs
+      from 100; a hollow grey dot means the interval crosses 100, so the value does not differ from the neutral value.</> : <><b>Точка і смуга.</b> Смуга — 95&nbsp;% довірчий інтервал. Заповнена точка — значення відрізняється
+      від 100; порожня сіра — інтервал перетинає 100, тож від нейтрального значення не відрізняється.</>}
     </p>
     <p>
-      <b>Колір — за змістом.</b> <span class="t-good">Синій</span> — краще для науки,
+      {en ? <><b>Colour by meaning.</b> <span class="t-good">Blue</span> is better for science,
+      <span class="t-bad">red</span> is worse, <span class="t-neutral">amber</span> carries no
+      judgement. So growth in meaningless activity is shown in red.</> : <><b>Колір — за змістом.</b> <span class="t-good">Синій</span> — краще для науки,
       <span class="t-bad">червоний</span> — гірше, <span class="t-neutral">бурштиновий</span> — без
-      оцінки. Тож зростання безглуздої діяльності — червоне.
+      оцінки. Тож зростання безглуздої діяльності — червоне.</>}
     </p>
   </div>
 
   <section class="band" id="zminy">
-    <h2>Динаміка (за оцінками науковців)</h2>
+    <h2>{en ? 'Change (as assessed by researchers)' : 'Динаміка (за оцінками науковців)'}</h2>
     <p class="band-note">
-      Оцінка змін: респонденти відповідали, як змінилася частка часу, забезпеченість чи якість за
-      останній рік і за п'ять років.
+      {en ? <>Assessed change: respondents said how the share of time, adequacy of resources or quality had changed
+      over the past year and the past five years.</> : <>Оцінка змін: респонденти відповідали, як змінилася частка часу, забезпеченість чи якість за
+      останній рік і за п'ять років.</>}
     </p>
     <div class="hzbox">
       <input type="radio" class="hz-r" name="hz" id="hz-1" checked />
       <input type="radio" class="hz-r" name="hz" id="hz-5" />
-      <div class="hz-tabs" aria-label="Горизонт оцінки">
-        <label for="hz-1">За рік</label>
-        <label for="hz-5">За 5 років</label>
+      <div class="hz-tabs" aria-label={en ? 'Assessment horizon' : 'Горизонт оцінки'}>
+        <label for="hz-1">{en ? 'Over 1 year' : 'За рік'}</label>
+        <label for="hz-5">{en ? 'Over 5 years' : 'За 5 років'}</label>
       </div>
       <div class="hz hz-1"><IndexForest groups={DYN(1)} domain={DYN_DOMAIN} /></div>
       <div class="hz hz-5"><IndexForest groups={DYN(5)} domain={DYN_DOMAIN} /></div>
@@ -147,10 +166,11 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
   </section>
 
   <section class="band" id="vidsotky">
-    <h2>Додаткові показники</h2>
+    <h2>{en ? 'Additional indicators' : 'Додаткові показники'}</h2>
     <p class="band-note">
-      Відсоткові показники — частка двох найпозитивніших відповідей. Це не індекси, тож шкала 0–200
-      до них не застосовна.
+      {en ? <>Percentage indicators show the share of the two most positive responses. They are not indices, so the
+      0–200 scale does not apply to them.</> : <>Відсоткові показники — частка двох найпозитивніших відповідей. Це не індекси, тож шкала 0–200
+      до них не застосовна.</>}
     </p>
     <div class="tiles four">
       {STATS.map((s) => (
@@ -158,19 +178,21 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
       ))}
     </div>
     <p class="note">
-      Довірчий інтервал для відсотків — інтервал Вілсона. Поблизу 100&nbsp;% він несиметричний: униз довший,
+      {en ? <>The confidence interval for percentages is the Wilson interval. Near 100% it is asymmetric: longer
+      downwards than upwards, because a share cannot exceed 100%. An ordinary “± margin” interval is
+      inaccurate near the edge of the scale. <a href={link('/methodology#vybirka')}>More →</a></> : <>Довірчий інтервал для відсотків — інтервал Вілсона. Поблизу 100&nbsp;% він несиметричний: униз довший,
       ніж угору, бо частка не може перевищити 100&nbsp;%. Звичайний інтервал «± похибка» біля краю шкали
-      неточний. <a href="/methodology#vybirka">Докладніше →</a>
+      неточний. <a href={link('/methodology#vybirka')}>Докладніше →</a></>}
     </p>
   </section>
 
   <section class="band" id="rozdily">
-    <h2>Розділи дослідження</h2>
-    <p class="band-note">Шість блоків анкети — кожен із розподілами відповідей, розрізами за демографією і коментарями респондентів.</p>
+    <h2>{en ? 'Survey sections' : 'Розділи дослідження'}</h2>
+    <p class="band-note">{en ? 'Six blocks of the questionnaire, each with response distributions, demographic breakdowns and respondents’ comments.' : 'Шість блоків анкети — кожен із розподілами відповідей, розрізами за демографією і коментарями респондентів.'}</p>
     <div class="cards">
       {BLOCKS.map((b, i) => (
         <a class="card" href={b.href}>
-          <span class="card-num">Блок {i + 1}</span>
+          <span class="card-num">{en ? 'Block' : 'Блок'} {i + 1}</span>
           <h3>{b.title}</h3>
           <p>{b.teaser}</p>
           <p class="card-key" set:html={KEY[b.slug]} />
@@ -180,7 +202,7 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
   </section>
 
   <details class="all" id="usi-indeksy">
-    <summary>Усі 24 індекси — значення, 95&nbsp;% ДІ, n і розподіл відповідей</summary>
+    <summary>{en ? <>All 24 indices: value, 95% CI, n and response distribution</> : <>Усі 24 індекси — значення, 95&nbsp;% ДІ, n і розподіл відповідей</>}</summary>
     <h3>{KIND.state.label}</h3>
     <IndexForest groups={STATE_GROUPS} />
     <h3>{KIND.change.label}</h3>
@@ -189,16 +211,21 @@ const extraLabel = (i: Index) => PART[i.code] ?? i.subject;
     <h3>{KIND.expect.label}</h3>
     <IndexForest groups={EXPECT_GROUPS} />
     <p class="note">
-      Індекс = 100 · (1 + середнє зважених відповідей), ваги від +1 до −1; n — кількість відповідей на
+      {en ? <>Index = 100 · (1 + mean of weighted responses), with weights from +1 to −1; n is the number of
+      responses to the question. The CI of the composite Research Capacity Index was computed by bootstrap:
+      10,000 random resamples from the responses of the same respondents. How it is calculated: see the
+      <a href={link('/methodology')}>methodology</a>; all values are in the <a href={DOI_URL} target="_blank" rel="noopener">dataset</a>.</> : <>Індекс = 100 · (1 + середнє зважених відповідей), ваги від +1 до −1; n — кількість відповідей на
       питання. ДІ зведеного Індексу наукових можливостей розраховано бутстрепом — 10 000 випадкових
       перевибірок з відповідей тих самих респондентів. Як рахується —
-      <a href="/methodology">методологія</a>; усі значення — у <a href={DOI_URL} target="_blank" rel="noopener">наборі даних</a>.
+      <a href={link('/methodology')}>методологія</a>; усі значення — у <a href={DOI_URL} target="_blank" rel="noopener">наборі даних</a>.</>}
     </p>
   </details>
 
   <p class="callout" style="margin-top:2rem">
-    <b>Пілот.</b> Вибірка невипадкова ({int(w.n)} із {int(w.population.size)} науковців, {num(w.population.fractionPct, 2)}&nbsp;%)
+    {en ? <><b>Pilot.</b> The sample is non-random ({int(w.n)} of {int(w.population.size)} researchers, {pct(w.population.fractionPct, 2)})
+    and {SAMPLE_BIAS_EN}. {SAMPLE_ARGUMENT_EN} Confidence intervals describe the statistical precision of the estimates.
+    <a href={link('/methodology#vybirka')}>About the sample →</a></> : <><b>Пілот.</b> Вибірка невипадкова ({int(w.n)} із {int(w.population.size)} науковців, {num(w.population.fractionPct, 2)}&nbsp;%)
     і {SAMPLE_BIAS}. {SAMPLE_ARGUMENT} Довірчі інтервали описують статистичну точність оцінок.
-    <a href="/methodology#vybirka">Про вибірку →</a>
+    <a href={link('/methodology#vybirka')}>Про вибірку →</a></>}
   </p>
 </Layout>

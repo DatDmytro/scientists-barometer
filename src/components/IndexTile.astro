@@ -5,8 +5,11 @@
 // toggle: codes — горизонти одного індексу; кожне значення у .hz.hz-{1|5}, видиме лише те, що обрано
 // перемикачем смуги (CSS, див. .hzbox у global.css).
 import Meter from './Meter.astro';
-import { byCode, arrow, KIND, type Index } from '../lib/indices';
-import { num, range, pct, int } from '../lib/format';
+import { indexApi, arrow, type Index } from '../lib/indices';
+import { i18n } from '../i18n';
+
+const { lang, en, link, num, range, pct, int } = i18n(Astro);
+const { byCode, KIND } = indexApi(lang);
 
 interface Props {
   codes: string[];
@@ -24,9 +27,11 @@ const pair = items.length > 1 && !toggle;
 const extraLabel = Astro.props.extraLabel ?? ((i: Index) => i.horizonText || i.subject);
 const kindLine = [KIND[head.kind].label, pair || toggle ? '' : head.horizonText].filter(Boolean).join(' · ');
 const balance = (i: Index) =>
-  i.dist ? `«${i.scale.up}» ${pct(i.up, 0)} · «${i.scale.down}» ${pct(i.down, 0)}` : '';
+  i.dist ? (en
+    ? `“${i.scale.up}” ${pct(i.up, 0)} · “${i.scale.down}” ${pct(i.down, 0)}`
+    : `«${i.scale.up}» ${pct(i.up, 0)} · «${i.scale.down}» ${pct(i.down, 0)}`) : '';
 const aria = (i: Index) =>
-  `${i.family.name}, ${i.subject.toLowerCase()} ${i.horizonText}: ${num(i.value)} із 200, 95 % ДІ ${range(i.ciLow, i.ciHigh)}`;
+  `${i.family.name}, ${i.subject.toLowerCase()} ${i.horizonText}: ${num(i.value)} ${en ? 'out of 200, 95% CI' : 'із 200, 95 % ДІ'} ${range(i.ciLow, i.ciHigh)}`;
 ---
 
 <article class={`tile${pair ? ' pair' : ''}`}>
@@ -42,7 +47,7 @@ const aria = (i: Index) =>
         <Meter value={i.value} lo={i.ciLow} hi={i.ciHigh} tone={i.tone} label={aria(i)} />
         <p class="tile-verdict">{i.verdict}</p>
         {i.dist && <p class="tile-balance">{balance(i)}</p>}
-        <p class="tile-meta">95 % ДІ {range(i.ciLow, i.ciHigh)} · n = {int(i.n)}</p>
+        <p class="tile-meta">{en ? '95% CI' : '95 % ДІ'} {range(i.ciLow, i.ciHigh)} · n = {int(i.n)}</p>
       </div>
     ))}
   </div>
@@ -50,12 +55,12 @@ const aria = (i: Index) =>
   {extras.length > 0 && (
     <ul class="tile-extra">
       {extras.map((e) => (
-        <li title={`${e.code}: 95 % ДІ ${range(e.ciLow, e.ciHigh)}, n = ${int(e.n)}`}>
+        <li title={`${e.code}: ${en ? '95% CI' : '95 % ДІ'} ${range(e.ciLow, e.ciHigh)}, n = ${int(e.n)}`}>
           <i class={`lg-dot t-${e.tone}`}></i>{extraLabel(e)} <b>{num(e.value)}</b> <span class={`t-${e.tone}`} aria-hidden="true">{arrow(e)}</span>
         </li>
       ))}
     </ul>
   )}
 
-  <a class="tile-link" href={head.family.href}>Докладніше →</a>
+  <a class="tile-link" href={head.family.href}>{en ? 'More →' : 'Докладніше →'}</a>
 </article>

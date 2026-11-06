@@ -1,0 +1,447 @@
+---
+// Methodology (English): the same structure and figures as /methodology.
+// The calculations are shared (lib/methodology.ts); wording follows METHODOLOGY_EN.md of the dataset where the content matches.
+import Layout from '../../layouts/Layout.astro';
+import wave from '../../data/wave-2026.json';
+import verification from '../../data/verification-2026.json';
+import { indexApi, type Kind } from '../../lib/indices';
+import { DOI_URL, SAMPLE_ARGUMENT_EN } from '../../lib/site';
+import { rep, compByCrit, biasCls, W, sums, sumMax, nearSum, assessCls } from '../../lib/methodology';
+import { i18n } from '../../i18n';
+
+const { lang, tr, link, num, signed, pval, int, pct } = i18n(Astro);
+const { INDICES, KIND } = indexApi(lang);
+
+const w = wave.wave;
+const v = verification;
+
+// Sample profile: shares from the dataset METHODOLOGY, section 3 (these characteristics were optional)
+const profile = [
+  { label: 'Position', detail: 'research-and-teaching staff 47.0%; heads / deputy heads of units 21.5%; research staff (without teaching) 19.0%; PhD students 4.5%' },
+  { label: 'Academic degree', detail: 'hold a degree 87.5% (Candidate of Sciences / PhD 63.5%; Doctor of Sciences 24.0%); no degree 12.5%' },
+  { label: 'Academic title', detail: 'Associate Professors 37.0%; no academic title 34.0%; Professors 17.5%; Senior Researchers / Senior Research Fellows 10.5%; other statuses 1.0%' },
+  { label: 'Years in research', detail: 'mostly over 10 years; the 11–20 and 21–30 year groups together make up 56.5%' },
+  { label: 'Field of science', detail: 'the most represented are the social sciences (27.6%) and natural sciences and mathematics (24.1%), self-assessed' },
+  { label: 'Type of research', detail: 'applied research 58.9%; basic research 51.3%; scientific and technical development 15.2% (multiple choice)' },
+  { label: 'Type of institution', detail: 'HEIs 70.4%; research institutions 28.6%; other 1%' },
+  { label: 'Geography', detail: '21 regions of Ukraine; most of all Kyiv region (32.1%) and Odesa region (18.4%)' },
+];
+
+const kinds: Kind[] = ['state', 'change', 'expect'];
+const ofKind = (k: Kind) => INDICES.filter((i) => i.kind === k);
+
+// the two summary rows reworded for the site, as on the Ukrainian page
+const rc = v.reverseCheck;
+const SUMMARY_TEXT: Record<string, { dimension: string; result: string }> = {
+  'Узгодженість оцінок часу': {
+    dimension: 'Consistency of working time structure estimates',
+    result: `sum of the three shares: mean ${pct(v.shareSumCheck.mean)}; median ${pct(v.shareSumCheck.median)}`,
+  },
+  'Якість і узгодженість відповідей': {
+    dimension: 'Consistency of answers to related questions',
+    result: `among those for whom MA takes up more than ${rc.threshold}% of time (n = ${rc.n}), only ${rc.notImprove} (${pct(rc.pct)}) thinks that removing it would not improve the quality of work`,
+  },
+};
+const summary = v.psychometricSummary.ua.map((r, i) => ({
+  ...v.psychometricSummary.en[i],
+  cls: assessCls(r.assessment),
+  ...SUMMARY_TEXT[r.dimension],
+}));
+const CAT = { НД: 'Actual scientific (ASA)', КН: 'Useful non-scientific (UNSA)', БД: 'Meaningless (MA)' } as Record<string, string>;
+---
+
+<Layout title="Methodology — Scientists Barometer" description="How the indices are calculated, the three types of indicators, uncertainty, the sample, and the reliability and validity of the instrument.">
+  <h1>Methodology</h1>
+  <p class="lead">
+    The full version is in the documentation of the <a href={DOI_URL} target="_blank" rel="noopener">dataset</a>.
+  </p>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#indeks">How the index is calculated</a></li>
+      <li><a href="#typy">Three types of indicators</a></li>
+      <li><a href="#vybirka">Sample and uncertainty</a></li>
+      <li><a href="#profil">Sample profile</a></li>
+      <li><a href="#reprezentatyvnist">Representativeness</a></li>
+      <li><a href="#pidhotovka">Data preparation</a></li>
+      <li><a href="#nadiinist">Reliability and validity</a></li>
+      <li><a href="#etyka">Ethics and data protection</a></li>
+      <li><a href="#mezhi">Limits</a></li>
+    </ol>
+  </nav>
+
+  <div class="prose">
+    <h3 id="indeks">1. How the index is calculated</h3>
+    <p>
+      The indices are built from researchers’ own structured assessments and combined into a
+      <b>diffusion index</b>, by analogy with the Purchasing Managers’ Index (PMI) and the consumer
+      sentiment index.
+    </p>
+    <div class="formula">
+      <code>Index = [P₁·1 + P₂·0.5 + P₃·0 + P₄·(−0.5) + P₅·(−1)] · 100 + 100</code>
+      <p class="note" style="margin:0.5rem 0 0">
+        P₁…P₅ are the shares of responses from the most positive to the most negative. The range is
+        <b>0–200</b>; <b>100 = neutral level</b>.
+      </p>
+    </div>
+    <p>
+      <b>The 95% confidence interval (CI)</b> shows the precision of an estimate: the range of index values
+      compatible with the responses obtained, given that not everyone was surveyed. It is narrower the more
+      responses there are (here from 188 to 199 per question) and the smaller their spread.
+    </p>
+    <p class="note">
+      The composite <b>Research Capacity Index (RCI)</b> is the geometric mean of the three adequacy indices
+      (funding, equipment, time). Its CI was computed by bootstrap: 10,000 times, a new sample of the same
+      size was drawn at random from the same respondents (one person could enter it several times, another
+      not at all), the RCI was recalculated for each, and the CI limits are the values between which 95% of
+      the results lie. This takes into account that the three components of the RCI are related to one
+      another.
+    </p>
+    <p>
+      The same index value can mean different things: 100 can be “almost everyone chose the neutral
+      response” or “opinions were split in half”. That is why the site always shows the
+      <b>response distribution</b> next to the index.
+    </p>
+
+    <h3 id="typy">2. Three types of indicators</h3>
+    <p>
+      The 24 indices measure three different things, and the site presents them separately:
+    </p>
+    <table>
+      <thead><tr><th>Type</th><th>What it is</th><th class="num">Indices</th><th>Which</th></tr></thead>
+      <tbody>
+        {kinds.map((k) => (
+          <tr>
+            <td><b>{KIND[k].label}</b></td>
+            <td>{KIND[k].note}</td>
+            <td class="num">{ofKind(k).length}</td>
+            <td class="note">{ofKind(k).map((i) => i.code).join(', ')}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p>
+      <b>Assessed change is not measured change.</b> Respondents said how, in their view, the share of time,
+      adequacy of resources or quality had changed over one year and five years. This is their assessment
+      at the time of the survey. Retrospective indices are not included in the construct validity test
+      (section 7).
+    </p>
+
+    <h3 id="vybirka">3. Sample and uncertainty</h3>
+    <p>
+      <b>N = {w.n}</b> (25.02.2026 – 13.04.2026, {w.field.days} days; most responses came in March). The
+      population is <b>{int(w.population.size)}</b> research, research-and-teaching and teaching staff of
+      higher education institutions (HEIs) and research institutions (State Statistics Service of Ukraine,
+      2024); the sample is {pct(w.population.fractionPct, 2)}. The questionnaire was on Google Forms,
+      distributed through three channels at once: invitations to addresses from the institutions’ official
+      sites, requests to the heads of institutions, and social networks and research communities. Selection
+      was <b>non-random</b> (convenience / self-selection); participation was voluntary and anonymous.
+    </p>
+    <p>
+      Uncertainty is shown with <b>95% confidence intervals</b>: they describe the statistical precision of
+      the estimates. How far the sample differs from the population was assessed with the χ² test
+      (section 5).
+    </p>
+    <h4>Confidence intervals in demographic breakdowns</h4>
+    <p>
+      A <b>breakdown</b> divides respondents by one characteristic: field, degree, title, type of
+      institution, years in research or region. A <b>group</b> is one category of a breakdown, for example
+      the “Social sciences” field or “HEI”.
+    </p>
+    <p>
+      In the heat maps on the block pages, every cell has a CI (the “Show 95% CI” switch):
+    </p>
+    <ul>
+      <li><b>shares</b> (% choosing, agreeing, with inadequate provision): the Wilson interval. Unlike the
+        usual “share ± 1.96·√(p(1−p)/n)”, it does not go beyond 0–100% and is correct for small n and for
+        shares near the edge, which is why it is asymmetric near 0 or 100% (e.g. 93.4% → 89.1–96.1). The CIs
+        of the four percentage indicators on the home page are computed the same way;</li>
+      <li><b>indices</b>: as for the overall indices, but using only the responses of people in the group:
+        the index value in the group ± 1.96 standard errors, which depend on the spread of responses in the
+        group and their number. The limits are constrained to the 0–200 scale;</li>
+      <li><b>mean shares of time</b>: the group mean ± 1.96 standard errors of the mean (likewise based on
+        the spread and number of responses in the group).</li>
+    </ul>
+    <p>
+      <b>The smaller the group, the wider the interval.</b> Each cell is computed only from the responses of
+      people in that group to the relevant question, and groups can be very small, from 5 people.
+    </p>
+    <ul>
+      <li>In groups with fewer than 20 responses, a typical 95% CI for shares is about
+        {Math.round(W.small)} points wide (roughly ±{Math.round(W.small / 2)}); in larger groups, about
+        {Math.round(W.large)} (±{Math.round(W.large / 2)}). So small differences between groups may be due to
+        chance.</li>
+      <li>Cells with fewer than 20 responses are hatched in the heat maps.</li>
+      <li>For indices in small groups the CI is only approximate.</li>
+      <li>If everyone in a group answered identically, the formula gives an interval of zero width. This
+        does not mean perfect precision, so such a CI is not shown: the cell displays “—”.</li>
+    </ul>
+    <p class="note">
+      CIs in breakdowns were computed from the primary data and are not part of version 1.0 of the dataset on
+      Zenodo, so they cannot be reproduced from the dataset (the point values can).
+    </p>
+
+    <h3 id="profil">4. Sample profile</h3>
+    <p>
+      Questions about respondents’ characteristics were <b>optional</b> in the questionnaire.
+    </p>
+    <table>
+      <thead><tr><th>Characteristic</th><th>Sample composition</th></tr></thead>
+      <tbody>
+        {profile.map((p) => (
+          <tr><td><b>{p.label}</b></td><td>{p.detail}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="note">
+      Type of institution, degree, title and field are compared with the population in more detail below;
+      the shares there are based on those who answered the relevant question, so they may differ slightly.
+    </p>
+
+    <h3 id="reprezentatyvnist">5. Representativeness (χ² against the State Statistics Service)</h3>
+    <p>
+      The sample was compared with the population on four criteria. On all of them the difference is
+      statistically significant (p &lt; 0.05). The bias is systematic: the sample is skewed towards more
+      qualified respondents and those more engaged in research. Such bias is typical of surveys of this
+      kind. {SAMPLE_ARGUMENT_EN} Region is descriptive only: there are too few observations in the regions
+      for χ².
+    </p>
+    {rep.criteria.map((cr) => (
+      <section style="margin-top:1.2rem">
+        <h2 style="margin-bottom:0.3rem">{tr(cr.criterion)}</h2>
+        <p class="note" style="margin:0 0 0.4rem">
+          χ² = {num(cr.chi2, 2)}, df = {cr.df}, p = {pval(cr.p)} (N = {cr.n})
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Category</th><th class="num">population %</th><th class="num">sample %</th><th class="num">bias, pp</th></tr>
+            </thead>
+            <tbody>
+              {compByCrit(cr.criterion).map((r) => (
+                <tr>
+                  <td>{tr(r.category)}</td>
+                  <td class="num">{num(r.popPct)}</td>
+                  <td class="num">{num(r.samplePct)}</td>
+                  <td class={`num ${biasCls(r.biasPp)}`}>{signed(r.biasPp)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+
+    <h3 id="pidhotovka">6. Data preparation</h3>
+    <ul>
+      <li><b>Cleaning the sample.</b> The initial database contained 202 questionnaires; two were excluded
+        (one from outside the target geography, one from a respondent outside the target group). The final
+        sample is 200.</li>
+      <li><b>Missing answers. Questions were optional</b>, so each indicator is computed on those who
+        answered the relevant question; n is given beside each value.</li>
+      <li><b>Time shares</b> were chosen by respondents as intervals (0–10%, 11–20% … 91–100%); the
+        calculations use the interval midpoints (5, 15 … 95%).</li>
+      <li><b>Categorisation.</b> The <a href={link('/about#kategorii')}>ASA / UNSA / MA</a> shares are
+        computed from the sum of these three answers; “hard to say” and “not encountered” are not part of
+        the base.</li>
+      <li><b>Fields.</b> Non-standard answers (in particular interdisciplinary ones) were merged into
+        “Other (interdisciplinary)”.</li>
+    </ul>
+
+    <h3 id="nadiinist">7. Reliability and validity</h3>
+    <h4>Summary assessment</h4>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Dimension</th><th>Method</th><th>Result</th><th>Assessment</th></tr></thead>
+        <tbody>
+          {summary.map((r) => (
+            <tr>
+              <td><b>{r.dimension}</b></td>
+              <td>{r.method}</td>
+              <td>{r.result}</td>
+              <td><span class={`assess ${r.cls}`}>{r.assessment}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Internal consistency of scales (Cronbach α and MIC)</h4>
+    <p>
+      Cronbach α shows how consistently the items of a scale measure a common construct. MIC is the mean
+      correlation between all pairs of items; unlike α, it does not depend on the number of items, so it is
+      the right measure for comparing scales of different lengths.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Scale</th><th class="num">Items</th><th class="num">N</th><th class="num">α</th><th class="num">MIC</th></tr></thead>
+        <tbody>
+          {v.scaleStatistics.map((s) => (
+            <tr>
+              <td>{tr(s.scale)}</td>
+              <td class="num">{s.k}</td>
+              <td class="num">{s.n}</td>
+              <td class="num"><b>{num(s.alpha, 3)}</b></td>
+              <td class="num">{num(s.mic, 3)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      N is the number of respondents with complete answers to all items of the scale. By Nunnally’s
+      criterion, α ≥ 0.70 is acceptable, ≥ 0.80 good and ≥ 0.90 excellent: all seven scales are acceptable or
+      better, four are good; all MIC ≥ 0.50.
+    </p>
+    <ul class="note">
+      <li>The highest α, for the expectations scale, does not mean it is the “most reliable”: α rises
+        mechanically with the number of items. By MIC the most closely related items are those on
+        expectations (0.838) and on the quality of others’ research (0.712), and the weakest those on adequacy
+        of resources (0.510). A very high MIC can also indicate redundancy of individual items.</li>
+      <li>The quality scales combine the current level with assessed change over 1 year and 5 years, which
+        are conceptually different dimensions. They correlate closely enough to be combined but are not
+        strictly unidimensional: α tests consistency, not unidimensionality.</li>
+    </ul>
+
+    <h4>Rater agreement (Fleiss κ)</h4>
+    <p>
+      How uniformly researchers assign activities to the actual scientific / useful non-scientific /
+      meaningless categories: <b>κ = {num(wave.reliability.fleiss.kappa, 3)}</b> (mean agreement
+      P̄ = {num(wave.reliability.fleiss.pBar, 3)}), “fair” on the Landis–Koch scale. This level of consensus is
+      to be expected: the boundaries between the categories are partly subjective, and the degree of
+      disagreement is itself a substantive result. Agreement for each activity (Pᵢ) is on the
+      <a href={link('/categorization')}>categorisation</a> page.
+    </p>
+
+    <h4>Construct validity (Spearman ρ)</h4>
+    <p>
+      Whether theoretically related constructs correlate in the expected direction: more actual scientific
+      activity and more resources → higher quality and more optimistic expectations; more meaningless
+      activity → lower. Only current and prospective measures, taken at the same time, were used.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Construct pair</th><th class="num">N</th><th class="num">ρ</th><th class="num">p</th><th class="num">p (BH)</th><th class="num">p (BY)</th><th>Direction</th></tr></thead>
+        <tbody>
+          {v.constructPairs.map((p) => (
+            <tr>
+              <td>{tr(p.pair)}</td>
+              <td class="num">{p.n}</td>
+              <td class={`num ${p.rho >= 0 ? 'bias-pos' : 'bias-neg'}`}><b>{signed(p.rho, 3)}</b></td>
+              <td class="num">{pval(p.p)}</td>
+              <td class="num">{pval(p.pBH)}</td>
+              <td class="num">{pval(p.pBY)}</td>
+              <td>{tr(p.expected)}, {p.directionMatch === 'так' ? 'as expected' : 'not as expected'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Research capacity (score) is the individual sum of the three adequacy ratings (3–15), not the composite
+      index. p (BH) and p (BY) are the Benjamini–Hochberg correction and the stricter Benjamini–Yekutieli
+      correction for five comparisons. Four relationships are significant under BH and three under BY. By
+      Cohen’s criteria two correlations are moderate and the rest weak; for distinct constructs this is to
+      be expected: correlations that were too high would mean the constructs do not differ. The strongest
+      relationship is between the share of actual scientific activity and the quality of own research
+      (ρ = +0.351).
+    </p>
+
+    <h4>Known groups: HEIs and research institutions (Mann–Whitney test)</h4>
+    <p>
+      The structure of working time should differ between higher education institutions and research
+      institutions, where research is the main activity. The test is non-parametric because the responses
+      are intervals, the distributions are skewed and the groups are of different sizes.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Category</th><th class="num">HEI: mean / median (N)</th><th class="num">RI: mean / median (N)</th><th class="num">Difference, pp</th><th class="num">U</th><th class="num">p</th></tr></thead>
+        <tbody>
+          {v.knownGroups.map((g) => (
+            <tr>
+              <td>{CAT[g.category]}</td>
+              <td class="num">{num(g.zvo.mean)} / {num(g.zvo.median)} ({g.zvo.n})</td>
+              <td class="num">{num(g.nu.mean)} / {num(g.nu.median)} ({g.nu.n})</td>
+              <td class="num">{signed(g.delta)}</td>
+              <td class="num">{num(g.U, g.U % 1 ? 1 : 0)}</td>
+              <td class="num">{pval(g.p)}{g.p >= 0.05 ? ' (n.s.)' : ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      In research institutions the share of actual scientific activity is substantially higher and the
+      share of meaningless activity lower: the instrument distinguishes groups that ought to differ.
+      Distributions by type of institution are on the
+      <a href={link('/time-structure#zvo-nu')}>working time structure</a> page.
+    </p>
+
+    <h4>Consistency of answers</h4>
+    <p>
+      <b>Sum-of-shares check.</b> Respondents assessed the share of working time on actual scientific, useful
+      non-scientific and meaningless activity in three separate questions, each by choosing an interval
+      (0–10%, 11–20% … 91–100%). The questionnaire did not require the three answers to add up to 100%, so
+      their sum is an independent check of how attentively it was filled in. For each respondent the three
+      shares were taken as the midpoints of the chosen intervals (5, 15 … 95%) and added. Each midpoint can
+      differ from the true share by up to 5 pp, so the sum of the three can differ by up to 15 pp: with sums
+      from 85 to 115% the true sum could have been exactly 100%.
+    </p>
+    <p>
+      The mean sum is {pct(v.shareSumCheck.mean)} and the median {pct(v.shareSumCheck.median)}
+      (N = {v.shareSumCheck.n}); {nearSum} respondents ({pct((nearSum / v.shareSumCheck.n) * 100)}) fall in
+      the 85–115% range.
+    </p>
+    <div class="sumhist" role="img" aria-label="Distribution of the sums of the three time shares">
+      {sums.map((d) => (
+        <div class={`sh-col${d.sum >= 85 && d.sum <= 115 ? ' near' : ''}`} title={`sum ${d.sum}%: ${d.n} respondents`}>
+          <span class="sh-bar" style={`height:${(d.n / sumMax) * 100}%`}></span>
+          <span class="sh-x">{d.sum}</span>
+        </div>
+      ))}
+    </div>
+    <p class="note">Horizontal axis: sum of the three shares (interval midpoints, %); vertical axis: number of respondents. 85–115% is highlighted.</p>
+    <p>
+      <b>Reverse check.</b> Among the {rc.n} respondents for whom meaningless activity takes up more than
+      {rc.threshold}% of working time, only {rc.notImprove} ({pct(rc.pct)}) thinks that removing it would not
+      improve the quality of their work
+      ({rc.answers.filter((a) => a.n > 0).map((a) => `${a.n} said “${tr(a.label).toLowerCase()}”`).join(', ')}).
+      The answers are consistent with the study’s central claim, which indicates that the questionnaire was
+      filled in thoughtfully.
+    </p>
+
+    <h3 id="etyka">8. Ethics and data protection</h3>
+    <p>
+      Before filling in the questionnaire, every respondent gave mandatory consent to take part in the study
+      and to the processing of their data. All other questions were optional, no payment was offered and no
+      email addresses were collected. Circulating the questionnaire through the heads of institutions in the
+      southern region was supported by a letter from the Southern Scientific Centre of the National Academy
+      of Sciences of Ukraine and the Ministry of Education and Science of Ukraine. The open verification
+      questions (position and institution) were used only to verify responses and have been deleted.
+    </p>
+    <ul>
+      <li><b>Aggregates only.</b> Microdata (the responses of individual respondents) are not published.</li>
+      <li><b>Suppression of small groups.</b> Groups with n &lt; 5 are not shown in breakdowns (“·”), nor are
+        individual cells where fewer than 5 people in a group answered the question.</li>
+      <li><b>Breakdowns are one-dimensional:</b> each demographic characteristic is shown separately, with no
+        cross-tabulations, so an individual respondent cannot be “reconstructed” by intersecting
+        characteristics. Resistance to recovering suppressed groups by subtraction has been checked.</li>
+      <li><b>Comments</b> are given verbatim and unedited in the Ukrainian version and in translation here;
+        they were checked for direct identifiers (names, contacts, references to a specific person), and
+        there are none.</li>
+    </ul>
+
+    <h3 id="mezhi">9. Limits</h3>
+    <p>
+      The sample is skewed towards more qualified and more research-engaged respondents (section 5); whether
+      to generalise the results in view of this bias is for the user of the data to decide. The aim of the
+      survey is to test whether intersubjective indices for assessing the state of the research system can
+      be measured at system level.
+    </p>
+    <p class="note">
+      Known limitations of the instrument: two respondents said in comments that some answer buttons did not
+      work (with no noticeable loss of responses); the questionnaire did not allow several fields to be
+      chosen at once; some respondents note that they estimated time shares approximately.
+    </p>
+  </div>
+</Layout>

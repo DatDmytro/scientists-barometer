@@ -6,7 +6,9 @@ import BlockHeader from '../components/BlockHeader.astro';
 import BlockNav from '../components/BlockNav.astro';
 import block from '../data/block-additional-2026.json';
 import ci from '../data/crosstab-ci-2026.json';
-import { pct, num, range } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { en, tr, pct, num, range, ci95 } = i18n(Astro);
 
 const de = block.deadEnd;
 const deMax = Math.max(...de.options.map((o) => o.pct));
@@ -15,34 +17,35 @@ const workload = block.impact.find((i) => i.code === 'workload')!;
 const pub = block.publishing;
 
 // рядки розподілів, що розходяться від нейтральної відповіді
-const impactRows = block.impact.map((i) => ({ label: i.label, dist: i.dist }));
-const pubRows = [{ label: 'Проводив би й публікував без вимог', dist: pub.dist }];
+const impactRows = block.impact.map((i) => ({ label: tr(i.label), dist: i.dist }));
+const pubRows = [{ label: (en ? 'Would do research and publish without requirements' : 'Проводив би й публікував без вимог'), dist: pub.dist }];
 // 95 % ДІ Вілсона для трьох відсотків (ті самі показники, що на головній)
 const CI = (label: string) => {
   const c = ci.indicators.find((x) => x.label === label)!.ci;
-  return `95 % ДІ ${range(c[0], c[1])}`;
+  return `${ci95} ${range(c[0], c[1])}`;
 };
 
 const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
 ---
 
 <Layout
-  title="Додаткові питання — Науковий Барометр"
-  description="Поведінка в глухому куті, вплив усунення безглуздої діяльності та зниження навантаження на якість, публікації без примусу, читацька активність."
+  title={en ? 'Additional questions — Scientists Barometer' : 'Додаткові питання — Науковий Барометр'}
+  description={en ? 'Behaviour at a research dead end, the effect on quality of removing meaningless activity and reducing workload, publishing without compulsion, reading.' : 'Поведінка в глухому куті, вплив усунення безглуздої діяльності та зниження навантаження на якість, публікації без примусу, читацька активність.'}
 >
   <BlockHeader slug="additional" />
 
   <section>
-    <h2>Поведінка в умовах «глухого кута»</h2>
+    <h2>{en ? 'Behaviour at a research “dead end”' : 'Поведінка в умовах «глухого кута»'}</h2>
     <p class="note" style="margin-top:-0.2rem">
-      Що зробить науковець, коли дослідження зайшло в глухий кут (хибна гіпотеза, брак даних, втрата
-      актуальності). Множинний вибір; відповіли n = {de.n}.
+      {en ? <>What a researcher will do when a study reaches a dead end (a false hypothesis, lack of data, loss of
+      relevance). Multiple choice; n = {de.n} responded.</> : <>Що зробить науковець, коли дослідження зайшло в глухий кут (хибна гіпотеза, брак даних, втрата
+      актуальності). Множинний вибір; відповіли n = {de.n}.</>}
     </p>
     <table class="dist">
       <tbody>
         {de.options.map((o) => (
           <tr>
-            <td class="opt">{o.label}</td>
+            <td class="opt">{tr(o.label)}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(o.pct / deMax) * 100}%`}></span></div></td>
             <td class="pct">{pct(o.pct)}</td>
             <td class="nn">{o.n}</td>
@@ -50,48 +53,48 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
         ))}
       </tbody>
     </table>
-    <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">Дописані варіанти ({de.writeIns.length})</h3>
+    <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">{en ? 'Write-in answers' : 'Дописані варіанти'} ({de.writeIns.length})</h3>
     <ul class="qlist">
-      {de.writeIns.map((w) => <li>{w}</li>)}
+      {de.writeIns.map((w) => <li>{tr(w)}</li>)}
     </ul>
   </section>
 
   <section>
-    <h2>Вплив на якість наукової роботи</h2>
+    <h2>{en ? 'Effect on the quality of research work' : 'Вплив на якість наукової роботи'}</h2>
     <div class="cat-summary">
-      <div><b class="big up">{pct(removebs.positivePct)}</b> очікують покращення якості за умови <b>усунення безглуздої діяльності</b> · {CI('Усунення БД покращить якість (% покращення)')}</div>
-      <div><b class="big up">{pct(workload.positivePct)}</b> — за умови <b>зниження загального навантаження</b> · {CI('Зниження навантаж. покращить якість (%)')}</div>
+      <div><b class="big up">{pct(removebs.positivePct)}</b>{en ? <> expect quality to improve if <b>meaningless activity is removed</b></> : <> очікують покращення якості за умови <b>усунення безглуздої діяльності</b></>} · {CI('Усунення БД покращить якість (% покращення)')}</div>
+      <div><b class="big up">{pct(workload.positivePct)}</b>{en ? <> if <b>overall workload is reduced</b></> : <> — за умови <b>зниження загального навантаження</b></>} · {CI('Зниження навантаж. покращить якість (%)')}</div>
     </div>
-    <p class="note" style="margin:0.6rem 0 0.3rem">Розподіл відповідей, %:</p>
+    <p class="note" style="margin:0.6rem 0 0.3rem">{en ? 'Response distribution, %:' : 'Розподіл відповідей, %:'}</p>
     <LikertDiverging rows={impactRows} />
   </section>
 
   <section>
-    <h2>Публікації без зовнішнього примусу</h2>
+    <h2>{en ? 'Publishing without external compulsion' : 'Публікації без зовнішнього примусу'}</h2>
     <div class="cat-summary">
-      <div><b class="big up">{pct(pub.positivePct)}</b> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b> · {CI('Публікували б без примусу (% так)')}</div>
+      <div><b class="big up">{pct(pub.positivePct)}</b>{en ? <> would do research and publish it <b>even without mandatory requirements</b></> : <> проводили б дослідження й публікували їх <b>і без обов'язкових вимог</b></>} · {CI('Публікували б без примусу (% так)')}</div>
     </div>
-    <p class="note" style="margin:0.6rem 0 0.3rem">«{pub.question}»</p>
+    <p class="note" style="margin:0.6rem 0 0.3rem">{en ? `“${tr(pub.question)}”` : `«${pub.question}»`}</p>
     <LikertDiverging rows={pubRows} />
   </section>
 
   <section>
-    <h2>Розрізи за демографією</h2>
+    <h2>{en ? 'Demographic breakdowns' : 'Розрізи за демографією'}</h2>
     <p class="note" style="margin-top:-0.2rem">
-      % згодних по трьох показниках у розрізі груп (теплокарта: темніше = сильніша згода).
+      {en ? <>% agreeing on the three indicators, by group (heat map: darker = stronger agreement).</> : <>% згодних по трьох показниках у розрізі груп (теплокарта: темніше = сильніша згода).</>}
     </p>
     <AddCrossTab block={block} />
   </section>
 
   <section>
-    <h2>Уважна читацька активність</h2>
+    <h2>{en ? 'Attentive reading' : 'Уважна читацька активність'}</h2>
     <p class="note" style="margin-top:-0.2rem">
-      Яка частка прочитань є справді уважними (повне засвоєння), а не поверхневим переглядом.
+      {en ? <>What share of readings are truly attentive (full absorption) rather than a superficial look.</> : <>Яка частка прочитань є справді уважними (повне засвоєння), а не поверхневим переглядом.</>}
     </p>
 
-    <h3 style="font-size:0.96rem;margin:1rem 0 0.3rem;color:var(--ink)">Свої прочитання чужих праць</h3>
-    <p class="note" style="margin:0 0 0.2rem">«{block.reading.own.question}»</p>
-    <p class="note" style="margin:0">Медіана <b>{pct(block.reading.own.median)}</b>, середня {pct(block.reading.own.mean)} (n = {block.reading.own.n}).</p>
+    <h3 style="font-size:0.96rem;margin:1rem 0 0.3rem;color:var(--ink)">{en ? 'Own reading of others’ work' : 'Свої прочитання чужих праць'}</h3>
+    <p class="note" style="margin:0 0 0.2rem">{en ? `“${tr(block.reading.own.question)}”` : `«${block.reading.own.question}»`}</p>
+    <p class="note" style="margin:0">{en ? <>Median <b>{pct(block.reading.own.median)}</b>, mean {pct(block.reading.own.mean)} (n = {block.reading.own.n}).</> : <>Медіана <b>{pct(block.reading.own.median)}</b>, середня {pct(block.reading.own.mean)} (n = {block.reading.own.n}).</>}</p>
     <table class="dist">
       <tbody>
         {block.reading.own.dist.map((b) => (
@@ -105,9 +108,9 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
       </tbody>
     </table>
 
-    <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">Як уважно інші читають ваші праці</h3>
-    <p class="note" style="margin:0 0 0.2rem">«{block.reading.others.question}»</p>
-    <p class="note" style="margin:0">Медіана <b>{pct(block.reading.others.median)}</b>, середня {pct(block.reading.others.mean)} (n = {block.reading.others.n}).</p>
+    <h3 style="font-size:0.96rem;margin:1.4rem 0 0.3rem;color:var(--ink)">{en ? 'How attentively others read your work' : 'Як уважно інші читають ваші праці'}</h3>
+    <p class="note" style="margin:0 0 0.2rem">{en ? `“${tr(block.reading.others.question)}”` : `«${block.reading.others.question}»`}</p>
+    <p class="note" style="margin:0">{en ? <>Median <b>{pct(block.reading.others.median)}</b>, mean {pct(block.reading.others.mean)} (n = {block.reading.others.n}).</> : <>Медіана <b>{pct(block.reading.others.median)}</b>, середня {pct(block.reading.others.mean)} (n = {block.reading.others.n}).</>}</p>
     <table class="dist">
       <tbody>
         {block.reading.others.dist.map((b) => (
@@ -123,10 +126,10 @@ const readMax = (d: { pct: number }[]) => Math.max(...d.map((x) => x.pct));
   </section>
 
   <section>
-    <h2>Коментарі до блоку ({block.comments.length})</h2>
-    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <h2>{en ? 'Comments on this block' : 'Коментарі до блоку'} ({block.comments.length})</h2>
+    <p class="note">{en ? 'Respondents’ open comments on this section of the questionnaire, in English translation. The originals are in the Ukrainian version of this page.' : 'Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.'}</p>
     <ul class="qlist comments">
-      {block.comments.map((c) => <li>{c}</li>)}
+      {block.comments.map((c) => <li>{tr(c)}</li>)}
     </ul>
   </section>
   <BlockNav slug="additional" where="bottom" />

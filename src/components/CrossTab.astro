@@ -4,8 +4,10 @@
 // Групи з n<5 вже придушено в даних.
 import CtFoot from './CtFoot.astro';
 import ciData from '../data/crosstab-ci-2026.json';
-import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
-import { pct } from '../lib/format';
+import { SMALL_N, type CI } from '../lib/crosstab';
+import { i18n } from '../i18n';
+
+const { en, tr, pct, tip, ciText } = i18n(Astro);
 
 interface Opt { code: string; label: string; pct: number; }
 interface Group { value: string; n: number; }
@@ -29,10 +31,10 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
   <input type="checkbox" class="ct-cib" id="ct-mot-ci" />
   <div class="ct-tabs">
     {block.dimensions.map((d) => (
-      <label for={`ct-${d.id}`}>{d.label}</label>
+      <label for={`ct-${d.id}`}>{tr(d.label)}</label>
     ))}
   </div>
-  <label class="ct-cilabel" for="ct-mot-ci">Показати 95&nbsp;% ДІ</label>
+  <label class="ct-cilabel" for="ct-mot-ci">{en ? <>Show 95% CI</> : <>Показати 95&nbsp;% ДІ</>}</label>
 
   {block.dimensions.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -40,16 +42,16 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Мета \ {d.label.toLowerCase()}</th>
+              <th>{en ? 'Purpose' : 'Мета'} \ {tr(d.label).toLowerCase()}</th>
               {d.groups.map((g) => (
-                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{tr(g.value)}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
             {opts.map((o) => (
               <tr>
-                <td>{o.label}</td>
+                <td>{tr(o.label)}</td>
                 {d.groups.map((g) => {
                   const p = block.crosstab[d.id][g.value].pct[o.label] ?? 0;
                   const c = CIS[d.id]?.[g.value]?.[o.label];
@@ -67,7 +69,7 @@ const alpha = (p: number) => Math.min(p / 55, 1) * 0.82; // шкала коль�
         </table>
       </div>
       <CtFoot cube={CIS}>
-        Числа — % респондентів у групі, хто обрав варіант (множинний вибір, тож сума &gt; 100&nbsp;%).
+        {en ? <>Figures: % of respondents in the group who chose the option (multiple choice, so the total exceeds 100%).</> : <>Числа — % респондентів у групі, хто обрав варіант (множинний вибір, тож сума &gt; 100&nbsp;%).</>}
       </CtFoot>
     </div>
   ))}

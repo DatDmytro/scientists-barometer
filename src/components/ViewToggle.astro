@@ -1,6 +1,9 @@
 ---
 // CSS-only перемикач «Графік ⇄ Таблиця» (zero-JS).
 // Радіо-інпути — прямі діти .viewtoggle (перед контентом), щоб працювали ~ селектори.
+import { i18n } from '../i18n';
+
+const { en } = i18n(Astro);
 const { id, defaultView = 'chart' } = Astro.props as {
   id: string;
   defaultView?: 'chart' | 'table';
@@ -23,8 +26,8 @@ const { id, defaultView = 'chart' } = Astro.props as {
     checked={defaultView === 'table'}
   />
   <div class="vt-tabs" role="tablist">
-    <label for={`vt-${id}-chart`}>Графік</label>
-    <label for={`vt-${id}-table`}>Таблиця</label>
+    <label for={`vt-${id}-chart`}>{en ? 'Chart' : 'Графік'}</label>
+    <label for={`vt-${id}-table`}>{en ? 'Table' : 'Таблиця'}</label>
   </div>
   <div class="vt-chart"><slot name="chart" /></div>
   <div class="vt-table"><slot name="table" /></div>

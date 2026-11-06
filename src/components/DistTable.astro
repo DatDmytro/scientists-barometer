@@ -1,8 +1,11 @@
 ---
 // Таблиця розподілів відповідей для кількох індексів з однаковою шкалою: рядок = індекс,
 // стовпці = п'ять варіантів відповіді (%), n. Точні числа до графіка IndexForest.
-import { byCode } from '../lib/indices';
-import { num, int } from '../lib/format';
+import { indexApi } from '../lib/indices';
+import { i18n } from '../i18n';
+
+const { lang, en, num, int } = i18n(Astro);
+const { byCode } = indexApi(lang);
 
 interface Props { codes: string[]; caption?: string }
 const { codes, caption } = Astro.props;
@@ -15,7 +18,7 @@ const head = rows[0].dist!.map((c) => c.label);
     {caption && <caption>{caption}</caption>}
     <thead>
       <tr>
-        <th>Індекс</th>
+        <th>{en ? 'Index' : 'Індекс'}</th>
         {head.map((h) => <th class="num">{h}</th>)}
         <th class="num">n</th>
       </tr>

@@ -3,7 +3,9 @@
 // Рядок: назва (+ значення індексу, якщо є) і бар із підписами % у сегментах.
 // Легенда — за першим рядком; valence рядка (якщо задано) змінює лише кольори його плечей.
 import DistBar from './DistBar.astro';
-import { num } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { tr, num } = i18n(Astro);
 
 interface Cat { label: string; n: number; pct: number }
 interface Row { label: string; code?: string; value?: number; n?: number; dist: Cat[]; valence?: 1 | 0 | -1 }
@@ -11,7 +13,9 @@ interface Props {
   rows: Row[];
   valence?: 1 | 0 | -1;
 }
-const { rows, valence = 1 } = Astro.props;
+const { valence = 1 } = Astro.props;
+// мітки відповідей приходять із даних українською
+const rows = Astro.props.rows.map((r) => ({ ...r, dist: r.dist.map((c) => ({ ...c, label: tr(c.label) })) }));
 const L = Math.max(...rows.map((r) => r.dist[3].pct + r.dist[4].pct + r.dist[2].pct / 2), 50);
 const R = Math.max(...rows.map((r) => r.dist[0].pct + r.dist[1].pct + r.dist[2].pct / 2), 50);
 const up = valence > 0 ? 'g' : valence < 0 ? 'b' : 'n';

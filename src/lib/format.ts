@@ -1,29 +1,38 @@
-// Числа для українського тексту: десяткова кома, нерозривний пробіл перед «%», справжній мінус.
-const cache = new Map<number, Intl.NumberFormat>();
-const nf = (digits: number) => {
-  if (!cache.has(digits)) {
-    cache.set(digits, new Intl.NumberFormat('uk-UA', { minimumFractionDigits: digits, maximumFractionDigits: digits }));
-  }
-  return cache.get(digits)!;
-};
+// Числа для тексту сайту. Українська: десяткова кома, нерозривний пробіл перед «%», справжній мінус.
+// Англійська: десяткова крапка, «%» без пробілу, той самий мінус.
+export type Lang = 'uk' | 'en';
 
-/** 113,3 · −4,7 */
-export const num = (x: number, digits = 1) => nf(digits).format(x).replace('-', '−');
+export function formatters(lang: Lang = 'uk') {
+  const en = lang === 'en';
+  const locale = en ? 'en-GB' : 'uk-UA';
+  const cache = new Map<number, Intl.NumberFormat>();
+  const nf = (digits: number) => {
+    if (!cache.has(digits)) {
+      cache.set(digits, new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }));
+    }
+    return cache.get(digits)!;
+  };
 
-/** +0,351 / −0,196 — для коефіцієнтів і зміщень */
-export const signed = (x: number, digits = 1) => (x > 0 ? '+' : '') + num(x, digits);
+  /** 113,3 · −4,7 */
+  const num = (x: number, digits = 1) => nf(digits).format(x).replace('-', '−');
 
-/** 63,8 % */
-export const pct = (x: number, digits = 1) => `${num(x, digits)} %`;
+  /** +0,351 / −0,196 — для коефіцієнтів і зміщень */
+  const signed = (x: number, digits = 1) => (x > 0 ? '+' : '') + num(x, digits);
 
-/** 108,2–118,5 */
-export const range = (lo: number, hi: number, digits = 1) => `${num(lo, digits)}–${num(hi, digits)}`;
+  /** 63,8 % */
+  const pct = (x: number, digits = 1) => `${num(x, digits)}${en ? '' : ' '}%`;
 
-/** 113,3 (108,2–118,5) */
-export const withCi = (v: number, lo: number, hi: number, digits = 1) => `${num(v, digits)} (${range(lo, hi, digits)})`;
+  /** 108,2–118,5 */
+  const range = (lo: number, hi: number, digits = 1) => `${num(lo, digits)}–${num(hi, digits)}`;
 
-/** 136 131 */
-export const int = (n: number) => n.toLocaleString('uk-UA');
+  /** 113,3 (108,2–118,5) */
+  const withCi = (v: number, lo: number, hi: number, digits = 1) => `${num(v, digits)} (${range(lo, hi, digits)})`;
 
-/** p-значення: «< 0,001» або три знаки */
-export const pval = (p: number) => (p < 0.001 ? '< 0,001' : num(p, 3));
+  /** 136 131 */
+  const int = (n: number) => n.toLocaleString(locale);
+
+  /** p-значення: «< 0,001» або три знаки */
+  const pval = (p: number) => (p < 0.001 ? `< ${num(0.001, 3)}` : num(p, 3));
+
+  return { num, signed, pct, range, withCi, int, pval };
+}

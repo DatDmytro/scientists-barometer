@@ -5,8 +5,11 @@
 // «майже всі обрали нейтральну відповідь», і «думки розділилися навпіл».
 // Рядки — HTML-сітка з позиціюванням у відсотках (zero-JS, без спотворень на телефоні).
 import DistBar from './DistBar.astro';
-import { byCode, type Index } from '../lib/indices';
-import { num, range, pct, int } from '../lib/format';
+import { indexApi, type Index } from '../lib/indices';
+import { i18n } from '../i18n';
+
+const { lang, en, num, range, pct, int } = i18n(Astro);
+const { byCode } = indexApi(lang);
 
 interface Group { title?: string; codes: string[] }
 interface Props {
@@ -43,8 +46,8 @@ const rowLabel = (g: Group & { items: Index[] }, i: Index) =>
     : [i.subject, i.horizonText].filter(Boolean).join(', ');
 const tip = (i: Index) =>
   `${i.family.name} (${i.code}) — ${i.subject.toLowerCase()}${i.horizonText ? ', ' + i.horizonText : ''}: ` +
-  `${num(i.value)}, 95 % ДІ ${range(i.ciLow, i.ciHigh)}, n = ${int(i.n)}` +
-  (i.dist ? `. Відповіді: ${i.dist.map((c) => `${c.label.toLowerCase()} ${pct(c.pct)}`).join(', ')}` : '');
+  `${num(i.value)}, ${en ? '95% CI' : '95 % ДІ'} ${range(i.ciLow, i.ciHigh)}, n = ${int(i.n)}` +
+  (i.dist ? `. ${en ? 'Responses' : 'Відповіді'}: ${i.dist.map((c) => `${c.label.toLowerCase()} ${pct(c.pct)}`).join(', ')}` : '');
 ---
 
 <figure class="ixf">
@@ -56,8 +59,8 @@ const tip = (i: Index) =>
           <span class={[t === 100 ? 'mid' : '', x(t) > 96 ? 'end' : x(t) < 4 ? 'start' : ''].join(' ').trim()} style={`left:${x(t)}%`}>{t}</span>
         ))}
       </div>
-      <span class="ixf-hval">Значення (95 % ДІ)</span>
-      {dist && <span class="ixf-hdist">Розподіл відповідей</span>}
+      <span class="ixf-hval">{en ? 'Value (95% CI)' : 'Значення (95 % ДІ)'}</span>
+      {dist && <span class="ixf-hdist">{en ? 'Response distribution' : 'Розподіл відповідей'}</span>}
     </div>
     {rows.map((g) => (
       <>
@@ -77,7 +80,7 @@ const tip = (i: Index) =>
               <div class="ixf-dist">
                 {i.dist
                   ? <DistBar dist={i.dist} valence={i.family.valence as 1 | 0 | -1} left={L} right={R} />
-                  : <span class="ixf-nodist">геометричне середнє трьох складових</span>}
+                  : <span class="ixf-nodist">{en ? 'geometric mean of the three components' : 'геометричне середнє трьох складових'}</span>}
               </div>
             )}
           </div>
@@ -86,11 +89,11 @@ const tip = (i: Index) =>
     ))}
   </div>
   <figcaption class="ixf-legend">
-    <span><i class="lg-dot t-good"></i>краще для науки</span>
-    <span><i class="lg-dot t-bad"></i>гірше</span>
-    {hasNeutral && <span><i class="lg-dot t-neutral"></i>без оцінки «добре / погано»</span>}
-    <span><i class="lg-dot t-ns"></i>95 % ДІ перетинає 100 — від нейтрального значення не відрізняється</span>
-    {dist && <span class="lg-dist">розподіл: праворуч від центру — позитивні відповіді, ліворуч — негативні, сіре — нейтральна</span>}
+    <span><i class="lg-dot t-good"></i>{en ? 'better for science' : 'краще для науки'}</span>
+    <span><i class="lg-dot t-bad"></i>{en ? 'worse' : 'гірше'}</span>
+    {hasNeutral && <span><i class="lg-dot t-neutral"></i>{en ? 'no “good / bad” judgement' : 'без оцінки «добре / погано»'}</span>}
+    <span><i class="lg-dot t-ns"></i>{en ? '95% CI crosses 100: does not differ from the neutral value' : '95 % ДІ перетинає 100 — від нейтрального значення не відрізняється'}</span>
+    {dist && <span class="lg-dist">{en ? 'distribution: positive responses to the right of centre, negative to the left, neutral in grey' : 'розподіл: праворуч від центру — позитивні відповіді, ліворуч — негативні, сіре — нейтральна'}</span>}
     {caption && <span class="lg-cap">{caption}</span>}
   </figcaption>
 </figure>

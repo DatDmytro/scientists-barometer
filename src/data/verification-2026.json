@@ -2217,8 +2217,8 @@
       {
         "dimension": "Міжекспертна надійність категоризації",
         "method": "Fleiss κ; P̄",
-        "result": "κ = 0,275 (помірна); P̄ = 0,531",
-        "assessment": "Помірна"
+        "result": "κ = 0,275 (помітна); P̄ = 0,531",
+        "assessment": "Помітна"
       },
       {
         "dimension": "Внутрішня узгодженість шкал",
@@ -2261,8 +2261,8 @@
       {
         "dimension": "Inter-rater reliability of the categorisation",
         "method": "Fleiss κ; P̄",
-        "result": "κ = 0.275 (moderate); P̄ = 0.531",
-        "assessment": "Moderate"
+        "result": "κ = 0.275 (fair); P̄ = 0.531",
+        "assessment": "Fair"
       },
       {
         "dimension": "Internal consistency of scales",

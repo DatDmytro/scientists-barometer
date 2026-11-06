@@ -2,6 +2,8 @@
 // Підводка: дослівне питання там, де блок побудований на одному питанні (Мотивація)
 // або має спільну основу (Категоризація); для решти — тема блоку, без лапок,
 // бо єдиного формулювання в анкеті немає (той самий принцип, що й у наборі на Zenodo).
+import { localize, tr, type Lang } from '../i18n';
+
 export interface Block {
   slug: string;
   href: string;
@@ -42,8 +44,27 @@ export const BLOCKS: Block[] = [
   },
 ];
 
-export const blockBySlug = (slug: string) => {
-  const b = BLOCKS.find((x) => x.slug === slug);
+// англійські назви — як у наборі на Zenodo; питання й теми — з його перекладів
+const EN: Record<string, { title: string; teaser: string }> = {
+  motivation: { title: 'Motivation', teaser: 'Why researchers do research: nine possible purposes, write-in answers and breakdowns by group.' },
+  categorization: { title: 'Categorisation of activities', teaser: '54 activities: what researchers count as research, useful non-scientific work and meaningless work.' },
+  'time-structure': { title: 'Working time structure', teaser: 'What share of the week each kind of activity takes, how many hours people really work and how this has changed.' },
+  resources: { title: 'Adequacy of resources', teaser: 'Funding, equipment and time: current adequacy, assessed change, and whether there is enough time for sleep and thinking.' },
+  quality: { title: 'Quality and expectations', teaser: 'How researchers assess the quality of their own and others’ research, and what they expect for the development of science.' },
+  additional: { title: 'Additional questions', teaser: 'Research dead ends, the effect of workload on quality, publishing without compulsion, attentive reading.' },
+};
+
+/** блоки мовою сторінки: назви, підводки й адреси */
+export const blocksFor = (lang: Lang): Block[] =>
+  lang === 'uk' ? BLOCKS : BLOCKS.map((b) => ({
+    ...b,
+    ...EN[b.slug],
+    href: localize(b.href, lang),
+    lead: b.lead && { ...b.lead, text: tr(b.lead.text, lang) },
+  }));
+
+export const blockBySlug = (slug: string, lang: Lang = 'uk') => {
+  const b = blocksFor(lang).find((x) => x.slug === slug);
   if (!b) throw new Error(`Невідомий блок: ${slug}`);
   return b;
 };

@@ -1,5 +1,5 @@
 // Спільне для теплокарт розрізів: 95 % ДІ клітинок (crosstab-ci-2026.json), мала база, підказки.
-import { range, int } from './format';
+import { formatters, type Lang } from './format';
 
 export type CI = [number, number];
 /** база клітинки, нижче якої вона штрихується: ДІ тут зазвичай ширші за 40 пунктів */
@@ -9,13 +9,22 @@ export const SMALL_N = 20;
  *  тож такий ДІ не показуємо (для часток Вілсон нульової ширини не дає — це лише індекси й середні) */
 export const degenerate = (ci: CI | undefined) => !!ci && ci[1] - ci[0] < 0.05;
 
-/** «52 % (95 % ДІ 38–66), n = 24» */
-export const tip = (value: string, ci: CI | undefined, n: number | undefined, digits = 0) =>
-  degenerate(ci)
-    ? `${value}, n = ${int(n ?? 0)}: усі відповіді однакові — 95 % ДІ не оцінюється`
-    : `${value}${ci ? ` (95 % ДІ ${range(ci[0], ci[1], digits)})` : ''}${n !== undefined ? `, n = ${int(n)}` : ''}`;
+/** підказки клітинок мовою сторінки */
+export function crosstabText(lang: Lang = 'uk') {
+  const en = lang === 'en';
+  const { range, int } = formatters(lang);
+  const ci95 = en ? '95% CI' : '95 % ДІ';
 
-export const ciText = (ci: CI | undefined, digits = 0) => (!ci ? '' : degenerate(ci) ? '—' : range(ci[0], ci[1], digits));
+  /** «52 % (95 % ДІ 38–66), n = 24» */
+  const tip = (value: string, ci: CI | undefined, n: number | undefined, digits = 0) =>
+    degenerate(ci)
+      ? `${value}, n = ${int(n ?? 0)}: ${en ? `all responses are identical, so no ${ci95} is estimated` : `усі відповіді однакові — ${ci95} не оцінюється`}`
+      : `${value}${ci ? ` (${ci95} ${range(ci[0], ci[1], digits)})` : ''}${n !== undefined ? `, n = ${int(n)}` : ''}`;
+
+  const ciText = (ci: CI | undefined, digits = 0) => (!ci ? '' : degenerate(ci) ? '—' : range(ci[0], ci[1], digits));
+
+  return { tip, ciText, ci95 };
+}
 
 /** медіанна ширина ДІ у кубі — окремо для малих (n < 20) і більших баз */
 export function typicalWidths(cube: unknown): { small: number; large: number } {

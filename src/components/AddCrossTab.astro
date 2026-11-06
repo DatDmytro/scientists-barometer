@@ -4,8 +4,10 @@
 // Синя шкала (вище = сильніша згода). Селектор демографії — CSS-only. Придушення n<5 → «·». Zero-JS.
 import CtFoot from './CtFoot.astro';
 import ciData from '../data/crosstab-ci-2026.json';
-import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
-import { pct } from '../lib/format';
+import { SMALL_N, type CI } from '../lib/crosstab';
+import { i18n } from '../i18n';
+
+const { en, tr, pct, tip, ciText } = i18n(Astro);
 
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
@@ -29,10 +31,10 @@ const alpha = (p: number) => Math.min(p / 100, 1) * 0.9;
   <input type="checkbox" class="ct-cib" id="ct-add-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
-      <label for={`ct-${d.id}`}>{d.label}</label>
+      <label for={`ct-${d.id}`}>{tr(d.label)}</label>
     ))}
   </div>
-  <label class="ct-cilabel" for="ct-add-ci">Показати 95&nbsp;% ДІ</label>
+  <label class="ct-cilabel" for="ct-add-ci">{en ? <>Show 95% CI</> : <>Показати 95&nbsp;% ДІ</>}</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -40,16 +42,16 @@ const alpha = (p: number) => Math.min(p / 100, 1) * 0.9;
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Показник · % згодних</th>
+              <th>{en ? 'Indicator · % agreeing' : 'Показник · % згодних'}</th>
               {d.groups.map((g) => (
-                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{tr(g.value)}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr>
-                <td>{r.label}</td>
+                <td>{tr(r.label)}</td>
                 {d.groups.map((g) => {
                   const v = block.crosstab[d.id][g.value][r.code];
                   if (v === null || v === undefined) {
@@ -69,7 +71,7 @@ const alpha = (p: number) => Math.min(p / 100, 1) * 0.9;
           </tbody>
         </table>
       </div>
-      <CtFoot cube={CIS}>Числа — % у групі, хто згоден (дві найпозитивніші відповіді); темніше — сильніша згода.</CtFoot>
+      <CtFoot cube={CIS}>{en ? <>Figures: % in the group who agree (the two most positive responses); darker means stronger agreement.</> : <>Числа — % у групі, хто згоден (дві найпозитивніші відповіді); темніше — сильніша згода.</>}</CtFoot>
     </div>
   ))}
 </div>

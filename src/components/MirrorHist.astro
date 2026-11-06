@@ -3,7 +3,9 @@
 // ліворуч — перша група, праворуч — друга, рядки — інтервали, довжина — % своєї групи
 // (кожна група — від своєї бази, тож різні n не спотворюють порівняння).
 // Використання: ЗВО ↔ НУ на «Структурі часу» (verification → knownGroups).
-import { pct } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { pct } = i18n(Astro);
 
 interface Bin { label: string; left: number; right: number } // кількості відповідей
 interface Side { label: string; n: number }

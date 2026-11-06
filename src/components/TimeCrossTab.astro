@@ -4,8 +4,10 @@
 // Колір рядка = колір категорії. Селектор демографії — CSS-only. Придушення n<5 → «·». Zero-JS.
 import CtFoot from './CtFoot.astro';
 import ciData from '../data/crosstab-ci-2026.json';
-import { tip, ciText, SMALL_N, type CI } from '../lib/crosstab';
-import { pct } from '../lib/format';
+import { SMALL_N, type CI } from '../lib/crosstab';
+import { i18n } from '../i18n';
+
+const { en, tr, pct, tip, ciText } = i18n(Astro);
 
 interface Group { value: string; n: number; }
 interface Dim { id: string; label: string; groups: Group[]; }
@@ -17,9 +19,9 @@ const { block } = Astro.props as {
 };
 const CIS = ciData.timestructure as Record<string, Record<string, Record<string, { n: number; ci: CI } | null>>>;
 const rows = [
-  { cat: 'НД', label: 'Дійсна наукова', color: 'c-nd' },
-  { cat: 'КН', label: 'Корисна ненаукова', color: 'c-kn' },
-  { cat: 'БД', label: 'Безглузда', color: 'c-bd' },
+  { cat: 'НД', label: (en ? 'Actual scientific' : 'Дійсна наукова'), color: 'c-nd' },
+  { cat: 'КН', label: (en ? 'Useful non-scientific' : 'Корисна ненаукова'), color: 'c-kn' },
+  { cat: 'БД', label: (en ? 'Meaningless' : 'Безглузда'), color: 'c-bd' },
 ];
 const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
 ---
@@ -31,10 +33,10 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
   <input type="checkbox" class="ct-cib" id="ct-time-ci" />
   <div class="ct-tabs">
     {block.crosstabDims.map((d) => (
-      <label for={`ct-${d.id}`}>{d.label}</label>
+      <label for={`ct-${d.id}`}>{tr(d.label)}</label>
     ))}
   </div>
-  <label class="ct-cilabel" for="ct-time-ci">Показати 95&nbsp;% ДІ</label>
+  <label class="ct-cilabel" for="ct-time-ci">{en ? <>Show 95% CI</> : <>Показати 95&nbsp;% ДІ</>}</label>
 
   {block.crosstabDims.map((d) => (
     <div class="ct-pane" data-dim={d.id}>
@@ -42,16 +44,16 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
         <table class="ct-table">
           <thead>
             <tr>
-              <th>Частка часу · %</th>
+              <th>{en ? 'Share of time · %' : 'Частка часу · %'}</th>
               {d.groups.map((g) => (
-                <th class={g.n < SMALL_N ? 'lown' : ''}>{g.value}<br /><span class="ct-n">n={g.n}</span></th>
+                <th class={g.n < SMALL_N ? 'lown' : ''}>{tr(g.value)}<br /><span class="ct-n">n={g.n}</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr>
-                <td>{r.label} ({r.cat})</td>
+                <td>{r.label} ({tr(r.cat)})</td>
                 {d.groups.map((g) => {
                   const v = block.crosstab[d.id][g.value][r.cat];
                   if (v === null || v === undefined) {
@@ -71,7 +73,7 @@ const alpha = (p: number) => Math.min(p / 50, 1) * 0.85;
           </tbody>
         </table>
       </div>
-      <CtFoot cube={CIS}>Числа — середня частка робочого часу (%) групи на категорію.</CtFoot>
+      <CtFoot cube={CIS}>{en ? 'Figures: the group’s mean share of working time (%) on the category.' : 'Числа — середня частка робочого часу (%) групи на категорію.'}</CtFoot>
     </div>
   ))}
 </div>

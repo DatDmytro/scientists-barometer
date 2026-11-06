@@ -7,31 +7,33 @@ import StatTile from '../components/StatTile.astro';
 import block from '../data/block-motivation-2026.json';
 import ci from '../data/crosstab-ci-2026.json';
 import verification from '../data/verification-2026.json';
-import { pct } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { en, tr, pct } = i18n(Astro);
 
 const maxPct = Math.max(...block.options.map((o) => o.pct));
 // змістовність роботи — окреме питання блоку (частка двох позитивних відповідей) + ДІ Вілсона
 const ZLABEL = 'Змістовність роботи (% згодних)';
 const zmist = ci.indicators.find((i) => i.label === ZLABEL)!;
 const zq = (verification.questionnaire.indicators as Record<string, string>)[ZLABEL];
-const [zQuestion, zOriginal] = zq.split(' (в оригіналі у Д. Гребера:').map((x) => x.trim());
-const graeber = zOriginal?.replace(/[«»()]/g, '').trim();
+const [zQuestion, zOriginal] = (en ? tr(zq).split(/ \(D\. Graeber.s original wording:/) : zq.split(' (в оригіналі у Д. Гребера:')).map((x) => x.trim());
+const graeber = zOriginal?.replace(/[«»“”()]/g, '').trim();
 ---
 
 <Layout
-  title="Мотивація науковців — Науковий Барометр"
-  description="Як науковці бачать головну мету своєї роботи: розподіл відповідей та розрізи за демографією."
+  title={en ? 'Researchers’ motivation — Scientists Barometer' : 'Мотивація науковців — Науковий Барометр'}
+  description={en ? 'How researchers see the main purpose of their work: response distribution and demographic breakdowns.' : 'Як науковці бачать головну мету своєї роботи: розподіл відповідей та розрізи за демографією.'}
 >
-  <BlockHeader slug="motivation" title="Мотивація науковців" />
-  <p class="note">Множинний вибір; відповіли n = {block.n}. Можна обрати кілька варіантів.</p>
+  <BlockHeader slug="motivation" title={en ? 'Researchers’ motivation' : 'Мотивація науковців'} />
+  <p class="note">{en ? <>Multiple choice; n = {block.n} responded. Several options could be chosen.</> : <>Множинний вибір; відповіли n = {block.n}. Можна обрати кілька варіантів.</>}</p>
 
   <section>
-    <h2>Розподіл відповідей</h2>
+    <h2>{en ? 'Response distribution' : 'Розподіл відповідей'}</h2>
     <table class="dist">
       <tbody>
         {block.options.map((o) => (
           <tr>
-            <td class="opt">{o.label}</td>
+            <td class="opt">{tr(o.label)}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(o.pct / maxPct) * 100}%`}></span></div></td>
             <td class="pct">{pct(o.pct)}</td>
             <td class="nn">{o.n}</td>
@@ -42,38 +44,38 @@ const graeber = zOriginal?.replace(/[«»()]/g, '').trim();
   </section>
 
   <section>
-    <h2>Змістовність роботи</h2>
+    <h2>{en ? 'Meaningfulness of work' : 'Змістовність роботи'}</h2>
     <div class="tiles" style="max-width:420px">
-      <StatTile title="Моя робота робить змістовний внесок у світ" value={zmist.pct} ci={zmist.ci as [number, number]}
-                n={zmist.n} question={zQuestion} answer="«повністю» + «скоріше погоджуюсь»" />
+      <StatTile title={en ? 'My work makes a meaningful contribution to the world' : 'Моя робота робить змістовний внесок у світ'} value={zmist.pct} ci={zmist.ci as [number, number]}
+                n={zmist.n} question={zQuestion} answer={en ? '“fully agree” + “rather agree”' : '«повністю» + «скоріше погоджуюсь»'} />
     </div>
     {graeber && (
       <p class="note">
-        В оригіналі в Девіда Гребера: «{graeber}».
+        {en ? <>David Graeber’s original wording: “{graeber}”.</> : <>В оригіналі в Девіда Гребера: «{graeber}».</>}
       </p>
     )}
   </section>
 
   <section>
-    <h2>Розрізи за демографією</h2>
+    <h2>{en ? 'Demographic breakdowns' : 'Розрізи за демографією'}</h2>
     <CrossTab block={block} />
   </section>
 
   <section>
-    <h2>Дописані варіанти мети ({block.writeInCount})</h2>
+    <h2>{en ? 'Write-in purposes' : 'Дописані варіанти мети'} ({block.writeInCount})</h2>
     <p class="note">
-      Власні відповіді респондентів у полі «Інше» — дослівно, без редагування.
+      {en ? 'Respondents’ own answers in the “Other” field, in English translation. The originals are in the Ukrainian version of this page.' : 'Власні відповіді респондентів у полі «Інше» — дослівно, без редагування.'}
     </p>
     <ul class="qlist">
-      {block.writeIns.map((wr) => <li>{wr}</li>)}
+      {block.writeIns.map((wr) => <li>{tr(wr)}</li>)}
     </ul>
   </section>
 
   <section>
-    <h2>Коментарі до блоку ({block.comments.length})</h2>
-    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <h2>{en ? 'Comments on this block' : 'Коментарі до блоку'} ({block.comments.length})</h2>
+    <p class="note">{en ? 'Respondents’ open comments on this section of the questionnaire, in English translation. The originals are in the Ukrainian version of this page.' : 'Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.'}</p>
     <ul class="qlist comments">
-      {block.comments.map((c) => <li>{c}</li>)}
+      {block.comments.map((c) => <li>{tr(c)}</li>)}
     </ul>
   </section>
 

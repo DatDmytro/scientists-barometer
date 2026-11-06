@@ -1,0 +1,75 @@
+---
+// About (English): the same position as /about. The definitions are a translation of the questionnaire text.
+import Layout from '../../layouts/Layout.astro';
+import { i18n } from '../../i18n';
+
+const { link } = i18n(Astro);
+---
+
+<Layout title="About — Scientists Barometer" description="Reforms in science proceed without any assessment of their consequences. The project estimates how much time researchers really have left for research.">
+  <h1>About</h1>
+  <p class="lead">
+    Reform in Ukrainian science proceeds without any assessment of its consequences. Above all, the
+    creation of unnecessary bureaucracy and the extra time researchers lose, which takes them away from
+    their research, are ignored.
+  </p>
+
+  <div class="prose">
+    <h3>Quantity as the goal</h3>
+    <p>
+      The state of the research system is not assessed before or after reforms, and which changes they are
+      meant to achieve is not defined. It looks as though the main goal of current reforms is to increase
+      the number of publications, grant applications, characters in textbooks and so on. This can be seen
+      from the rating methodologies of the state attestation and the National System of Researchers.
+    </p>
+    <p>
+      Moreover, no one even asks what level of these indicators would satisfy the authors of the reforms.
+      So the rule is always: the more, the better. But growth in quantitative indicators of this kind has a
+      limit: potential harm to research quality through a lack of time and other resources. The more
+      publications there are, the fewer resources each publication receives.
+    </p>
+
+    <h3>Aim of the project</h3>
+    <p>
+      The aim of the project is to try to estimate how much time researchers really have left for actually
+      doing research. It is research that should accompany the preparation of publications and the
+      fulfilment of other formal bureaucratic requirements, which are imposed directly or indirectly and
+      which keep multiplying thanks to “reform”.
+    </p>
+
+    <h3 id="kategorii">Three categories of working time</h3>
+    <p>
+      The Law of Ukraine “On Scientific and Scientific-Technical Activity” defines research activity as
+      intellectual creative activity aimed at obtaining new knowledge and (or) seeking ways to apply it.
+      However, not everything researchers have to do is directly aimed at this, and part of what they do
+      distracts from it. Working time is limited, so time for research shrinks as time spent on everything
+      else grows.
+    </p>
+    <p>
+      Researchers’ working time is therefore divided into three categories, in order to determine how much
+      time really remains for actual scientific activity. The division adapts David Graeber’s concept of
+      “bullshit jobs” to research work. The definitions below are translated from the questionnaire;
+      respondents saw them in Ukrainian:
+    </p>
+    <ul>
+      <li><b>Actual scientific activity (ASA)</b>: activity that directly brings a researcher closer to
+        creating new knowledge and (or) finding ways to apply it.</li>
+      <li><b>Useful non-scientific activity (UNSA)</b>: activity that is not actually scientific, but often
+        accompanies actual scientific activity and benefits the researcher and/or society.</li>
+      <li><b>Meaningless activity (MA)</b>: activity that brings no benefit to the creation of a scientific
+        result. There is no sense in researchers doing such work, but they are forced to do it by
+        bureaucratic rules and by formal and informal requirements of governing and inspecting bodies at
+        all levels. Doing it only distracts from and interferes with actual scientific work.</li>
+    </ul>
+
+    <h3>Author</h3>
+    <p>
+      Dmytro Maslov,<br />
+      Senior Research Fellow<br />
+      State Organization "Institute Of Market And Economic&amp;Ecological Researches of the National Academy
+      of Sciences of Ukraine"<br />
+      Contact: <a href="mailto:dmitrymaslov@ukr.net">dmitrymaslov@ukr.net</a> · or the
+      <a href={link('/participate')}>“Take part” form</a>
+    </p>
+  </div>
+</Layout>

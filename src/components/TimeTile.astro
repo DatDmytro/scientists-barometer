@@ -2,20 +2,22 @@
 // Плитка «Структура робочого часу» для головних показників: три середні частки тижня
 // (ДНД / КННД / БД) — не індекс, тож без шкали 0–200; стек-смуга і години безглуздої діяльності.
 import time from '../data/block-timestructure-2026.json';
-import { num, pct } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { en, link, num, pct } = i18n(Astro);
 
 const share = Object.fromEntries(time.shares.map((s) => [s.cat, s.mean]));
 const ROWS = [
-  { cat: 'НД', cls: 'nd', sw: 'swnd', label: 'Дійсна наукова' },
-  { cat: 'КН', cls: 'kn', sw: 'swkn', label: 'Корисна ненаукова' },
-  { cat: 'БД', cls: 'bd', sw: 'swbd', label: 'Безглузда' },
+  { cat: 'НД', cls: 'nd', sw: 'swnd', label: (en ? 'Actual scientific' : 'Дійсна наукова') },
+  { cat: 'КН', cls: 'kn', sw: 'swkn', label: (en ? 'Useful non-scientific' : 'Корисна ненаукова') },
+  { cat: 'БД', cls: 'bd', sw: 'swbd', label: (en ? 'Meaningless' : 'Безглузда') },
 ];
 ---
 
 <article class="tile">
-  <p class="tile-kind">Стан зараз · частки робочого тижня</p>
-  <h3 class="tile-title">Структура робочого часу</h3>
-  <p class="tile-what">на що йде робочий тиждень, за самооцінкою респондентів</p>
+  <p class="tile-kind">{en ? 'Current state · shares of the working week' : 'Стан зараз · частки робочого тижня'}</p>
+  <h3 class="tile-title">{en ? 'Working time structure' : 'Структура робочого часу'}</h3>
+  <p class="tile-what">{en ? 'what the working week goes on, as self-reported by respondents' : 'на що йде робочий тиждень, за самооцінкою респондентів'}</p>
 
   <ul class="tt-list">
     {ROWS.map((r) => (
@@ -27,8 +29,8 @@ const ROWS = [
     {ROWS.map((r) => <span class={r.cls} style={`width:${share[r.cat]}%`}></span>)}
   </div>
 
-  <p class="tile-verdict">≈ {num(time.hours.bullshitHoursAtMean)} год на тиждень — безглузда діяльність</p>
-  <p class="tile-meta">за середнього робочого тижня {num(time.hours.mean)} год</p>
+  <p class="tile-verdict">≈ {num(time.hours.bullshitHoursAtMean)} {en ? 'hours a week: meaningless activity' : 'год на тиждень — безглузда діяльність'}</p>
+  <p class="tile-meta">{en ? `with an average working week of ${num(time.hours.mean)} hours` : `за середнього робочого тижня ${num(time.hours.mean)} год`}</p>
 
-  <a class="tile-link" href="/time-structure">Докладніше →</a>
+  <a class="tile-link" href={link('/time-structure')}>{en ? 'More →' : 'Докладніше →'}</a>
 </article>

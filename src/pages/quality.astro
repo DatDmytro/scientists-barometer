@@ -6,8 +6,11 @@ import IndexForest from '../components/IndexForest.astro';
 import LikertDiverging from '../components/LikertDiverging.astro';
 import QualCrossTab from '../components/QualCrossTab.astro';
 import block from '../data/block-quality-2026.json';
-import { byCode, CHANGE_CAVEAT } from '../lib/indices';
-import { num, pct } from '../lib/format';
+import { indexApi } from '../lib/indices';
+import { i18n } from '../i18n';
+
+const { lang, en, tr, num, pct } = i18n(Astro);
+const { byCode, CHANGE_CAVEAT } = indexApi(lang);
 
 // розподіли — з блоку (дослівні мітки відповідей); значення й 95 % ДІ — через довідник індексів
 const likert = (grp: string) =>
@@ -15,7 +18,7 @@ const likert = (grp: string) =>
     .filter((i) => i.group === grp)
     .map((i) => {
       const m = byCode(i.code);
-      return { label: `${m.subject}${m.horizonText ? ', ' + m.horizonText : ''}`, code: i.code, value: i.value, dist: i.dist };
+      return { label: `${m.subject}${m.horizonText ? ', ' + m.horizonText : ''}`, code: m.code, value: i.value, dist: i.dist };
     });
 
 const link = block.timeQualityLink;
@@ -29,27 +32,31 @@ const oth5 = byCode('ІЯНР ч5');
 
 
 <Layout
-  title="Якість і очікування — Науковий Барометр"
-  description="Як науковці оцінюють якість досліджень (ІЯНР), її динаміку та чого очікують від розвитку науки в Україні (ІОРН)."
+  title={en ? 'Quality and expectations — Scientists Barometer' : 'Якість і очікування — Науковий Барометр'}
+  description={en ? 'How researchers assess research quality (RQI), how it has changed, and what they expect for the development of science in Ukraine (SEI).' : 'Як науковці оцінюють якість досліджень (ІЯНР), її динаміку та чого очікують від розвитку науки в Україні (ІОРН).'}
 >
-  <BlockHeader slug="quality" title="Якість наукових результатів та очікування" />
+  <BlockHeader slug="quality" title={en ? 'Quality of research results and expectations' : 'Якість наукових результатів та очікування'} />
   <p class="note">
-    П'ятий блок анкети: зв'язок часу і якості, поточна оцінка якості (власної та чужої), оцінка її
+    {en ? <>The fifth block of the questionnaire: the link between time and quality, the current assessment of
+    quality (own and others’), the assessed change in quality over 1 year and 5 years, and expectations for
+    the development of science. It yields the Research Quality Index (RQI) and the Science Expectations
+    Index (SEI).</> : <>П'ятий блок анкети: зв'язок часу і якості, поточна оцінка якості (власної та чужої), оцінка її
     змін за рік і за 5 років і очікування щодо розвитку науки. Звідси — Індекс якості наукових
-    результатів (ІЯНР) та Індекс очікувань розвитку науки (ІОРН).
+    результатів (ІЯНР) та Індекс очікувань розвитку науки (ІОРН).</>}
   </p>
 
   <section>
-    <h2>Зв'язок: час на науку ↔ якість результатів</h2>
+    <h2>{en ? 'Link: time for research ↔ quality of results' : "Зв'язок: час на науку ↔ якість результатів"}</h2>
     <p class="note" style="margin-top:-0.2rem">
-      Окреме питання без розрахунку індексу — як науковці бачать механізм впливу часу на якість
-      (n = {link.n}).
+      {en ? <>A separate question with no index calculated: how researchers see the way time affects quality
+      (n = {link.n}).</> : <>Окреме питання без розрахунку індексу — як науковці бачать механізм впливу часу на якість
+      (n = {link.n}).</>}
     </p>
     <table class="dist">
       <tbody>
         {link.options.map((o) => (
           <tr>
-            <td class="opt">{o.label}</td>
+            <td class="opt">{tr(o.label)}</td>
             <td class="barcell"><div class="bar"><span style={`width:${(o.pct / maxPct) * 100}%`}></span></div></td>
             <td class="pct">{pct(o.pct)}</td>
             <td class="nn">{o.n}</td>
@@ -58,65 +65,67 @@ const oth5 = byCode('ІЯНР ч5');
       </tbody>
     </table>
     <p class="note">
-      Абсолютна більшість — <b>{pct(link.directPct)}</b> — бачать <b>прямий зв'язок</b>: більше часу на
-      дійсну наукову діяльність означає кращу якість.
+      {en ? <>The overwhelming majority, <b>{pct(link.directPct)}</b>, see a <b>direct link</b>: more time for actual
+      scientific activity means better quality.</> : <>Абсолютна більшість — <b>{pct(link.directPct)}</b> — бачать <b>прямий зв'язок</b>: більше часу на
+      дійсну наукову діяльність означає кращу якість.</>}
     </p>
-    <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">Дописані варіанти (2)</h3>
+    <h3 style="font-size:0.96rem;margin:1.2rem 0 0.3rem;color:var(--ink)">{en ? 'Write-in answers (2)' : 'Дописані варіанти (2)'}</h3>
     <ul class="qlist">
-      {link.writeIns.map((w) => <li>{w}</li>)}
+      {link.writeIns.map((w) => <li>{tr(w)}</li>)}
     </ul>
   </section>
 
   <section>
-    <h2>Поточна якість результатів</h2>
+    <h2>{en ? 'Current quality of results' : 'Поточна якість результатів'}</h2>
     <IndexForest groups={[{ codes: ['ІЯНР в', 'ІЯНР ч'] }]} dist={false} />
-    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок, % відповідей:</p>
+    <p class="note" style="margin:0.8rem 0 0.3rem">{en ? 'Distribution of assessments, % of responses:' : 'Розподіл оцінок, % відповідей:'}</p>
     <LikertDiverging rows={likert('Поточна якість')} />
     <p class="note">
-      Обидва індекси помірно позитивні (≈113). Більшість оцінює якість як «нормальну» або «скоріше
-      високу». Майже однаковий рівень оцінок власних і чужих досліджень свідчить про відсутність
-      систематичного завищення самооцінки.
+      {en ? <>Both indices are moderately positive (≈113). Most assess quality as “adequate” or “rather high”.</> : <>Обидва індекси помірно позитивні (≈113). Більшість оцінює якість як «нормальну» або «скоріше
+      високу».</>}
     </p>
   </section>
 
   <section>
-    <h2>Оцінка змін якості</h2>
+    <h2>{en ? 'Assessed change in quality' : 'Оцінка змін якості'}</h2>
     <p class="note" style="margin-top:-0.2rem">{CHANGE_CAVEAT}</p>
     <IndexForest groups={[
-      { title: 'Якість власних досліджень', codes: ['ІЯНР в1', 'ІЯНР в5'] },
-      { title: 'Якість досліджень інших', codes: ['ІЯНР ч1', 'ІЯНР ч5'] },
+      { title: (en ? 'Quality of own research' : 'Якість власних досліджень'), codes: ['ІЯНР в1', 'ІЯНР в5'] },
+      { title: (en ? 'Quality of others’ research' : 'Якість досліджень інших'), codes: ['ІЯНР ч1', 'ІЯНР ч5'] },
     ]} dist={false} />
-    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл оцінок змін, % відповідей:</p>
+    <p class="note" style="margin:0.8rem 0 0.3rem">{en ? 'Distribution of assessed change, % of responses:' : 'Розподіл оцінок змін, % відповідей:'}</p>
     <LikertDiverging rows={likert('Динаміка якості')} />
     <p class="note">
-      Якість <b>власних</b> досліджень, за оцінкою респондентів, покращувалася (рік {num(own1.value)},
+      {en ? <>In respondents’ assessment the quality of <b>own</b> research improved (1 year {num(own1.value)},
+      5 years {num(own5.value)}), while for <b>others’</b> research the assessments do not differ from the neutral value ({num(oth1.value)} /
+      {' '}{num(oth5.value)}: the intervals cross 100). Assessed change relies on respondents’ memory, which is a limitation of the pilot.</> : <>Якість <b>власних</b> досліджень, за оцінкою респондентів, покращувалася (рік {num(own1.value)},
       5 років {num(own5.value)}), а для <b>чужих</b> оцінки від нейтрального значення не відрізняються ({num(oth1.value)} /
-      {' '}{num(oth5.value)}: інтервали перетинають 100). Контраст «своє покращується, чуже — ні» може бути
-      проявом когнітивного упередження. Оцінки змін спираються на пам'ять респондентів — це обмеження пілоту.
+      {' '}{num(oth5.value)}: інтервали перетинають 100). Оцінки змін спираються на пам'ять респондентів — це обмеження пілоту.</>}
     </p>
   </section>
 
   <section>
-    <h2>Очікування розвитку науки</h2>
+    <h2>{en ? 'Expectations for the development of science' : 'Очікування розвитку науки'}</h2>
     <IndexForest groups={[{ codes: ['ІОРН 1', 'ІОРН 5'] }]} dist={false} />
-    <p class="note" style="margin:0.8rem 0 0.3rem">Розподіл очікувань, % відповідей:</p>
+    <p class="note" style="margin:0.8rem 0 0.3rem">{en ? 'Distribution of expectations, % of responses:' : 'Розподіл очікувань, % відповідей:'}</p>
     <LikertDiverging rows={likert('Очікування')} />
     <p class="note">
-      Обидва індекси очікувань <b>суттєво нижчі за 100</b> (на рік {num(byCode('ІОРН 1').value)}, на 5 років
-      {' '}{num(byCode('ІОРН 5').value)}) — загальний структурний песимізм.
+      {en ? <>Both expectation indices are <b>substantially below 100</b> (one year ahead {num(byCode('ІОРН 1').value)}, 5 years ahead
+      {' '}{num(byCode('ІОРН 5').value)}).</> : <>Обидва індекси очікувань <b>суттєво нижчі за 100</b> (на рік {num(byCode('ІОРН 1').value)}, на 5 років
+      {' '}{num(byCode('ІОРН 5').value)}).</>}
     </p>
   </section>
 
   <section>
-    <h2>Розрізи за демографією</h2>
+    <h2>{en ? 'Demographic breakdowns' : 'Розрізи за демографією'}</h2>
     <QualCrossTab block={block} />
   </section>
 
   <section>
-    <h2>Коментарі до блоку ({block.comments.length})</h2>
-    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <h2>{en ? 'Comments on this block' : 'Коментарі до блоку'} ({block.comments.length})</h2>
+    <p class="note">{en ? 'Respondents’ open comments on this section of the questionnaire, in English translation. The originals are in the Ukrainian version of this page.' : 'Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.'}</p>
     <ul class="qlist comments">
-      {block.comments.map((c) => <li>{c}</li>)}
+      {block.comments.map((c) => <li>{tr(c)}</li>)}
     </ul>
   </section>
 

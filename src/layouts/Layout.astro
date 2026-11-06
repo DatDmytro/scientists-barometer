@@ -1,34 +1,44 @@
 ---
 import '../styles/global.css';
-import { BLOCKS } from '../lib/blocks';
-import { CITATION, DOI, DOI_URL, LICENSE } from '../lib/site';
+import { blocksFor } from '../lib/blocks';
+import { i18n } from '../i18n';
+import { CITATION, DOI, DOI_URL, LICENSE, SITE_URL } from '../lib/site';
 
 const { title, description } = Astro.props as { title: string; description?: string };
+const { lang, en, link } = i18n(Astro);
+const BLOCKS = blocksFor(lang);
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+// та сама сторінка іншою мовою — для перемикача й hreflang
+const ukPath = path.replace(/^\/en(?=\/|$)/, '') || '/';
+const enPath = ukPath === '/' ? '/en/' : `/en${ukPath}`;
+const absolute = (p: string) => SITE_URL + (p.endsWith('/') ? p : `${p}/`);
 const nav = [
-  { href: '/methodology', label: 'Методологія' },
-  { href: '/about', label: 'Про проєкт' },
+  { href: link('/methodology'), label: en ? 'Methodology' : 'Методологія' },
+  { href: link('/about'), label: en ? 'About' : 'Про проєкт' },
 ];
+const home = link('/');
 const inResults = BLOCKS.some((b) => path.startsWith(b.href));
-const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+const active = (href: string) => (href === home ? ukPath === '/' : path.startsWith(href));
 ---
 
 <!doctype html>
-<html lang="uk">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" hreflang="uk" href={absolute(ukPath)} />
+    <link rel="alternate" hreflang="en" href={absolute(enPath)} />
   </head>
   <body>
     <header class="topnav">
-      <a href="/" class="brand">Науковий Барометр</a>
-      <nav aria-label="Основна навігація">
-        <a href="/" class={active('/') ? 'active' : ''}>Головна</a>
+      <a href={home} class="brand">{en ? 'Scientists Barometer' : 'Науковий Барометр'}</a>
+      <nav aria-label={en ? 'Main navigation' : 'Основна навігація'}>
+        <a href={home} class={active(home) ? 'active' : ''}>{en ? 'Home' : 'Головна'}</a>
         <div class="navgroup">
-          <a href="/#rozdily" class={inResults ? 'active' : ''} aria-haspopup="true">Результати <span aria-hidden="true">▾</span></a>
+          <a href={link('/#rozdily')} class={inResults ? 'active' : ''} aria-haspopup="true">{en ? 'Results' : 'Результати'} <span aria-hidden="true">▾</span></a>
           <div class="navmenu">
             {BLOCKS.map((b, i) => (
               <a href={b.href} class={path.startsWith(b.href) ? 'active' : ''}><span class="bn-num">{i + 1}</span>{b.title}</a>
@@ -36,7 +46,11 @@ const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(
           </div>
         </div>
         {nav.map((n) => <a href={n.href} class={active(n.href) ? 'active' : ''}>{n.label}</a>)}
-        <a href="/participate" class={`cta${active('/participate') ? ' active' : ''}`}>Долучитися</a>
+        <a href={link('/participate')} class={`cta${active(link('/participate')) ? ' active' : ''}`}>{en ? 'Take part' : 'Долучитися'}</a>
+        <span class="langsw" aria-label={en ? 'Language' : 'Мова'}>
+          <a href={ukPath} hreflang="uk" lang="uk" class={en ? '' : 'active'}>УКР</a>
+          <a href={enPath} hreflang="en" lang="en" class={en ? 'active' : ''}>EN</a>
+        </span>
       </nav>
     </header>
 
@@ -46,16 +60,18 @@ const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(
 
     <footer>
       <p>
-        Дані публікуються <b>лише агреговано й безособово</b>. Набір даних хвилі 2026 — на Zenodo,
-        DOI <a href={DOI_URL} target="_blank" rel="noopener">{DOI}</a>, ліцензія <a href={LICENSE.url} target="_blank" rel="noopener">{LICENSE.name}</a>.
+        {en ? <>Data are published <b>only in aggregated, anonymised form</b>. The wave 2026 dataset is on Zenodo,
+        DOI <a href={DOI_URL} target="_blank" rel="noopener">{DOI}</a>, licence <a href={LICENSE.urlEn} target="_blank" rel="noopener">{LICENSE.name}</a>.</> : <>Дані публікуються <b>лише агреговано й безособово</b>. Набір даних хвилі 2026 — на Zenodo,
+        DOI <a href={DOI_URL} target="_blank" rel="noopener">{DOI}</a>, ліцензія <a href={LICENSE.url} target="_blank" rel="noopener">{LICENSE.name}</a>.</>}
       </p>
-      <p class="cite">Як цитувати: {CITATION}</p>
+      <p class="cite">{en ? 'How to cite' : 'Як цитувати'}: {CITATION}</p>
       <p>
-        Сайт збирає лише знеособлену статистику відвідувань (Cloudflare Web Analytics): без cookies і
-        без даних, за якими можна встановити особу.
+        {en ? <>The site collects only anonymised visit statistics (Cloudflare Web Analytics): no cookies and
+        no data that could identify a person.</> : <>Сайт збирає лише знеособлену статистику відвідувань (Cloudflare Web Analytics): без cookies і
+        без даних, за якими можна встановити особу.</>}
       </p>
       <p>
-        <a href="/participate">Долучитися до наступної хвилі</a> · Науковий Барометр / Scientists Barometer
+        <a href={link('/participate')}>{en ? 'Take part in the next wave' : 'Долучитися до наступної хвилі'}</a> · {en ? 'Scientists Barometer / Науковий Барометр' : 'Науковий Барометр / Scientists Barometer'}
       </p>
     </footer>
   </body>

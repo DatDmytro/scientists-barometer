@@ -6,11 +6,15 @@ export const DOI_URL = `https://doi.org/${DOI}`;
 export const TITLE_EN = 'Scientists Barometer: Aggregated data from a survey of Ukrainian researchers (wave 2026)';
 export const CITATION = `Maslov, D. (2026). ${TITLE_EN} [Data set]. Zenodo. ${DOI_URL}`;
 
-export const LICENSE = { name: 'CC BY 4.0', url: 'https://creativecommons.org/licenses/by/4.0/deed.uk' };
+export const LICENSE = { name: 'CC BY 4.0', url: 'https://creativecommons.org/licenses/by/4.0/deed.uk', urlEn: 'https://creativecommons.org/licenses/by/4.0/deed.en' };
+
+// адреса сайту — для посилань hreflang між мовними версіями
+export const SITE_URL = 'https://scientists-barometer.pages.dev';
 
 // Подача вибірки (рішення автора 2026-10-07): описуємо зміщення, але висновок про узагальнення
 // лишаємо користувачам — таке зміщення типове для подібних опитувань, а оцінки кваліфікованих
 // науковців для системи найважливіші.
 export const SAMPLE_BIAS = 'зміщена в бік кваліфікованіших і залученіших у науку респондентів — це типово для подібних опитувань';
 export const SAMPLE_ARGUMENT = 'Водночас саме оцінки кваліфікованих і досвідчених науковців найважливіші для розуміння стану системи.';
-
+export const SAMPLE_BIAS_EN = 'skewed towards more qualified and more research-engaged respondents, which is typical of surveys of this kind';
+export const SAMPLE_ARGUMENT_EN = 'At the same time, it is the assessments of qualified and experienced researchers that matter most for understanding the state of the system.';

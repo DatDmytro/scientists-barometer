@@ -1,7 +1,9 @@
 ---
 // Шкала-«барометр»: трек min–max, риска нейтралі, смуга 95 % ДІ і маркер значення.
 // HTML + CSS-позиціювання у відсотках (не SVG), щоб маркер не спотворювався на будь-якій ширині.
-import { num } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { num } = i18n(Astro);
 
 interface Props {
   value: number;

@@ -104,6 +104,9 @@ a { color: var(--accent); }
 .topnav nav a.active { color: var(--accent); background: var(--bg); }
 .topnav nav a.cta { background: var(--accent); color: #fff; margin-left: 0.3rem; }
 .topnav nav a.cta:hover, .topnav nav a.cta.active { background: #234d71; color: #fff; }
+.topnav nav .langsw { display: inline-flex; margin-left: 0.45rem; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.topnav nav .langsw a { font-size: 0.78rem; padding: 0.2rem 0.45rem; border-radius: 0; }
+.topnav nav .langsw a.active { color: #fff; background: var(--accent); }
 .navgroup { position: relative; }
 .navmenu {
   display: none; position: absolute; top: 100%; left: 0; z-index: 20; min-width: 16.5rem;

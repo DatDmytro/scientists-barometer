@@ -5,16 +5,16 @@
 import Layout from '../layouts/Layout.astro';
 import wave from '../data/wave-2026.json';
 import verification from '../data/verification-2026.json';
-import ciData from '../data/crosstab-ci-2026.json';
-import { INDICES, KIND, type Kind } from '../lib/indices';
+import { indexApi, type Kind } from '../lib/indices';
 import { DOI_URL, SAMPLE_ARGUMENT } from '../lib/site';
-import { num, signed, pval, int, pct } from '../lib/format';
+import { rep, compByCrit, biasCls, W, sums, sumMax, nearSum, assessCls } from '../lib/methodology';
+import { i18n } from '../i18n';
+
+const { lang, link, num, signed, pval, int, pct } = i18n(Astro);
+const { INDICES, KIND } = indexApi(lang);
 
 const w = wave.wave;
-const rep = wave.representativeness;
 const v = verification;
-const compByCrit = (c: string) => rep.comparison.filter((r) => r.criterion === c);
-const biasCls = (b: number) => (b >= 0 ? 'bias-pos' : 'bias-neg');
 
 // Профіль вибірки — частки за METHODOLOGY набору, розд. 3 (характеристики необов'язкові)
 const profile = [
@@ -32,31 +32,6 @@ const profile = [
 const kinds: Kind[] = ['state', 'change', 'expect'];
 const ofKind = (k: Kind) => INDICES.filter((i) => i.kind === k);
 
-// типова ширина ДІ у крос-табах (медіана, в пунктах) — для малих і більших груп
-function widths() {
-  const small: number[] = [], large: number[] = [];
-  const walk = (o: unknown): void => {
-    if (!o || typeof o !== 'object') return;
-    const r = o as Record<string, unknown>;
-    if (typeof r.n === 'number') {
-      for (const [k, val] of Object.entries(r)) {
-        if (k !== 'n' && Array.isArray(val) && val.length === 2 && typeof val[0] === 'number') {
-          (r.n < 20 ? small : large).push((val[1] as number) - (val[0] as number));
-        }
-      }
-      return;
-    }
-    Object.values(r).forEach(walk);
-  };
-  for (const key of ['motivation', 'categorization', 'resources', 'sufficiency', 'additional'] as const) walk(ciData[key]);
-  const med = (a: number[]) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
-  return { small: med(small), large: med(large) };
-}
-const W = widths();
-
-const sums = v.shareSumCheck.distribution;
-const sumMax = Math.max(...sums.map((d) => d.n));
-const assessCls = (a: string) => (a === 'Обмеження' ? 'lim' : a === 'Помірна' ? 'mid' : 'ok');
 // формулювання двох рядків зведеної таблиці для сайту (JSON набору не змінюємо)
 const rc = v.reverseCheck;
 const SUMMARY_TEXT: Record<string, { dimension: string; result: string }> = {
@@ -70,7 +45,6 @@ const SUMMARY_TEXT: Record<string, { dimension: string; result: string }> = {
   },
 };
 const summary = v.psychometricSummary.ua.map((r) => ({ ...r, ...SUMMARY_TEXT[r.dimension] }));
-const nearSum = sums.filter((d) => d.sum >= 85 && d.sum <= 115).reduce((a, d) => a + d.n, 0);
 const CAT = { НД: 'Дійсна наукова (ДНД)', КН: 'Корисна ненаукова (КННД)', БД: 'Безглузда (БД)' } as Record<string, string>;
 ---
 
@@ -261,7 +235,7 @@ const CAT = { НД: 'Дійсна наукова (ДНД)', КН: 'Корисн�
         відповів на відповідне питання; n наведено поруч із кожним значенням.</li>
       <li><b>Частки часу</b> респонденти обирали інтервалом (0–10 %, 11–20 % … 91–100 %); у розрахунках —
         середини інтервалів (5, 15 … 95 %).</li>
-      <li><b>Категоризація.</b> Частки ДНД / КННД / БД розраховані від суми цих трьох відповідей; «важко визначити» і
+      <li><b>Категоризація.</b> Частки <a href={link('/about#kategorii')}>ДНД / КННД / БД</a> розраховані від суми цих трьох відповідей; «важко визначити» і
         «не стикався» до бази не входять.</li>
       <li><b>Галузі.</b> Нестандартні відповіді (зокрема міждисциплінарні) об'єднано в «Інше
         (міждисциплінарна)».</li>
@@ -326,9 +300,9 @@ const CAT = { НД: 'Дійсна наукова (ДНД)', КН: 'Корисн�
     <p>
       Наскільки однаково науковці відносять види діяльності до наукової / корисної ненаукової /
       безглуздої: <b>κ = {num(wave.reliability.fleiss.kappa, 3)}</b> (середня узгодженість
-      P̄ = {num(wave.reliability.fleiss.pBar, 3)}) — «помірна» за шкалою Лендіса–Коха. Помірний консенсус
+      P̄ = {num(wave.reliability.fleiss.pBar, 3)}) — «помітна» за шкалою Лендіса–Коха. Такий рівень консенсусу
       очікуваний: межі між категоріями частково суб'єктивні, і сам ступінь розбіжності — змістовний
-      результат. Узгодженість по кожному виду (Pᵢ) — на сторінці <a href="/categorization">категоризації</a>.
+      результат. Узгодженість по кожному виду (Pᵢ) — на сторінці <a href={link('/categorization')}>категоризації</a>.
     </p>
 
     <h4>Конструктна валідність (Spearman ρ)</h4>
@@ -390,7 +364,7 @@ const CAT = { НД: 'Дійсна наукова (ДНД)', КН: 'Корисн�
     <p>
       У наукових установах частка дійсної наукової діяльності значно вища, а безглуздої — нижча:
       інструмент розрізняє групи, які мають відрізнятися. Розподіли за типом установи — на сторінці
-      <a href="/time-structure#zvo-nu">структури часу</a>.
+      <a href={link('/time-structure#zvo-nu')}>структури часу</a>.
     </p>
 
     <h4>Узгодженість відповідей</h4>

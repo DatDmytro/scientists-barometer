@@ -5,41 +5,43 @@ import CatCrossTab from '../components/CatCrossTab.astro';
 import BlockHeader from '../components/BlockHeader.astro';
 import BlockNav from '../components/BlockNav.astro';
 import block from '../data/block-categorization-2026.json';
-import { num } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { en, tr, link, num } = i18n(Astro);
 
 const acts = block.activities; // дефолт: за спаданням БД%
 const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
 ---
 
 <Layout
-  title="Категоризація діяльності — Науковий Барометр"
-  description="54 види діяльності науковця, класифіковані як дійсна наукова, корисна ненаукова чи безглузда."
+  title={en ? 'Categorisation of activities — Scientists Barometer' : 'Категоризація діяльності — Науковий Барометр'}
+  description={en ? '54 researcher activities classified as actual scientific, useful non-scientific or meaningless.' : '54 види діяльності науковця, класифіковані як дійсна наукова, корисна ненаукова чи безглузда.'}
 >
   <BlockHeader slug="categorization" />
-  <p class="note">{block.note}</p>
+  <p class="note">{tr(block.note)} {en ? <>Definitions of ASA, UNSA and MA are on the <a href={link('/about#kategorii')}>About</a> page.</> : <>Визначення ДНД, КННД і БД — на сторінці <a href={link('/about#kategorii')}>«Про проєкт»</a>.</>}</p>
 
   <div class="cat-summary">
-    <div><b>{block.summary['ДНД']}</b> видів — переважно дійсна наукова</div>
-    <div><b>{block.summary['КННД']}</b> — корисна ненаукова</div>
-    <div><b>{block.summary['БД']}</b> — безглузда</div>
-    <div><b>{num(block.fleissKappa, 3)}</b> Fleiss κ — помірна узгодженість</div>
-    <div><b>{block.controversialCount}</b> суперечливих — розрив &lt; 20 в.п.</div>
+    <div><b>{block.summary['ДНД']}</b>{en ? ' activities: mainly actual scientific' : ' видів — переважно дійсна наукова'}</div>
+    <div><b>{block.summary['КННД']}</b>{en ? ': useful non-scientific' : ' — корисна ненаукова'}</div>
+    <div><b>{block.summary['БД']}</b>{en ? ': meaningless' : ' — безглузда'}</div>
+    <div><b>{num(block.fleissKappa, 3)}</b>{en ? ' Fleiss κ: fair agreement' : ' Fleiss κ — помітна узгодженість'}</div>
+    <div><b>{block.controversialCount}</b>{en ? <> contested: gap under 20 pp</> : <> суперечливих — розрив &lt; 20 в.п.</>}</div>
   </div>
 
   <div class="cat-legend">
-    <span><i class="swnd"></i>ДНД — дійсна наукова</span>
-    <span><i class="swkn"></i>КННД — корисна ненаукова</span>
-    <span><i class="swbd"></i>БД — безглузда</span>
-    <span class="note">Pᵢ — узгодженість респондентів щодо категоризації i-того виду</span>
+    <span><i class="swnd"></i>{en ? 'ASA: actual scientific' : 'ДНД — дійсна наукова'}</span>
+    <span><i class="swkn"></i>{en ? 'UNSA: useful non-scientific' : 'КННД — корисна ненаукова'}</span>
+    <span><i class="swbd"></i>{en ? 'MA: meaningless' : 'БД — безглузда'}</span>
+    <span class="note">{en ? 'Pᵢ: respondents’ agreement on the categorisation of activity i' : 'Pᵢ — узгодженість респондентів щодо категоризації i-того виду'}</span>
   </div>
 
   <div class="catsort">
-    Сортувати:
+    {en ? 'Sort:' : 'Сортувати:'}
     <select id="cat-sort">
-      <option value="bd">за безглуздою (БД)</option>
-      <option value="nd">за дійсною науковою (ДНД)</option>
-      <option value="kn">за корисною ненауковою (КННД)</option>
-      <option value="pi">за узгодженістю (Pᵢ)</option>
+      <option value="bd">{en ? 'by meaningless (MA)' : 'за безглуздою (БД)'}</option>
+      <option value="nd">{en ? 'by actual scientific (ASA)' : 'за дійсною науковою (ДНД)'}</option>
+      <option value="kn">{en ? 'by useful non-scientific (UNSA)' : 'за корисною ненауковою (КННД)'}</option>
+      <option value="pi">{en ? 'by agreement (Pᵢ)' : 'за узгодженістю (Pᵢ)'}</option>
     </select>
   </div>
 
@@ -49,14 +51,14 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
         acts.map((a) => (
           <div class="actrow" data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
             <div class="actname">
-              {a.name}
+              {tr(a.name)}
               <span class="pi">Pᵢ={num(a.pi, 2)}</span>
-              {a.controversial && <span class="contro"> · суперечливо</span>}
+              {a.controversial && <span class="contro">{en ? ' · contested' : ' · суперечливо'}</span>}
             </div>
             <div class="actbar">
-              <span class="nd" style={`width:${a.nd}%`} title={`ДНД ${num(a.nd)} %`}>{lbl(a.nd)}</span>
-              <span class="kn" style={`width:${a.kn}%`} title={`КННД ${num(a.kn)} %`}>{lbl(a.kn)}</span>
-              <span class="bd" style={`width:${a.bd}%`} title={`БД ${num(a.bd)} %`}>{lbl(a.bd)}</span>
+              <span class="nd" style={`width:${a.nd}%`} title={en ? `ASA ${num(a.nd)}%` : `ДНД ${num(a.nd)} %`}>{lbl(a.nd)}</span>
+              <span class="kn" style={`width:${a.kn}%`} title={en ? `UNSA ${num(a.kn)}%` : `КННД ${num(a.kn)} %`}>{lbl(a.kn)}</span>
+              <span class="bd" style={`width:${a.bd}%`} title={en ? `MA ${num(a.bd)}%` : `БД ${num(a.bd)} %`}>{lbl(a.bd)}</span>
             </div>
           </div>
         ))
@@ -65,10 +67,10 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
     <table slot="table">
       <thead>
         <tr>
-          <th>Вид діяльності</th>
-          <th class="num">ДНД %</th>
-          <th class="num">КННД %</th>
-          <th class="num">БД %</th>
+          <th>{en ? 'Activity' : 'Вид діяльності'}</th>
+          <th class="num">{en ? 'ASA %' : 'ДНД %'}</th>
+          <th class="num">{en ? 'UNSA %' : 'КННД %'}</th>
+          <th class="num">{en ? 'MA %' : 'БД %'}</th>
           <th class="num">Pᵢ</th>
           <th class="num">n</th>
         </tr>
@@ -77,7 +79,7 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
         {
           acts.map((a) => (
             <tr data-nd={a.nd} data-kn={a.kn} data-bd={a.bd} data-pi={a.pi}>
-              <td>{a.name}</td>
+              <td>{tr(a.name)}</td>
               <td class="num">{num(a.nd)}</td>
               <td class="num">{num(a.kn)}</td>
               <td class="num" style={a.dominant === 'БД' ? 'font-weight:700' : ''}>
@@ -93,20 +95,21 @@ const lbl = (n: number) => (n >= 10 ? String(Math.round(n)) : '');
   </ViewToggle>
 
   <p class="note" style="margin-top:1.5rem">
-    Найбезглуздіші практики (за версією науковців): друк паперових варіантів, усне й письмове
-    звітування, забезпечення формальних метрик (h-індекс, цитування).
+    {en ? <>The most meaningless practices (according to researchers): printing paper copies, oral and written
+    reporting, meeting formal metrics (h-index, citations).</> : <>Найбезглуздіші практики (за версією науковців): друк паперових варіантів, усне й письмове
+    звітування, забезпечення формальних метрик (h-індекс, цитування).</>}
   </p>
 
   <section>
-    <h2>Розрізи за демографією</h2>
+    <h2>{en ? 'Demographic breakdowns' : 'Розрізи за демографією'}</h2>
     <CatCrossTab block={block} />
   </section>
 
   <section>
-    <h2>Коментарі до блоку ({block.comments.length})</h2>
-    <p class="note">Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.</p>
+    <h2>{en ? 'Comments on this block' : 'Коментарі до блоку'} ({block.comments.length})</h2>
+    <p class="note">{en ? 'Respondents’ open comments on this section of the questionnaire, in English translation. The originals are in the Ukrainian version of this page.' : 'Відкриті коментарі респондентів до цього розділу анкети — дослівно, без редагування.'}</p>
     <ul class="qlist comments">
-      {block.comments.map((c) => <li>{c}</li>)}
+      {block.comments.map((c) => <li>{tr(c)}</li>)}
     </ul>
   </section>
 

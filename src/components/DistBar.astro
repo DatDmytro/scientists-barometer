@@ -3,7 +3,9 @@
 // нейтральна категорія — по центру (сіра), позитивні — праворуч, негативні — ліворуч.
 // Колір плеча — за змістом: що краще для науки — синє, гірше — червоне, без оцінки (ІКННЧ) — бурштинове.
 // left/right — спільні межі (у % відповідей), щоб центри всіх рядків стояли на одній лінії.
-import { pct as fpct } from '../lib/format';
+import { i18n } from '../i18n';
+
+const { pct: fpct } = i18n(Astro);
 
 interface Cat { label: string; n: number; pct: number }
 interface Props {

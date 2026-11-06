@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  // українська — за замовчуванням, без префікса; англійська — під /en/
+  i18n: { locales: ['uk', 'en'], defaultLocale: 'uk', routing: { prefixDefaultLocale: false } },
   vite: {
     plugins: [tailwindcss()],
     // Скрипти сторінок — окремими файлами, а не інлайном: тоді CSP обходиться script-src 'self'
