@@ -46,7 +46,7 @@ const active = (href: string) => (href === home ? ukPath === '/' : path.startsWi
           </div>
         </div>
         {nav.map((n) => <a href={n.href} class={active(n.href) ? 'active' : ''}>{n.label}</a>)}
-        <a href={link('/participate')} class={`cta${active(link('/participate')) ? ' active' : ''}`}>{en ? 'Take part' : 'Долучитися'}</a>
+        <a href={link('/participate')} class={`cta${active(link('/participate')) ? ' active' : ''}`}>{en ? 'Take part or leave feedback' : 'Долучитися або залишити відгук'}</a>
         <span class="langsw" aria-label={en ? 'Language' : 'Мова'}>
           <a href={ukPath} hreflang="uk" lang="uk" class={en ? '' : 'active'}>УКР</a>
           <a href={enPath} hreflang="en" lang="en" class={en ? 'active' : ''}>EN</a>

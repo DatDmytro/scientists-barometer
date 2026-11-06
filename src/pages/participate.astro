@@ -13,10 +13,10 @@ const embedUrl = (id: string) => `https://tally.so/embed/${id}?alignLeft=1&hideT
 ---
 
 <Layout
-  title={en ? 'Take part — Scientists Barometer' : 'Долучитися — Науковий Барометр'}
+  title={en ? 'Take part or leave feedback — Scientists Barometer' : 'Долучитися або залишити відгук — Науковий Барометр'}
   description={en ? 'Leave your contact details to take part in the next wave of the survey, or send feedback about the site.' : 'Лишіть контакт, щоб узяти участь у наступній хвилі опитування, або надішліть відгук про сайт.'}
 >
-  <h1>{en ? 'Take part' : 'Долучитися'}</h1>
+  <h1>{en ? 'Take part or leave feedback' : 'Долучитися або залишити відгук'}</h1>
   <p class="lead">
     {en ? <>The Barometer is repeated in waves. If you would like to take part in the next survey, leave your
     contact details and we will send you the form when a new wave starts. The survey itself is conducted in
@@ -52,9 +52,8 @@ const embedUrl = (id: string) => `https://tally.so/embed/${id}?alignLeft=1&hideT
   <div class="meta">
     <p><b>{en ? 'How we handle your contact details' : 'Як ми поводимося з вашим контактом'}</b></p>
     <p>{en ? <><b>Who collects them:</b> D. Maslov (ORCID 0000-0002-1721-8319), author of the study.</> : <><b>Хто збирає:</b> Маслов Д.С. (ORCID 0000-0002-1721-8319), автор дослідження.</>}</p>
-    <p>{en ? <><b>What:</b> your email address; in the feedback form, your message, and your address only if you wish.</> : <><b>Що:</b> вашу електронну адресу; у формі відгуку — повідомлення, а адресу лише за бажанням.</>}</p>
-    <p>{en ? <><b>Why:</b> an address left for an invitation is used solely to send you the survey form at the next wave; an address left with feedback is used only to reply. No mailing lists or advertising.</> : <><b>Навіщо:</b> адресу для запрошення — виключно щоб надіслати форму опитування при наступній хвилі; адресу з відгуку — лише щоб відповісти. Жодної розсилки чи реклами.</>}</p>
-    <p>{en ? <><b>Where:</b> the forms run on the Tally service (Belgium, data stored in the EU). The data are not passed to any other third parties. A form loads only after you press the button; while it is open, Tally keeps a technical form identifier in your browser.</> : <><b>Де:</b> форми працюють на сервісі Tally (Бельгія, дані зберігаються в ЄС). Іншим третім сторонам дані не передаються. Форма завантажується лише після натискання кнопки; під час заповнення Tally зберігає у браузері службовий ідентифікатор форми.</>}</p>
+    <p>{en ? <><b>What:</b> only your email address.</> : <><b>Що:</b> лише вашу електронну адресу.</>}</p>
+    <p>{en ? <><b>Why:</b> solely to send you the survey form at the next wave. No mailing lists, advertising or transfer to third parties.</> : <><b>Навіщо:</b> виключно щоб надіслати форму опитування при наступній хвилі. Жодної розсилки, реклами чи передачі третім сторонам.</>}</p>
     <p>{en ? <><b>How long:</b> until you ask for deletion or until the project ends.</> : <><b>Скільки:</b> до вашого запиту про видалення або до завершення проєкту.</>}</p>
     <p>
       {en ? <><b>Separate from the study:</b> the contact details of those who wish to take part and feedback are not
