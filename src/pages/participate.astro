@@ -4,8 +4,6 @@ import { i18n } from '../i18n';
 
 const { en } = i18n(Astro);
 
-const email = 'dmitrymaslov@ukr.net';
-
 // Форми Tally. Запрошення й відгуки — окремо, щоб адреси для запрошень не змішувалися з відгуками.
 const FORMS = en ? { join: 'Vpj8by', feedback: 'Eq50vB' } : { join: 'PRD09Q', feedback: '6DexQA' };
 const formUrl = (id: string) => `https://tally.so/r/${id}`;
@@ -62,10 +60,7 @@ const embedUrl = (id: string) => `https://tally.so/embed/${id}?alignLeft=1&hideT
       дослідження. Вони зберігаються окремо від відповідей опитування, не публікуються й не входять у
       жодні агреговані дані на цьому сайті.</>}
     </p>
-    <p>
-      {en ? <><b>Your rights:</b> access, correction or deletion. Write to</> : <><b>Ваші права:</b> доступ, виправлення чи видалення — напишіть на</>}
-      <a href={`mailto:${email}`}>{email}</a>.
-    </p>
+    <p>{en ? <><b>Your rights:</b> access, correction or deletion. Write to us through the feedback form.</> : <><b>Ваші права:</b> доступ, виправлення чи видалення — напишіть через форму відгуку.</>}</p>
   </div>
 </Layout>
 
