@@ -10,7 +10,7 @@ import { DOI_URL, SAMPLE_ARGUMENT } from '../lib/site';
 import { rep, compByCrit, biasCls, W, sums, sumMax, nearSum, assessCls } from '../lib/methodology';
 import { i18n } from '../i18n';
 
-const { lang, link, num, signed, pval, int, pct } = i18n(Astro);
+const { lang, link, num, signed, pval, peq, int, pct } = i18n(Astro);
 const { INDICES, KIND } = indexApi(lang);
 
 const w = wave.wave;
@@ -201,11 +201,19 @@ const CAT = { НД: 'Дійсна наукова (ДНД)', КН: 'Корисн�
       типове для подібних опитувань. {SAMPLE_ARGUMENT} Область — лише описово: для χ² замало спостережень
       у регіонах.
     </p>
+    <p>Порівняння з генеральною сукупністю наближене:</p>
+    <ul>
+      <li>дані Держстату щодо генеральної сукупності станом на початок 2024/2025 навчального року, а
+        опитування тривало в лютому–квітні 2026 року;</li>
+      <li>під час повномасштабного російського вторгнення склад наукової спільноти міг швидко змінюватись
+        через мобілізацію, міграцію науковців і реорганізацію установ, тож реальні чисельність і склад
+        генеральної сукупності на момент опитування могли бути іншими.</li>
+    </ul>
     {rep.criteria.map((cr) => (
       <section style="margin-top:1.2rem">
         <h2 style="margin-bottom:0.3rem">{cr.criterion}</h2>
         <p class="note" style="margin:0 0 0.4rem">
-          χ² = {num(cr.chi2, 2)}, df = {cr.df}, p = {pval(cr.p)} (N = {cr.n})
+          χ² = {num(cr.chi2, 2)}, df = {cr.df}, {peq(cr.p)} (N = {cr.n})
         </p>
         <div class="table-scroll">
           <table>
@@ -224,6 +232,14 @@ const CAT = { НД: 'Дійсна наукова (ДНД)', КН: 'Корисн�
             </tbody>
           </table>
         </div>
+        {cr.criterion === 'Галузь наук (НУ)' && (
+          <p class="note">
+            Для ЗВО — найчисельнішої частини цільової групи — порівняння за галуззю неможливе: у Держстату
+            немає даних про кількість викладачів за галузями знань. Галузь у вибірці — це самооцінка
+            респондентів, вона показує, у якому напрямі людина фактично працює, і може відрізнятися від
+            адміністративної класифікації за назвою відділу чи інституту.
+          </p>
+        )}
       </section>
     ))}
 

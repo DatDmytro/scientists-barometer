@@ -34,5 +34,8 @@ export function formatters(lang: Lang = 'uk') {
   /** p-значення: «< 0,001» або три знаки */
   const pval = (p: number) => (p < 0.001 ? `< ${num(0.001, 3)}` : num(p, 3));
 
-  return { num, signed, pct, range, withCi, int, pval };
+  /** p у тексті: «p < 0,001» або «p = 0,002» (у стовпці p — просто pval) */
+  const peq = (p: number) => (p < 0.001 ? `p ${pval(p)}` : `p = ${pval(p)}`);
+
+  return { num, signed, pct, range, withCi, int, pval, peq };
 }

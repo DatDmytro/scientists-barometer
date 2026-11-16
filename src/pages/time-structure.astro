@@ -11,7 +11,7 @@ import verification from '../data/verification-2026.json';
 import { indexApi } from '../lib/indices';
 import { i18n } from '../i18n';
 
-const { lang, en, tr, link, num, pct, pval, signed } = i18n(Astro);
+const { lang, en, tr, link, num, pct, peq, signed } = i18n(Astro);
 const { byCode, CHANGE_CAVEAT } = indexApi(lang);
 
 const sh = Object.fromEntries(block.shares.map((s) => [s.cat, s]));
@@ -88,7 +88,7 @@ const CAT: Record<string, { label: string; tone: string }> = {
       {verification.knownGroups.map((g) => (
         <MirrorHist
           title={CAT[g.category].label}
-          sub={en ? `difference in means ${signed(g.delta)} pp · p = ${pval(g.p)}${g.p >= 0.05 ? ' (n.s.)' : ''}` : `різниця середніх ${signed(g.delta)} в.п. · p = ${pval(g.p)}${g.p >= 0.05 ? ' (н/з)' : ''}`}
+          sub={en ? `difference in means ${signed(g.delta)} pp · ${peq(g.p)}${g.p >= 0.05 ? ' (n.s.)' : ''}` : `різниця середніх ${signed(g.delta)} в.п. · ${peq(g.p)}${g.p >= 0.05 ? ' (н/з)' : ''}`}
           bins={g.distribution.map((d) => ({ label: d.interval, left: d.zvo, right: d.nu }))}
           left={{ label: en ? 'HEI' : 'ЗВО', n: g.zvo.n }}
           right={{ label: en ? 'RI' : 'НУ', n: g.nu.n }}

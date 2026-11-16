@@ -9,7 +9,7 @@ import { DOI_URL, SAMPLE_ARGUMENT_EN } from '../../lib/site';
 import { rep, compByCrit, biasCls, W, sums, sumMax, nearSum, assessCls } from '../../lib/methodology';
 import { i18n } from '../../i18n';
 
-const { lang, tr, link, num, signed, pval, int, pct } = i18n(Astro);
+const { lang, tr, link, num, signed, pval, peq, int, pct } = i18n(Astro);
 const { INDICES, KIND } = indexApi(lang);
 
 const w = wave.wave;
@@ -206,11 +206,20 @@ const CAT = { НД: 'Actual scientific (ASA)', КН: 'Useful non-scientific (UNS
       kind. {SAMPLE_ARGUMENT_EN} Region is descriptive only: there are too few observations in the regions
       for χ².
     </p>
+    <p>The comparison with the population is approximate:</p>
+    <ul>
+      <li>the State Statistics Service data on the population refer to the start of the 2024/2025 academic
+        year, while the survey ran in February–April 2026;</li>
+      <li>during the full-scale Russian invasion the composition of the research community may have changed
+        rapidly because of mobilisation, the migration of researchers and the reorganisation of
+        institutions, so the actual size and composition of the population at the time of the survey may
+        have been different.</li>
+    </ul>
     {rep.criteria.map((cr) => (
       <section style="margin-top:1.2rem">
         <h2 style="margin-bottom:0.3rem">{tr(cr.criterion)}</h2>
         <p class="note" style="margin:0 0 0.4rem">
-          χ² = {num(cr.chi2, 2)}, df = {cr.df}, p = {pval(cr.p)} (N = {cr.n})
+          χ² = {num(cr.chi2, 2)}, df = {cr.df}, {peq(cr.p)} (N = {cr.n})
         </p>
         <div class="table-scroll">
           <table>
@@ -229,6 +238,14 @@ const CAT = { НД: 'Actual scientific (ASA)', КН: 'Useful non-scientific (UNS
             </tbody>
           </table>
         </div>
+        {cr.criterion === 'Галузь наук (НУ)' && (
+          <p class="note">
+            For HEIs, the largest part of the target group, a comparison by field is impossible: the State
+            Statistics Service has no data on the number of teaching staff by field of knowledge. Field in
+            the sample is respondents’ self-assessment: it shows which field a person actually works in and
+            may differ from the administrative classification by the name of a department or institute.
+          </p>
+        )}
       </section>
     ))}
 
